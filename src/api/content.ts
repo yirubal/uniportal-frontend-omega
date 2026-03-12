@@ -1,11 +1,28 @@
 import client from "./client";
 import { Department, Course, Resource } from "../store/contentStore";
 
+const isDev = import.meta.env.DEV;
+
+// Lazily import mocks only in dev (tree-shaken out of production build)
+async function getMocks() {
+    if (!isDev) return null;
+    return import("./devMocks");
+}
+
 // ── Departments ──────────────────────────────────────────────
 
 export const getDepartments = async (): Promise<Department[]> => {
-    const response = await client.get<Department[]>("/api/departments/");
-    return response.data;
+    try {
+        const response = await client.get<Department[]>("/api/departments/");
+        return response.data;
+    } catch (err) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Using mock departments");
+            return mocks.MOCK_DEPARTMENTS;
+        }
+        throw err;
+    }
 };
 
 // ── Courses ───────────────────────────────────────────────────
@@ -15,11 +32,25 @@ export const getCourses = async (
     year: number,
     semester: number
 ): Promise<Course[]> => {
-    const response = await client.get<Course[]>(
-        `/api/departments/${departmentId}/courses/`,
-        { params: { year, semester } }
-    );
-    return response.data;
+    try {
+        const response = await client.get<Course[]>(
+            `/api/departments/${departmentId}/courses/`,
+            { params: { year, semester } }
+        );
+        return response.data;
+    } catch (err) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Using mock courses");
+            return mocks.MOCK_COURSES.filter(
+                (c) =>
+                    c.department === departmentId &&
+                    c.year === year &&
+                    c.semester === semester
+            );
+        }
+        throw err;
+    }
 };
 
 // ── Resources ─────────────────────────────────────────────────
@@ -33,20 +64,46 @@ export const getResources = async (
     courseId: number,
     params?: ResourcesParams
 ): Promise<Resource[]> => {
-    const response = await client.get<Resource[]>(
-        `/api/courses/${courseId}/resources/`,
-        { params }
-    );
-    return response.data;
+    try {
+        const response = await client.get<Resource[]>(
+            `/api/courses/${courseId}/resources/`,
+            { params }
+        );
+        return response.data;
+    } catch (err) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Using mock resources");
+            let resources = mocks.MOCK_RESOURCES.filter((r) => r.course === courseId);
+            if (params?.type && params.type !== "All") {
+                resources = resources.filter((r) => r.file_type === params.type);
+            }
+            if (params?.search) {
+                const q = params.search.toLowerCase();
+                resources = resources.filter((r) => r.title.toLowerCase().includes(q));
+            }
+            return resources;
+        }
+        throw err;
+    }
 };
 
 export const getResourceDetail = async (
     resourceId: number
 ): Promise<Resource> => {
-    const response = await client.get<Resource>(
-        `/api/resources/${resourceId}/`
-    );
-    return response.data;
+    try {
+        const response = await client.get<Resource>(
+            `/api/resources/${resourceId}/`
+        );
+        return response.data;
+    } catch (err) {
+        const mocks = await getMocks();
+        if (mocks) {
+            const r = mocks.MOCK_RESOURCES.find((r) => r.id === resourceId);
+            if (r) return r;
+        }
+        throw err;
+    }
 };
 
 export interface DownloadResponse {
@@ -58,8 +115,17 @@ export interface DownloadResponse {
 export const requestDownload = async (
     resourceId: number
 ): Promise<DownloadResponse> => {
-    const response = await client.post<DownloadResponse>(
-        `/api/resources/${resourceId}/download/`
-    );
-    return response.data;
+    try {
+        const response = await client.post<DownloadResponse>(
+            `/api/resources/${resourceId}/download/`
+        );
+        return response.data;
+    } catch (err) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Mock download response");
+            return { url: "#", filename: `resource_${resourceId}.pdf`, expires_in: 300 };
+        }
+        throw err;
+    }
 };
