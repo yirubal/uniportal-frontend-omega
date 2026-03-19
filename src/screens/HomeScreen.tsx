@@ -1,3 +1,4 @@
+import { ArrowRight, Brain, ChartColumn, FolderOpen, Sparkles, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { useAccess } from "../hooks/useAccess";
@@ -6,35 +7,31 @@ import { formatDaysRemaining } from "../utils/format";
 const QUICK_ACTIONS = [
     {
         path: "/resources",
-        icon: "📁",
-        label: "Resources",
-        desc: "Lecture notes & past exams",
-        color: "#E8F4FD",
-        textColor: "#1565C0",
+        icon: FolderOpen,
+        label: "Resource library",
+        desc: "Notes, worksheets, and past papers by course.",
+        tone: "tone-blue",
     },
     {
         path: "/quiz",
-        icon: "🧠",
-        label: "Practice Quiz",
-        desc: "Test your knowledge",
-        color: "#FFF3E0",
-        textColor: "#E65100",
+        icon: Brain,
+        label: "Practice sessions",
+        desc: "Short drills for management, marketing, accounting, and more.",
+        tone: "tone-gold",
     },
     {
         path: "/exit-exam",
-        icon: "🎯",
-        label: "Exit Exam",
-        desc: "Simulate final exit exams",
-        color: "#E8F5E9",
-        textColor: "#1B5E20",
+        icon: Target,
+        label: "Exit exam prep",
+        desc: "Timed simulations with exam-like pacing.",
+        tone: "tone-green",
     },
     {
         path: "/performance",
-        icon: "📊",
+        icon: ChartColumn,
         label: "Performance",
-        desc: "Track your progress",
-        color: "#F3E5F5",
-        textColor: "#6A1B9A",
+        desc: "Track weak topics and progress over time.",
+        tone: "tone-purple",
     },
 ];
 
@@ -51,98 +48,122 @@ export default function HomeScreen() {
     })();
 
     return (
-        <div className="fixed inset-0 flex flex-col bg-[#F5F7FA] overflow-y-auto">
-            {/* Hero header */}
-            <div
-                className="px-5 pt-12 pb-8"
-                style={{
-                    background: "linear-gradient(160deg, #0A1628 0%, #1A3A5C 100%)",
-                }}
-            >
-                <div className="flex items-start justify-between">
-                    <div>
-                        <p className="text-[#8899AA] text-sm">{greeting} 👋</p>
-                        <h1 className="text-white text-2xl font-bold mt-0.5">
+        <div className="app-screen">
+            <div className="app-hero">
+                <div className="relative z-10 flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                        <p className="text-sm text-white/70">{greeting}</p>
+                        <h1 className="app-title mt-1 text-[2rem] font-bold text-white">
                             {student?.first_name ?? "Student"}
                         </h1>
+                        <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/72">
+                            A focused study space for business and social science courses, with room for computing and other departments as the catalog grows.
+                        </p>
                     </div>
 
-                    {/* Premium badge */}
-                    {isPremium ? (
-                        <div className="flex flex-col items-end">
-                            <span className="bg-[#FFB400] text-[#0A1628] text-[10px] font-black px-2.5 py-1 rounded-full">
-                                ⭐ PREMIUM
-                            </span>
-                            <span className="text-[#8899AA] text-[10px] mt-1">
-                                {formatDaysRemaining(daysRemaining)}
-                            </span>
+                    <div className="shrink-0 rounded-full border border-white/14 bg-white/10 px-3 py-2 text-right backdrop-blur">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                            Access
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-white">
+                            {isPremium ? "Premium" : "Free"}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="relative z-10 mt-6 app-panel rounded-[28px] p-4">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                            <p className="app-section-label">Study profile</p>
+                            <p className="mt-2 text-base font-semibold text-[#18253D]">
+                                Year {student?.preferred_year ?? "?"} · Semester {student?.preferred_semester ?? "?"}
+                            </p>
+                            <p className="mt-1 text-sm text-[#53627D]">
+                                Use quick practice now and scale into deeper revision as more courses go live.
+                            </p>
                         </div>
-                    ) : (
+
+                        <div className={`shrink-0 rounded-full px-3 py-2 text-xs font-bold ${isPremium ? "tone-green" : "tone-gold"}`}>
+                            {isPremium ? formatDaysRemaining(daysRemaining) : "Upgrade for full access"}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="app-scroll">
+                <div className="mb-5 flex items-center justify-between gap-3">
+                    <div>
+                        <p className="app-section-label">Overview</p>
+                        <h2 className="app-title mt-2 text-[1.4rem] font-bold text-[#18253D]">
+                            Choose where to focus today
+                        </h2>
+                    </div>
+                    {!isPremium && (
                         <button
                             onClick={() => navigate("/subscribe")}
-                            className="bg-[#FFB400]/15 border border-[#FFB400]/40 text-[#FFB400] text-[10px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+                            className="app-chip app-chip-active"
                         >
-                            Upgrade ↗
+                            <Sparkles size={14} />
+                            Go premium
                         </button>
                     )}
                 </div>
 
-                {/* Sub-info */}
-                {student?.preferred_department && (
-                    <div className="flex items-center gap-2 mt-4">
-                        <span className="text-[#8899AA] text-xs">🎓</span>
-                        <span className="text-[#8899AA] text-xs">
-                            Year {student.preferred_year} · Semester {student.preferred_semester}
-                        </span>
-                    </div>
-                )}
-            </div>
+                <div className="app-grid-2">
+                    {QUICK_ACTIONS.map((action) => {
+                        const Icon = action.icon;
 
-            {/* Content */}
-            <div className="flex-1 px-5 pt-5 pb-28">
-                <p className="text-[#999] text-xs font-semibold uppercase tracking-widest mb-3">
-                    Quick Actions
-                </p>
-
-                <div className="grid grid-cols-2 gap-3">
-                    {QUICK_ACTIONS.map((action) => (
-                        <button
-                            key={action.path}
-                            onClick={() => navigate(action.path)}
-                            className="flex flex-col items-start p-4 bg-white rounded-2xl shadow-[0_1px_8px_rgba(0,0,0,0.06)] active:scale-[0.97] transition-transform duration-150 text-left"
-                        >
-                            <div
-                                className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl mb-3"
-                                style={{ backgroundColor: action.color }}
+                        return (
+                            <button
+                                key={action.path}
+                                onClick={() => navigate(action.path)}
+                                className="app-panel flex min-h-[178px] flex-col items-start justify-between rounded-[28px] p-4 text-left transition-transform duration-200 active:scale-[0.985]"
                             >
-                                {action.icon}
-                            </div>
-                            <p className="text-[#0A1628] text-sm font-bold leading-tight">
-                                {action.label}
-                            </p>
-                            <p className="text-[#999] text-[11px] mt-0.5 leading-snug">
-                                {action.desc}
-                            </p>
-                        </button>
-                    ))}
+                                <div className={`app-stat-card ${action.tone} flex h-12 w-12 items-center justify-center rounded-[18px]`}>
+                                    <Icon size={22} strokeWidth={2.2} />
+                                </div>
+                                <div className="mt-6">
+                                    <p className="text-base font-semibold text-[#18253D]">
+                                        {action.label}
+                                    </p>
+                                    <p className="mt-2 text-sm leading-relaxed text-[#53627D]">
+                                        {action.desc}
+                                    </p>
+                                </div>
+                                <div className="mt-6 flex items-center gap-2 text-sm font-semibold text-[#2D5BFF]">
+                                    Open
+                                    <ArrowRight size={16} />
+                                </div>
+                            </button>
+                        );
+                    })}
                 </div>
 
-                {/* Premium upsell strip (free users only) */}
-                {!isPremium && (
-                    <button
-                        onClick={() => navigate("/subscribe")}
-                        className="mt-5 w-full flex items-center gap-4 bg-[#0A1628] rounded-2xl p-4 active:scale-[0.98] transition-transform"
-                    >
-                        <span className="text-3xl">⭐</span>
-                        <div className="flex-1 text-left">
-                            <p className="text-[#FFB400] text-sm font-bold">Go Premium</p>
-                            <p className="text-[#8899AA] text-xs mt-0.5">
-                                Unlock exit exams, unlimited downloads & more
-                            </p>
+                <div className="mt-6 app-panel rounded-[32px] p-5">
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <p className="app-section-label">Curriculum direction</p>
+                            <h3 className="app-title mt-2 text-[1.3rem] font-bold text-[#18253D]">
+                                Built for social studies first
+                            </h3>
                         </div>
-                        <span className="text-[#FFB400] text-lg">›</span>
-                    </button>
-                )}
+                        <div className="rounded-full bg-[#EDF2FF] p-3 text-[#2D5BFF]">
+                            <Sparkles size={18} />
+                        </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-3">
+                        {[
+                            "Management and marketing flows should feel structured, calm, and readable under pressure.",
+                            "Accounting and quantitative topics need clean hierarchy so figures and option sets are easy to scan.",
+                            "The layout leaves enough flexibility to absorb computer science and other departments later.",
+                        ].map((point) => (
+                            <div key={point} className="app-panel-muted rounded-[22px] px-4 py-3 text-sm leading-relaxed text-[#53627D]">
+                                {point}
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );

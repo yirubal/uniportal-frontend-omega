@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
+import { Search, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getCourses, getDepartments, getResources } from "../api/content";
+import ResourceCard from "../components/ResourceCard";
+import TopBackButton from "../components/TopBackButton";
+import { EmptyState, ErrorState, Skeleton } from "../components/ui";
+import { useAccess } from "../hooks/useAccess";
 import { useAuthStore } from "../store/authStore";
 import { useContentStore } from "../store/contentStore";
-import { useAccess } from "../hooks/useAccess";
-import { getDepartments, getCourses, getResources } from "../api/content";
-import { Department, Course, Resource } from "../store/contentStore";
-import ResourceCard from "../components/ResourceCard";
-import { Skeleton, EmptyState, ErrorState } from "../components/ui";
-import { formatFileType } from "../utils/format";
+import type { Course, Department } from "../store/contentStore";
 
 type FilterType = "All" | "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
 
@@ -14,296 +16,390 @@ const FILTER_TABS: { key: FilterType; label: string }[] = [
     { key: "All", label: "All" },
     { key: "lecture_note", label: "Notes" },
     { key: "worksheet", label: "Worksheets" },
-    { key: "past_exam", label: "Past Exams" },
+    { key: "past_exam", label: "Past exams" },
+    { key: "exit_exam", label: "Exit exams" },
 ];
 
 const YEARS = [1, 2, 3, 4];
 const SEMESTERS = [1, 2];
 
-type ViewState = "select" | "list";
-
 export default function ResourcesScreen() {
+    const navigate = useNavigate();
     const { student } = useAuthStore();
     const store = useContentStore();
     const { canAccessResource } = useAccess();
 
-    // Local state for selection phase
-    const [view, setView] = useState<ViewState>(
-        store.selectedCourse ? "list" : "select"
-    );
+    const [view, setView] = useState<"select" | "list">(store.selectedCourse ? "list" : "select");
     const [departments, setDepartments] = useState<Department[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
     const [loadingDepts, setLoadingDepts] = useState(true);
     const [loadingCourses, setLoadingCourses] = useState(false);
     const [loadingResources, setLoadingResources] = useState(false);
-    const [localCourses, setLocalCourses] = useState<Course[]>([]);
     const [error, setError] = useState<string | null>(null);
-
-    // Selections (seed from student prefs or store)
     const [selDept, setSelDept] = useState<Department | null>(store.selectedDepartment);
     const [selYear, setSelYear] = useState<number | null>(store.selectedYear ?? student?.preferred_year ?? null);
     const [selSemester, setSelSemester] = useState<number | null>(store.selectedSemester ?? student?.preferred_semester ?? null);
     const [selCourse, setSelCourse] = useState<Course | null>(store.selectedCourse);
-
     const [filterType, setFilterType] = useState<FilterType>("All");
     const [search, setSearch] = useState("");
 
-    // Load departments once
     useEffect(() => {
         getDepartments()
-            .then((depts) => {
-                setDepartments(depts);
-                // Pre-select student's preferred dept if none chosen
+            .then((items) => {
+                setDepartments(items);
                 if (!selDept && student?.preferred_department) {
-                    const preferred = depts.find(
-                        (d) => d.id === student.preferred_department
-                    );
+                    const preferred = items.find((item) => item.id === student.preferred_department);
                     if (preferred) setSelDept(preferred);
                 }
             })
             .catch(() => setError("Failed to load departments."))
             .finally(() => setLoadingDepts(false));
-    }, []);
+    }, [selDept, student?.preferred_department]);
 
-    // Load courses whenever dept/year/semester changes
     useEffect(() => {
         if (!selDept || !selYear || !selSemester) return;
+
         setLoadingCourses(true);
+        setCourses([]);
         setSelCourse(null);
-        setLocalCourses([]);
+
         getCourses(selDept.id, selYear, selSemester)
-            .then(setLocalCourses)
+            .then(setCourses)
             .catch(() => setError("Failed to load courses."))
             .finally(() => setLoadingCourses(false));
     }, [selDept?.id, selYear, selSemester]);
 
-    // Load resources when course selected
-    const loadResources = useCallback((course: Course) => {
+    const loadResources = useCallback(async (course: Course) => {
         setLoadingResources(true);
         setError(null);
-        store.setSelectedCourse(course);
+
         store.setSelectedDepartment(selDept);
         store.setSelectedYear(selYear);
         store.setSelectedSemester(selSemester);
+        store.setSelectedCourse(course);
 
-        getResources(course.id)
-            .then(store.setResources)
-            .catch(() => setError("Failed to load resources."))
-            .finally(() => setLoadingResources(false));
-    }, [selDept, selYear, selSemester]);
+        try {
+            const resources = await getResources(course.id);
+            store.setResources(resources);
+            setView("list");
+        } catch {
+            setError("Failed to load resources.");
+        } finally {
+            setLoadingResources(false);
+        }
+    }, [selDept, selSemester, selYear, store]);
 
-    const handleCourseSelect = (course: Course) => {
-        setSelCourse(course);
-        loadResources(course);
-        setView("list");
-    };
+    const filteredResources = useMemo(() => {
+        return store.resources.filter((resource) => {
+            const matchesType = filterType === "All" || resource.file_type === filterType;
+            const query = search.trim().toLowerCase();
+            const matchesSearch = !query ||
+                resource.title.toLowerCase().includes(query) ||
+                resource.description?.toLowerCase().includes(query) ||
+                resource.tags?.some((tag) => tag.toLowerCase().includes(query));
 
-    const handleBack = () => {
-        setView("select");
-        setSelCourse(null);
-        store.setSelectedCourse(null);
-        store.setResources([]);
-    };
+            return matchesType && matchesSearch;
+        });
+    }, [filterType, search, store.resources]);
 
-    // Filtered resources
-    const filtered = store.resources.filter((r) => {
-        const matchType = filterType === "All" || r.file_type === filterType;
-        const matchSearch = r.title.toLowerCase().includes(search.toLowerCase());
-        return matchType && matchSearch;
-    });
+    const resourceStats = useMemo(() => {
+        const total = store.resources.length;
+        const notes = store.resources.filter((item) => item.file_type === "lecture_note").length;
+        const premium = store.resources.filter((item) => item.access_level === "premium").length;
+        const recent = store.resources.filter((item) => isRecent(item.created_at)).length;
+        return { total, notes, premium, recent };
+    }, [store.resources]);
 
-    // ── SELECTION VIEW ─────────────────────────────────────────────────────────
+    const featuredResource = useMemo(() => {
+        return [...store.resources].sort((a, b) => b.downloads_count - a.downloads_count)[0] ?? null;
+    }, [store.resources]);
+
     if (view === "select") {
         return (
-            <div className="fixed inset-0 flex flex-col bg-[#F5F7FA]">
-                {/* Header */}
-                <div className="bg-[#0A1628] px-5 pt-12 pb-5">
-                    <h1 className="text-white text-xl font-bold">Resources</h1>
-                    <p className="text-[#8899AA] text-sm mt-0.5">
-                        Choose your course to get started
-                    </p>
+            <div className="app-screen">
+                <div className="app-hero">
+                    <div className="relative z-10">
+                        <TopBackButton onClick={() => navigate("/home")} label="Home" />
+                        <p className="app-section-label text-white/70">Resource library</p>
+                        <h1 className="app-title mt-2 text-[2rem] font-bold text-white">Build your reading shelf</h1>
+                        <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/72">
+                            Select a department, year, semester, and course so the library stays tightly scoped and easier to browse.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-5 py-4 pb-28">
-                    {/* Department */}
-                    <p className="text-[#999] text-xs font-semibold uppercase tracking-widest mb-2">
-                        Department
-                    </p>
-                    {loadingDepts ? (
-                        <div className="space-y-2 mb-5">
-                            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 rounded-xl" />)}
+                <div className="app-scroll app-scroll-tight space-y-5">
+                    <div className="app-panel rounded-[30px] p-5">
+                        <div className="flex items-start gap-3">
+                            <div className="rounded-[18px] bg-[#EDF2FF] p-3 text-[#2D5BFF]">
+                                <Sparkles size={18} />
+                            </div>
+                            <div>
+                                <p className="app-section-label">Smart start</p>
+                                <p className="mt-2 text-base font-semibold text-[#18253D]">Start with the right course context</p>
+                                <p className="mt-1 text-sm leading-relaxed text-[#53627D]">
+                                    This keeps management case notes, accounting worksheets, and future computing resources separated cleanly.
+                                </p>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="flex flex-wrap gap-2 mb-5">
-                            {departments.map((d) => (
+                    </div>
+
+                    <SelectorGroup
+                        label="Department"
+                        loading={loadingDepts}
+                        items={departments}
+                        value={selDept?.id ?? null}
+                        onSelect={(item) => setSelDept(item)}
+                        getKey={(item) => item.id}
+                        getLabel={(item) => item.name}
+                        getMeta={(item) => item.code}
+                    />
+
+                    <div>
+                        <p className="app-section-label mb-3">Year</p>
+                        <div className="app-grid-2">
+                            {YEARS.map((year) => (
                                 <button
-                                    key={d.id}
-                                    onClick={() => setSelDept(d)}
-                                    className={`px-3 py-2 rounded-xl text-sm font-medium border-2 transition-all duration-150 active:scale-95 ${
-                                        selDept?.id === d.id
-                                            ? "bg-[#0A1628] border-[#0A1628] text-white"
-                                            : "bg-white border-[#E0E0E0] text-[#555]"
-                                    }`}
+                                    key={year}
+                                    onClick={() => setSelYear(year)}
+                                    className={`app-panel rounded-[26px] p-4 text-left ${selYear === year ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
                                 >
-                                    {d.name}
+                                    <p className="app-title text-[1.8rem] font-bold text-[#18253D]">{year}</p>
+                                    <p className="mt-1 text-sm text-[#53627D]">Year {year}</p>
                                 </button>
                             ))}
                         </div>
-                    )}
-
-                    {/* Year */}
-                    <p className="text-[#999] text-xs font-semibold uppercase tracking-widest mb-2">
-                        Year
-                    </p>
-                    <div className="flex gap-2 mb-5">
-                        {YEARS.map((y) => (
-                            <button
-                                key={y}
-                                onClick={() => setSelYear(y)}
-                                className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all duration-150 active:scale-95 ${
-                                    selYear === y
-                                        ? "bg-[#0A1628] border-[#0A1628] text-white"
-                                        : "bg-white border-[#E0E0E0] text-[#555]"
-                                }`}
-                            >
-                                {y}
-                            </button>
-                        ))}
                     </div>
 
-                    {/* Semester */}
-                    <p className="text-[#999] text-xs font-semibold uppercase tracking-widest mb-2">
-                        Semester
-                    </p>
-                    <div className="flex gap-2 mb-5">
-                        {SEMESTERS.map((s) => (
-                            <button
-                                key={s}
-                                onClick={() => setSelSemester(s)}
-                                className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-all duration-150 active:scale-95 ${
-                                    selSemester === s
-                                        ? "bg-[#0A1628] border-[#0A1628] text-white"
-                                        : "bg-white border-[#E0E0E0] text-[#555]"
-                                }`}
-                            >
-                                Sem {s}
-                            </button>
-                        ))}
+                    <div>
+                        <p className="app-section-label mb-3">Semester</p>
+                        <div className="app-grid-2">
+                            {SEMESTERS.map((semester) => (
+                                <button
+                                    key={semester}
+                                    onClick={() => setSelSemester(semester)}
+                                    className={`app-panel rounded-[26px] p-4 text-left ${selSemester === semester ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                >
+                                    <p className="app-title text-[1.8rem] font-bold text-[#18253D]">{semester}</p>
+                                    <p className="mt-1 text-sm text-[#53627D]">Semester {semester}</p>
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Courses */}
                     {selDept && selYear && selSemester && (
-                        <>
-                            <p className="text-[#999] text-xs font-semibold uppercase tracking-widest mb-2">
-                                Course
-                            </p>
+                        <div>
+                            <p className="app-section-label mb-3">Course</p>
                             {loadingCourses ? (
-                                <div className="space-y-2">
-                                    {[1, 2, 3].map((i) => <Skeleton key={i} className="h-14 rounded-2xl" />)}
+                                <div className="space-y-3">
+                                    {[1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-[28px]" />)}
                                 </div>
-                            ) : localCourses.length === 0 ? (
+                            ) : courses.length === 0 ? (
                                 <EmptyState
-                                    icon="📭"
                                     title="No courses found"
                                     description="No courses match the selected filters."
                                 />
                             ) : (
-                                <div className="flex flex-col gap-2">
-                                    {localCourses.map((course) => (
+                                <div className="space-y-3">
+                                    {courses.map((course) => (
                                         <button
                                             key={course.id}
-                                            onClick={() => handleCourseSelect(course)}
-                                            className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-[0_1px_8px_rgba(0,0,0,0.06)] active:scale-[0.98] transition-transform text-left"
+                                            onClick={() => {
+                                                setSelCourse(course);
+                                                void loadResources(course);
+                                            }}
+                                            className="app-panel flex w-full items-center justify-between rounded-[28px] p-4 text-left transition-transform duration-200 active:scale-[0.985]"
                                         >
                                             <div>
-                                                <p className="text-[#0A1628] text-sm font-semibold leading-snug">
-                                                    {course.name}
-                                                </p>
-                                                <p className="text-[#999] text-xs mt-0.5">{course.code}</p>
+                                                <p className="text-base font-semibold text-[#18253D]">{course.name}</p>
+                                                <p className="mt-1 text-sm text-[#7F8CA5]">{course.code}</p>
                                             </div>
-                                            <span className="w-8 h-8 rounded-lg bg-[#0A1628] flex items-center justify-center text-[#FFB400] text-base font-bold flex-shrink-0">
-                                                ›
-                                            </span>
+                                            <div className="rounded-full bg-[#18253D] px-3 py-2 text-xs font-bold text-white">
+                                                Open
+                                            </div>
                                         </button>
                                     ))}
                                 </div>
                             )}
-                        </>
+                        </div>
                     )}
-                    {error && <p className="text-[#F44336] text-sm text-center mt-4">{error}</p>}
+
+                    {error && <p className="text-center text-sm text-[#D95A50]">{error}</p>}
                 </div>
             </div>
         );
     }
 
-    // ── LIST VIEW ──────────────────────────────────────────────────────────────
     return (
-        <div className="fixed inset-0 flex flex-col bg-[#F5F7FA]">
-            {/* Header */}
-            <div className="bg-[#0A1628] px-5 pt-12 pb-4">
-                <button onClick={handleBack} className="flex items-center gap-1 text-[#8899AA] text-sm mb-2 active:opacity-70">
-                    ← Back
-                </button>
-                <h1 className="text-white text-lg font-bold leading-tight">
-                    {selCourse?.name ?? "Resources"}
-                </h1>
-                <p className="text-[#8899AA] text-xs mt-0.5">{selCourse?.code}</p>
-            </div>
-
-            {/* Filter tabs + Search */}
-            <div className="bg-white border-b border-[#EAEAEA] px-5 pt-3 pb-0">
-                <div className="relative mb-3">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#999] text-sm">🔍</span>
-                    <input
-                        type="text"
-                        placeholder="Search resources..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2.5 bg-[#F5F7FA] rounded-xl text-sm text-[#0A1628] placeholder-[#BBBBBB] outline-none border border-transparent focus:border-[#0A1628]/20"
+        <div className="app-screen">
+                <div className="app-hero">
+                    <div className="relative z-10">
+                    <TopBackButton
+                        onClick={() => {
+                            setView("select");
+                            setSelCourse(null);
+                            store.setSelectedCourse(null);
+                            store.setResources([]);
+                        }}
                     />
-                </div>
-                <div className="flex gap-1 overflow-x-auto pb-3 no-scrollbar">
-                    {FILTER_TABS.map((tab) => (
-                        <button
-                            key={tab.key}
-                            onClick={() => setFilterType(tab.key)}
-                            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 flex-shrink-0 ${
-                                filterType === tab.key
-                                    ? "bg-[#0A1628] text-[#FFB400]"
-                                    : "bg-[#F5F7FA] text-[#555]"
-                            }`}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
+                    <p className="app-section-label text-white/70">{selCourse?.code}</p>
+                    <h1 className="app-title mt-2 text-[1.85rem] font-bold text-white">{selCourse?.name ?? "Resources"}</h1>
                 </div>
             </div>
 
-            {/* Resources */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 pb-28">
-                {loadingResources ? (
-                    <div className="space-y-3">
-                        {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-16 rounded-2xl" />)}
-                    </div>
-                ) : error ? (
-                    <ErrorState message={error} onRetry={() => selCourse && loadResources(selCourse)} />
-                ) : filtered.length === 0 ? (
-                    <EmptyState
-                        icon="📭"
-                        title="No resources found"
-                        description={search ? "Try a different search term." : "No resources available for this filter."}
-                    />
-                ) : (
-                    <div className="flex flex-col gap-3">
-                        {filtered.map((resource) => (
-                            <ResourceCard
-                                key={resource.id}
-                                resource={resource}
-                                isLocked={!canAccessResource(resource.access_level)}
-                            />
-                        ))}
+            <div className="app-scroll app-scroll-tight">
+                <div className="app-grid-2">
+                    <MetricCard label="Resources" value={resourceStats.total} tone="tone-blue" />
+                    <MetricCard label="Fresh" value={resourceStats.recent} tone="tone-green" />
+                    <MetricCard label="Notes" value={resourceStats.notes} tone="tone-gold" />
+                    <MetricCard label="Premium" value={resourceStats.premium} tone="tone-purple" />
+                </div>
+
+                {featuredResource && (
+                    <div className="mt-4 app-panel rounded-[30px] p-5">
+                        <p className="app-section-label">Featured pack</p>
+                        <div className="mt-3 flex items-start justify-between gap-3">
+                            <div>
+                                <p className="text-base font-semibold text-[#18253D]">{featuredResource.title}</p>
+                                <p className="mt-2 text-sm leading-relaxed text-[#53627D]">
+                                    {featuredResource.description}
+                                </p>
+                            </div>
+                            <div className="rounded-full bg-[#FFF6DF] px-3 py-2 text-xs font-bold text-[#B27614]">
+                                {featuredResource.downloads_count} downloads
+                            </div>
+                        </div>
                     </div>
                 )}
+
+                <div className="mt-4 app-panel rounded-[30px] p-4">
+                    <div className="relative">
+                        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7F8CA5]" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search title, tag, or description"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            className="app-input pl-10"
+                        />
+                    </div>
+
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                        {FILTER_TABS.map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setFilterType(tab.key)}
+                                className={`app-chip whitespace-nowrap ${filterType === tab.key ? "app-chip-active" : ""}`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="mt-4">
+                    {loadingResources ? (
+                        <div className="space-y-3">
+                            {[1, 2, 3].map((item) => <Skeleton key={item} className="h-24 rounded-[28px]" />)}
+                        </div>
+                    ) : error ? (
+                        <ErrorState
+                            message={error}
+                            onRetry={() => {
+                                if (selCourse) void loadResources(selCourse);
+                            }}
+                        />
+                    ) : filteredResources.length === 0 ? (
+                        <EmptyState
+                            title="No resources found"
+                            description={search ? "Try a different search term or clear the filters." : "There are no resources for this category yet."}
+                        />
+                    ) : (
+                        <div className="space-y-3">
+                            {filteredResources.map((resource) => (
+                                <div key={resource.id}>
+                                    <ResourceCard
+                                        resource={resource}
+                                        isLocked={!canAccessResource(resource.access_level)}
+                                    />
+                                    {!!resource.tags?.length && (
+                                        <div className="ml-2 mt-2 flex flex-wrap gap-2">
+                                            {resource.tags.slice(0, 3).map((tag) => (
+                                                <span key={`${resource.id}-${tag}`} className="rounded-full bg-[#EEF3FF] px-3 py-1 text-[11px] font-semibold text-[#4D6691]">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
+}
+
+function SelectorGroup<T>({
+    label,
+    loading,
+    items,
+    value,
+    onSelect,
+    getKey,
+    getLabel,
+    getMeta,
+}: {
+    label: string;
+    loading: boolean;
+    items: T[];
+    value: number | null;
+    onSelect: (item: T) => void;
+    getKey: (item: T) => number;
+    getLabel: (item: T) => string;
+    getMeta: (item: T) => string;
+}) {
+    return (
+        <div>
+            <p className="app-section-label mb-3">{label}</p>
+            {loading ? (
+                <div className="space-y-3">
+                    {[1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-[28px]" />)}
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {items.map((item) => (
+                        <button
+                            key={getKey(item)}
+                            onClick={() => onSelect(item)}
+                            className={`app-panel flex w-full items-center justify-between rounded-[28px] p-4 text-left ${value === getKey(item) ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                        >
+                            <div>
+                                <p className="text-base font-semibold text-[#18253D]">{getLabel(item)}</p>
+                                <p className="mt-1 text-sm text-[#7F8CA5]">{getMeta(item)}</p>
+                            </div>
+                            <div className={`rounded-full px-3 py-2 text-xs font-bold ${value === getKey(item) ? "tone-blue" : "bg-[#F4F6FB] text-[#7F8CA5]"}`}>
+                                {value === getKey(item) ? "Selected" : "Choose"}
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function MetricCard({ label, value, tone }: { label: string; value: number; tone: string }) {
+    return (
+        <div className={`app-stat-card rounded-[24px] ${tone}`}>
+            <p className="text-2xl font-black">{value}</p>
+            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em]">{label}</p>
+        </div>
+    );
+}
+
+function isRecent(dateString: string) {
+    const createdAt = new Date(dateString).getTime();
+    return Date.now() - createdAt < 1000 * 60 * 60 * 24 * 7;
 }

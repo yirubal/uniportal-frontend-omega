@@ -23,10 +23,9 @@ export default function Card({
     return (
         <div
             className={`
-        bg-white rounded-2xl
-        shadow-[0_1px_8px_rgba(0,0,0,0.06)]
+        app-panel rounded-[28px]
         ${paddings[padding]}
-        ${onClick ? "cursor-pointer active:scale-98 transition-transform duration-150" : ""}
+        ${onClick ? "cursor-pointer active:scale-[0.985] transition-transform duration-150" : ""}
         ${className}
       `}
             onClick={onClick}

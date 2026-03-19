@@ -10,6 +10,9 @@ export interface Question {
     correct_option?: "a" | "b" | "c" | "d";
     explanation?: string;
     topic_tags?: string[];
+    topic?: string;
+    difficulty?: "easy" | "medium" | "hard";
+    hint?: string;
 }
 
 export interface QuizAnswer {

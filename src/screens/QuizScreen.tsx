@@ -17,7 +17,6 @@ export default function QuizScreen() {
     const { student } = useAuthStore();
     const quiz = useQuizStore();
 
-    // ── Course picker state ────────────────────────────────────────────────
     const [departments, setDepartments] = useState<Department[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [loadingDepts, setLoadingDepts] = useState(true);
@@ -30,11 +29,9 @@ export default function QuizScreen() {
     const [selSemester, setSelSemester] = useState<number | null>(student?.preferred_semester ?? null);
     const [selCourse, setSelCourse] = useState<Course | null>(null);
 
-    // ── Active quiz state ──────────────────────────────────────────────────
     const isQuizActive = quiz.questions.length > 0 && !quiz.isComplete;
     const isQuizComplete = quiz.isComplete;
 
-    // Load departments
     useEffect(() => {
         getDepartments()
             .then((depts) => {
@@ -48,7 +45,6 @@ export default function QuizScreen() {
             .finally(() => setLoadingDepts(false));
     }, []);
 
-    // Load courses when dept/year/semester changes
     useEffect(() => {
         if (!selDept || !selYear || !selSemester) return;
         setLoadingCourses(true);
@@ -60,7 +56,6 @@ export default function QuizScreen() {
             .finally(() => setLoadingCourses(false));
     }, [selDept?.id, selYear, selSemester]);
 
-    // Navigate to results when quiz completes (after submission)
     useEffect(() => {
         if (isQuizComplete) {
             navigate("/results", { replace: true });
@@ -101,7 +96,6 @@ export default function QuizScreen() {
             return;
         }
 
-        // Last question — submit
         try {
             const answerList = Object.entries(answers).map(([qId, opt]) => ({
                 question_id: Number(qId),
@@ -114,7 +108,6 @@ export default function QuizScreen() {
             });
             quiz.completeQuiz(result.score, result.results);
         } catch {
-            // Compute locally on API failure
             const correctCount = questions.filter(
                 (q) => answers[q.id] === q.correct_option
             ).length;
@@ -122,14 +115,12 @@ export default function QuizScreen() {
         }
     }, [quiz]);
 
-    // ── ACTIVE QUIZ ────────────────────────────────────────────────────────
     if (isQuizActive) {
         const q = quiz.questions[quiz.currentIndex];
         const isLast = quiz.currentIndex + 1 >= quiz.questions.length;
 
         return (
             <div className="fixed inset-0 flex flex-col bg-[#F5F7FA]">
-                {/* Header */}
                 <div className="bg-[#0A1628] px-5 pt-12 pb-5 flex items-center justify-between">
                     <button
                         onClick={() => quiz.resetQuiz()}
@@ -145,7 +136,6 @@ export default function QuizScreen() {
                     </span>
                 </div>
 
-                {/* Question */}
                 <div className="flex-1 overflow-y-auto px-5 py-5">
                     <QuestionCard
                         question={q}
@@ -157,7 +147,6 @@ export default function QuizScreen() {
                     />
                 </div>
 
-                {/* Next button */}
                 {quiz.selectedOption && (
                     <div className="px-5 pb-10 pt-3 animate-fade-in-up">
                         <Button
@@ -174,10 +163,8 @@ export default function QuizScreen() {
         );
     }
 
-    // ── COURSE PICKER ──────────────────────────────────────────────────────
     return (
         <div className="fixed inset-0 flex flex-col bg-[#F5F7FA]">
-            {/* Header */}
             <div className="bg-[#0A1628] px-5 pt-12 pb-5">
                 <h1 className="text-white text-xl font-bold">Practice Quiz</h1>
                 <p className="text-[#8899AA] text-sm mt-0.5">
@@ -186,7 +173,6 @@ export default function QuizScreen() {
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-4 pb-28">
-                {/* Department */}
                 <p className="text-[#999] text-xs font-semibold uppercase tracking-widest mb-2">
                     Department
                 </p>
@@ -212,7 +198,6 @@ export default function QuizScreen() {
                     </div>
                 )}
 
-                {/* Year */}
                 <p className="text-[#999] text-xs font-semibold uppercase tracking-widest mb-2">
                     Year
                 </p>
@@ -232,7 +217,6 @@ export default function QuizScreen() {
                     ))}
                 </div>
 
-                {/* Semester */}
                 <p className="text-[#999] text-xs font-semibold uppercase tracking-widest mb-2">
                     Semester
                 </p>
@@ -252,7 +236,6 @@ export default function QuizScreen() {
                     ))}
                 </div>
 
-                {/* Courses */}
                 {selDept && selYear && selSemester && (
                     <>
                         <p className="text-[#999] text-xs font-semibold uppercase tracking-widest mb-2">
@@ -299,7 +282,6 @@ export default function QuizScreen() {
                 {error && <p className="text-[#F44336] text-sm text-center mt-2">{error}</p>}
             </div>
 
-            {/* Start button */}
             <div className="px-5 pb-10 pt-3 bg-[#F5F7FA] border-t border-[#EAEAEA]">
                 <Button
                     variant="primary"

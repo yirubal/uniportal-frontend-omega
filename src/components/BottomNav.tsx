@@ -1,9 +1,11 @@
+import { Home, Library, Brain, Trophy } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const tabs = [
-    { path: "/resources", icon: "📁", label: "Resources" },
-    { path: "/quiz",      icon: "🧠", label: "Quiz"      },
-    { path: "/exit-exam", icon: "🎯", label: "Exit Exam" },
+    { path: "/home", icon: Home, label: "Home" },
+    { path: "/resources", icon: Library, label: "Library" },
+    { path: "/quiz", icon: Brain, label: "Quiz" },
+    { path: "/exit-exam", icon: Trophy, label: "Exams" },
 ];
 
 export default function BottomNav() {
@@ -16,35 +18,36 @@ export default function BottomNav() {
 
     return (
         <nav
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white
-                 border-t border-[#EAEAEA] safe-bottom"
+            className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-3 safe-bottom"
         >
-            <div className="flex">
-                {tabs.map((tab) => (
+            <div className="app-panel mx-auto flex max-w-md items-center justify-between rounded-[28px] px-2 py-2">
+                {tabs.map((tab) => {
+                    const Icon = tab.icon;
+
+                    return (
                     <button
+                        type="button"
                         key={tab.path}
                         onClick={() => navigate(tab.path)}
                         className={`
-              flex-1 flex flex-col items-center gap-1
-              pt-2 pb-3 transition-all duration-150
+              nav-tab relative flex min-w-0 flex-1 appearance-none flex-col items-center gap-1 rounded-[22px]
+              px-2 py-2.5 transition-all duration-200 focus:outline-none
               ${isActive(tab.path)
-                            ? "text-[#0A1628]"
-                            : "text-[#BBB]"
+                            ? "bg-[#18253D] text-white shadow-[0_14px_30px_rgba(24,37,61,0.18)]"
+                            : "bg-transparent text-[#7F8CA5]"
                         }
             `}
                     >
-                        <span className="text-xl leading-none">{tab.icon}</span>
+                        <Icon size={18} strokeWidth={2.2} />
                         <span
                             className={`text-[10px] leading-none
-                ${isActive(tab.path) ? "font-bold" : "font-normal"}`}
+                ${isActive(tab.path) ? "font-bold" : "font-medium"}`}
                         >
               {tab.label}
             </span>
-                        {isActive(tab.path) && (
-                            <span className="absolute bottom-0 w-6 h-0.5 bg-[#FFB400] rounded-full" />
-                        )}
                     </button>
-                ))}
+                    );
+                })}
             </div>
         </nav>
     );

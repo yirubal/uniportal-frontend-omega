@@ -1,8 +1,9 @@
+import { ArrowRight, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Resource } from "../store/contentStore";
+import type { Resource } from "../store/contentStore";
 import {
-    formatFileType,
     formatDate,
+    formatFileType,
     getFileTypeColor,
     getFileTypeIcon,
     truncate,
@@ -14,9 +15,9 @@ interface ResourceCardProps {
 }
 
 export default function ResourceCard({
-                                         resource,
-                                         isLocked = false,
-                                     }: ResourceCardProps) {
+    resource,
+    isLocked = false,
+}: ResourceCardProps) {
     const navigate = useNavigate();
     const colors = getFileTypeColor(resource.file_type);
     const icon = getFileTypeIcon(resource.file_type);
@@ -26,78 +27,51 @@ export default function ResourceCard({
             navigate("/subscribe");
             return;
         }
+
         navigate(`/resources/${resource.id}`);
     };
 
     return (
         <div
             onClick={handleTap}
-            className="bg-white rounded-2xl p-4 flex items-center gap-3
-                 shadow-[0_1px_8px_rgba(0,0,0,0.06)]
-                 active:scale-[0.98] transition-transform duration-150
-                 cursor-pointer relative overflow-hidden"
+            className="app-panel relative flex cursor-pointer items-center gap-4 overflow-hidden rounded-[28px] p-4 transition-transform duration-150 active:scale-[0.985]"
         >
-            {/* File type icon */}
             <div
-                className="w-11 h-11 rounded-xl flex items-center
-                   justify-center text-xl flex-shrink-0"
+                className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[18px] text-2xl"
                 style={{ backgroundColor: colors.bg }}
             >
                 {icon}
             </div>
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-[#1A1A1A] mb-1 leading-snug">
-                    {truncate(resource.title, 48)}
-                </p>
-                <div className="flex items-center gap-2 flex-wrap">
-                    {/* Type badge */}
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
                     <span
-                        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                        className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em]"
                         style={{ backgroundColor: colors.bg, color: colors.text }}
                     >
-            {formatFileType(resource.file_type)}
-          </span>
-                    {/* Date */}
-                    <span className="text-[10px] text-[#999]">
-            {formatDate(resource.created_at)}
-          </span>
-                    {/* Download count */}
-                    {resource.downloads_count > 0 && (
-                        <span className="text-[10px] text-[#999]">
-              ↓ {resource.downloads_count}
-            </span>
+                        {formatFileType(resource.file_type)}
+                    </span>
+                    {isNewResource(resource.created_at) && (
+                        <span className="rounded-full bg-[#FFF6DF] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B27614]">
+                            New
+                        </span>
                     )}
+                </div>
+
+                <p className="mt-3 text-base font-semibold leading-snug text-[#18253D]">
+                    {truncate(resource.title, 52)}
+                </p>
+
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-[#7F8CA5]">
+                    <span>{formatDate(resource.created_at)}</span>
+                    {resource.downloads_count > 0 && <span>{resource.downloads_count} downloads</span>}
+                    <span>{resource.access_level === "premium" ? "Premium" : "Free"}</span>
                 </div>
             </div>
 
-            {/* Right side */}
-            {isLocked ? (
-                <div
-                    className="w-8 h-8 rounded-lg bg-[#F5F5F5] flex
-                     items-center justify-center flex-shrink-0"
-                >
-                    <span className="text-sm">🔒</span>
-                </div>
-            ) : (
-                <div
-                    className="w-8 h-8 rounded-lg bg-[#0A1628] flex
-                     items-center justify-center flex-shrink-0"
-                >
-                    <span className="text-xs text-[#FFB400] font-bold">›</span>
-                </div>
-            )}
-
-            {/* New badge */}
-            {isNewResource(resource.created_at) && (
-                <div
-                    className="absolute top-2 right-2 bg-[#FFB400] text-[#0A1628]
-                     text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                >
-                    NEW
-                </div>
-            )}
+            <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${isLocked ? "bg-[#FFF0ED] text-[#D95A50]" : "bg-[#18253D] text-white"}`}>
+                {isLocked ? <Lock size={16} /> : <ArrowRight size={16} />}
+            </div>
         </div>
     );
 }
@@ -105,7 +79,6 @@ export default function ResourceCard({
 function isNewResource(dateString: string): boolean {
     const date = new Date(dateString);
     const now = new Date();
-    const diffDays =
-        (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
+    const diffDays = (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
     return diffDays <= 7;
 }

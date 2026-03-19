@@ -1,13 +1,175 @@
+import { useEffect, useMemo, useState } from "react";
+import { getMyPerformance, type Performance } from "../api/quiz";
+import LockedOverlay from "../components/LockedOverlay";
+import TopBackButton from "../components/TopBackButton";
+import { ErrorState, Skeleton } from "../components/ui";
+import { useAccess } from "../hooks/useAccess";
+import { useNavigate } from "react-router-dom";
+
 export default function PerformanceScreen() {
+    const navigate = useNavigate();
+    const { canAccessPerformance } = useAccess();
+    const [performance, setPerformance] = useState<Performance | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!canAccessPerformance) {
+            setLoading(false);
+            return;
+        }
+
+        getMyPerformance()
+            .then(setPerformance)
+            .catch(() => setError("Failed to load performance analytics."))
+            .finally(() => setLoading(false));
+    }, [canAccessPerformance]);
+
+    const scoreTrend = useMemo(() => {
+        if (!performance?.score_over_time.length) return 0;
+        const scores = performance.score_over_time;
+        return scores[scores.length - 1].score - scores[0].score;
+    }, [performance]);
+
+    if (!canAccessPerformance) {
+        return (
+            <div className="app-screen">
+                <div className="app-hero">
+                    <div className="relative z-10">
+                        <TopBackButton onClick={() => navigate("/home")} label="Home" />
+                        <p className="app-section-label text-white/70">Performance</p>
+                        <h1 className="app-title mt-2 text-[2rem] font-bold text-white">Track your growth over time</h1>
+                    </div>
+                </div>
+                <div className="app-scroll app-scroll-tight">
+                    <LockedOverlay
+                        feature="Performance"
+                        description="See score trends, weak topics, and course-by-course progress once premium is enabled."
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    if (loading) {
+        return (
+            <div className="app-screen px-5 pt-12">
+                <Skeleton className="h-32 rounded-[32px] mb-4" />
+                <Skeleton className="h-56 rounded-[32px] mb-4" />
+                <Skeleton className="h-56 rounded-[32px]" />
+            </div>
+        );
+    }
+
+    if (error || !performance) {
+        return (
+            <div className="app-screen">
+                <div className="app-scroll pt-12">
+                    <ErrorState message={error ?? "No performance data found."} onRetry={() => window.location.reload()} />
+                </div>
+            </div>
+        );
+    }
+
+    const maxScore = Math.max(...performance.score_over_time.map((item) => item.score), 100);
+
     return (
-        <div
-            className="fixed inset-0 flex flex-col items-center justify-center"
-            style={{ backgroundColor: "#F5F7FA" }}
-        >
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0A1628" }}>
-                Performance 📊
-            </h1>
-            <p style={{ color: "#555", marginTop: 8 }}>Performance screen coming soon.</p>
+        <div className="app-screen">
+            <div className="app-hero">
+                <div className="relative z-10">
+                    <TopBackButton onClick={() => navigate("/home")} label="Home" />
+                    <p className="app-section-label text-white/70">Performance</p>
+                    <h1 className="app-title mt-2 text-[2rem] font-bold text-white">Academic pulse</h1>
+                    <p className="mt-3 text-sm leading-relaxed text-white/72">
+                        Use trend data to decide whether to revise theory-heavy topics, drill problem solving, or shift into timed practice.
+                    </p>
+                </div>
+            </div>
+
+            <div className="app-scroll app-scroll-tight space-y-4">
+                <div className="app-grid-2">
+                    <KpiCard label="Attempts" value={performance.total_attempts} tone="tone-blue" />
+                    <KpiCard label="Average" value={`${performance.average_score}%`} tone="tone-green" />
+                    <KpiCard label="Best score" value={`${performance.best_score}%`} tone="tone-gold" />
+                    <KpiCard label="Trend" value={`${scoreTrend >= 0 ? "+" : ""}${scoreTrend}%`} tone="tone-purple" />
+                </div>
+
+                <div className="app-panel rounded-[32px] p-5">
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <p className="app-section-label">Score over time</p>
+                            <p className="mt-2 text-base font-semibold text-[#18253D]">Recent quiz sessions</p>
+                        </div>
+                        <span className="rounded-full bg-[#EAF8F1] px-3 py-2 text-xs font-bold text-[#2E9E73]">
+                            {performance.score_over_time.length} sessions
+                        </span>
+                    </div>
+
+                    <div className="mt-6 flex h-44 items-end gap-2">
+                        {performance.score_over_time.map((point) => (
+                            <div key={point.date} className="flex flex-1 flex-col items-center gap-2">
+                                <div className="relative w-full overflow-hidden rounded-t-[18px] bg-[#E6ECF7]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }}>
+                                    <div className="absolute inset-x-0 bottom-0 rounded-t-[18px] bg-[linear-gradient(180deg,#5F82FF_0%,#18253D_100%)]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }} />
+                                </div>
+                                <span className="text-[10px] font-semibold text-[#7F8CA5]">
+                                    {new Date(point.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="app-panel rounded-[32px] p-5">
+                    <p className="app-section-label">Weak topics</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {performance.weak_topics.map((topic) => (
+                            <span key={topic} className="rounded-full bg-[#FFF6DF] px-3 py-2 text-[12px] font-semibold text-[#B27614]">
+                                {topic}
+                            </span>
+                        ))}
+                    </div>
+                    <p className="mt-4 text-sm leading-relaxed text-[#53627D]">
+                        These areas need targeted revision first. Pair the topic filter in practice mode with matching resource packs to tighten recall.
+                    </p>
+                </div>
+
+                <div className="app-panel rounded-[32px] p-5">
+                    <p className="app-section-label">Course breakdown</p>
+                    <div className="mt-4 space-y-3">
+                        {performance.attempts_by_course.map((course) => (
+                            <div key={course.course_name} className="app-panel-muted rounded-[24px] p-4">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-sm font-semibold text-[#18253D]">{course.course_name}</p>
+                                        <p className="mt-1 text-xs text-[#7F8CA5]">{course.attempts} attempts</p>
+                                    </div>
+                                    <span className="text-lg font-black text-[#18253D]">{course.average}%</span>
+                                </div>
+                                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E1E7F2]">
+                                    <div className="h-full rounded-full bg-[linear-gradient(90deg,#5F82FF_0%,#18253D_100%)]" style={{ width: `${course.average}%` }} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function KpiCard({
+    label,
+    value,
+    tone,
+}: {
+    label: string;
+    value: string | number;
+    tone: string;
+}) {
+    return (
+        <div className={`app-stat-card rounded-[24px] ${tone}`}>
+            <p className="text-2xl font-black">{value}</p>
+            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em]">{label}</p>
         </div>
     );
 }

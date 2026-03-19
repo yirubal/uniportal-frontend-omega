@@ -1,140 +1,53 @@
-import { useAuthStore } from "../store/authStore";
+import { GraduationCap } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useAuthStore } from "../store/authStore";
 
 export default function SplashScreen() {
     const { error, isLoading } = useAuthStore();
     const { initAuth } = useAuth();
 
     return (
-        <div
-            style={{ backgroundColor: "#0A1628" }}
-            className="fixed inset-0 flex flex-col items-center justify-center gap-0 animate-fade-in"
-        >
-            {/* Radial glow behind the logo */}
-            <div
-                className="absolute"
-                style={{
-                    width: 260,
-                    height: 260,
-                    borderRadius: "50%",
-                    background:
-                        "radial-gradient(circle, rgba(255,180,0,0.12) 0%, transparent 70%)",
-                    pointerEvents: "none",
-                }}
-            />
+        <div className="app-screen items-center justify-center px-6 text-center">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(45,91,255,0.16),transparent_28%),radial-gradient(circle_at_bottom,rgba(241,195,100,0.18),transparent_24%)]" />
 
-            {/* Logo */}
-            <div
-                className="animate-scale-in flex items-center justify-center mb-6"
-                style={{
-                    width: 100,
-                    height: 100,
-                    borderRadius: 28,
-                    background:
-                        "linear-gradient(135deg, rgba(255,180,0,0.18) 0%, rgba(255,180,0,0.06) 100%)",
-                    border: "1.5px solid rgba(255,180,0,0.35)",
-                    fontSize: 52,
-                    lineHeight: 1,
-                    boxShadow: "0 8px 32px rgba(255,180,0,0.12)",
-                }}
-            >
-                🎓
+            <div className="relative z-10 w-full max-w-sm app-panel rounded-[36px] px-8 py-10">
+                <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[30px] bg-[linear-gradient(160deg,#18253D_0%,#2D5BFF_100%)] text-white shadow-[0_20px_50px_rgba(45,91,255,0.22)]">
+                    <GraduationCap size={42} />
+                </div>
+
+                <p className="app-section-label mt-6">Unity University</p>
+                <h1 className="app-title mt-2 text-[2rem] font-bold text-[#18253D]">
+                    Student Portal
+                </h1>
+                <p className="mt-3 text-sm leading-relaxed text-[#53627D]">
+                    A cleaner study hub for lecture resources, exam practice, and academic progress inside Telegram.
+                </p>
+
+                {!isLoading && error ? (
+                    <div className="mt-8">
+                        <p className="text-sm leading-relaxed text-[#D95A50]">{error}</p>
+                        <button
+                            onClick={initAuth}
+                            className="mt-5 inline-flex rounded-[18px] bg-[#18253D] px-5 py-3 text-sm font-semibold text-white"
+                        >
+                            Try again
+                        </button>
+                    </div>
+                ) : (
+                    <div className="mt-8 flex items-center justify-center gap-2">
+                        {[0, 1, 2].map((i) => (
+                            <span
+                                key={i}
+                                className="inline-block h-2.5 w-2.5 rounded-full bg-[#2D5BFF]"
+                                style={{
+                                    animation: "pulse 1.15s ease-in-out infinite",
+                                    animationDelay: `${i * 0.18}s`,
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
-
-            {/* App name */}
-            <p
-                className="animate-fade-in-up text-white font-bold tracking-tight"
-                style={{
-                    fontSize: 26,
-                    animationDelay: "0.10s",
-                    animationFillMode: "both",
-                    opacity: 0,
-                    letterSpacing: "-0.3px",
-                }}
-            >
-                Unity University
-            </p>
-
-            {/* Subtitle */}
-            <p
-                className="animate-fade-in-up"
-                style={{
-                    marginTop: 4,
-                    fontSize: 13,
-                    color: "#FFB400",
-                    opacity: 0,
-                    animationDelay: "0.20s",
-                    animationFillMode: "both",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    fontWeight: 500,
-                }}
-            >
-                Student Portal
-            </p>
-
-            {/* Error state */}
-            {!isLoading && error ? (
-                <div
-                    className="animate-fade-in-up flex flex-col items-center gap-3"
-                    style={{ marginTop: 48 }}
-                >
-                    <p
-                        style={{
-                            fontSize: 13,
-                            color: "#FF6B6B",
-                            textAlign: "center",
-                            maxWidth: 240,
-                            lineHeight: 1.5,
-                        }}
-                    >
-                        {error}
-                    </p>
-                    <button
-                        onClick={initAuth}
-                        style={{
-                            marginTop: 8,
-                            padding: "10px 28px",
-                            borderRadius: 12,
-                            background: "linear-gradient(135deg, #FFB400, #FF8C00)",
-                            color: "#0A1628",
-                            fontWeight: 700,
-                            fontSize: 14,
-                            border: "none",
-                            cursor: "pointer",
-                            boxShadow: "0 4px 16px rgba(255,180,0,0.3)",
-                        }}
-                    >
-                        Try Again
-                    </button>
-                </div>
-            ) : (
-                /* Loading dots */
-                <div
-                    className="animate-fade-in-up flex items-center gap-2"
-                    style={{
-                        marginTop: 48,
-                        opacity: 0,
-                        animationDelay: "0.35s",
-                        animationFillMode: "both",
-                    }}
-                >
-                    {[0, 1, 2].map((i) => (
-                        <span
-                            key={i}
-                            style={{
-                                display: "inline-block",
-                                width: 8,
-                                height: 8,
-                                borderRadius: "50%",
-                                backgroundColor: "#FFB400",
-                                animation: "pulse 1.2s ease-in-out infinite",
-                                animationDelay: `${i * 0.18}s`,
-                            }}
-                        />
-                    ))}
-                </div>
-            )}
         </div>
     );
 }

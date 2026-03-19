@@ -16,26 +16,24 @@ export default function LockedOverlay({
 
     return (
         <div
-            className="flex flex-col items-center justify-center
-                 min-h-[60vh] px-6 text-center"
+            className="px-5 pt-5"
         >
-            <div
-                className="w-20 h-20 rounded-full bg-[#FFF8E1]
-                   flex items-center justify-center text-4xl mb-5"
-            >
-                🔒
-            </div>
+            <div className="app-panel min-h-[60vh] rounded-[32px] px-6 py-10 text-center">
+                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#FFF6DF] text-4xl">
+                    🔒
+                </div>
 
-            <h2 className="text-xl font-bold text-[#0A1628] mb-2">
-                {feature} is Premium
-            </h2>
+                <p className="app-section-label mb-2">Premium Access</p>
+                <h2 className="app-title text-[1.7rem] font-bold text-[#18253D]">
+                    {feature} is part of the premium study suite
+                </h2>
 
-            <p className="text-sm text-[#555] mb-6 max-w-xs leading-relaxed">
-                {description ||
-                    `Upgrade to access ${feature} and all other premium features.`}
-            </p>
+                <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-[#53627D]">
+                    {description ||
+                        `Upgrade to access ${feature} and all other premium features.`}
+                </p>
 
-            <div className="bg-[#F5F7FA] rounded-2xl p-4 w-full max-w-xs mb-6">
+                <div className="app-panel-muted mx-auto mt-7 w-full max-w-xs p-4 text-left">
                 {[
                     "Unlimited downloads",
                     "Full exit exam archive",
@@ -43,20 +41,22 @@ export default function LockedOverlay({
                     "All past exam papers",
                 ].map((benefit) => (
                     <div key={benefit} className="flex items-center gap-3 py-1.5">
-                        <span className="text-[#4CAF50] text-base">✓</span>
-                        <span className="text-sm text-[#333]">{benefit}</span>
+                        <span className="text-[#2E9E73] text-base">✓</span>
+                        <span className="text-sm text-[#18253D]">{benefit}</span>
                     </div>
                 ))}
-            </div>
+                </div>
 
-            <Button
-                variant="secondary"
-                size="lg"
-                fullWidth
-                onClick={() => navigate("/subscribe")}
-            >
-                Upgrade from {price} →
-            </Button>
+                <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    className="mt-7"
+                    onClick={() => navigate("/subscribe")}
+                >
+                    Upgrade from {price}
+                </Button>
+            </div>
         </div>
     );
 }

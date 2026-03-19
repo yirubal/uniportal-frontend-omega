@@ -18,6 +18,7 @@ export interface Course {
 export interface Resource {
     id: number;
     title: string;
+    description?: string;
     file_type: "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
     access_level: "free" | "premium";
     status: "pending" | "published" | "rejected";
@@ -25,6 +26,11 @@ export interface Resource {
     downloads_count: number;
     created_at: string;
     is_locked: boolean;
+    author?: string;
+    pages?: number;
+    file_size_mb?: number;
+    estimated_minutes?: number;
+    tags?: string[];
 }
 
 type FilterType = "All" | "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
