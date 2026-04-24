@@ -34,14 +34,14 @@ export default function PerformanceScreen() {
     if (!canAccessPerformance) {
         return (
             <div className="app-screen">
-                <div className="app-hero">
+                <div className="app-topbar">
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate("/home")} label="Home" />
-                        <p className="app-section-label text-white/70">Performance</p>
-                        <h1 className="app-title mt-2 text-[2rem] font-bold text-white">Track your growth over time</h1>
+                        <p className="app-section-label">Performance</p>
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">Track your growth over time</h1>
                     </div>
                 </div>
-                <div className="app-scroll app-scroll-tight">
+                <div className="app-scroll app-scroll-compact">
                     <LockedOverlay
                         feature="Performance"
                         description="See score trends, weak topics, and course-by-course progress once premium is enabled."
@@ -75,30 +75,30 @@ export default function PerformanceScreen() {
 
     return (
         <div className="app-screen">
-            <div className="app-hero">
+            <div className="app-topbar">
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
-                    <p className="app-section-label text-white/70">Performance</p>
-                    <h1 className="app-title mt-2 text-[2rem] font-bold text-white">Academic pulse</h1>
-                    <p className="mt-3 text-sm leading-relaxed text-white/72">
-                        Use trend data to decide whether to revise theory-heavy topics, drill problem solving, or shift into timed practice.
+                    <p className="app-section-label">Performance</p>
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">Academic pulse</h1>
+                    <p className="mt-2 text-sm leading-relaxed text-[#53627D]">
+                        Keep the analytics dense, readable, and focused on what to revise next.
                     </p>
                 </div>
             </div>
 
-            <div className="app-scroll app-scroll-tight space-y-4">
+            <div className="app-scroll app-scroll-compact space-y-4">
                 <div className="app-grid-2">
                     <KpiCard label="Attempts" value={performance.total_attempts} tone="tone-blue" />
                     <KpiCard label="Average" value={`${performance.average_score}%`} tone="tone-green" />
-                    <KpiCard label="Best score" value={`${performance.best_score}%`} tone="tone-gold" />
+                    <KpiCard label="Best" value={`${performance.best_score}%`} tone="tone-gold" />
                     <KpiCard label="Trend" value={`${scoreTrend >= 0 ? "+" : ""}${scoreTrend}%`} tone="tone-purple" />
                 </div>
 
-                <div className="app-panel rounded-[32px] p-5">
+                <div className="app-sheet p-5">
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <p className="app-section-label">Score over time</p>
-                            <p className="mt-2 text-base font-semibold text-[#18253D]">Recent quiz sessions</p>
+                            <p className="mt-2 text-base font-semibold text-[#18253D]">Recent sessions</p>
                         </div>
                         <span className="rounded-full bg-[#EAF8F1] px-3 py-2 text-xs font-bold text-[#2E9E73]">
                             {performance.score_over_time.length} sessions
@@ -119,7 +119,7 @@ export default function PerformanceScreen() {
                     </div>
                 </div>
 
-                <div className="app-panel rounded-[32px] p-5">
+                <div className="app-sheet p-5">
                     <p className="app-section-label">Weak topics</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                         {performance.weak_topics.map((topic) => (
@@ -129,11 +129,11 @@ export default function PerformanceScreen() {
                         ))}
                     </div>
                     <p className="mt-4 text-sm leading-relaxed text-[#53627D]">
-                        These areas need targeted revision first. Pair the topic filter in practice mode with matching resource packs to tighten recall.
+                        These need attention first. Pair topic-based practice with matching resources to improve recall.
                     </p>
                 </div>
 
-                <div className="app-panel rounded-[32px] p-5">
+                <div className="app-sheet p-5">
                     <p className="app-section-label">Course breakdown</p>
                     <div className="mt-4 space-y-3">
                         {performance.attempts_by_course.map((course) => (

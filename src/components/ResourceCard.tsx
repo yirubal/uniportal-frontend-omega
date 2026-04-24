@@ -1,5 +1,8 @@
-import { ArrowRight, Lock } from "lucide-react";
+import { Download, LoaderCircle, Lock } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { requestDownload } from "../api/content";
+import { useTelegram } from "../hooks/useTelegram";
 import type { Resource } from "../store/contentStore";
 import {
     formatDate,
@@ -19,60 +22,78 @@ export default function ResourceCard({
     isLocked = false,
 }: ResourceCardProps) {
     const navigate = useNavigate();
+    const { downloadFile } = useTelegram();
+    const [downloading, setDownloading] = useState(false);
     const colors = getFileTypeColor(resource.file_type);
     const icon = getFileTypeIcon(resource.file_type);
 
-    const handleTap = () => {
+    const handleDownload = async () => {
         if (isLocked) {
             navigate("/subscribe");
             return;
         }
 
-        navigate(`/resources/${resource.id}`);
+        if (downloading) return;
+
+        setDownloading(true);
+        try {
+            const response = await requestDownload(resource.id);
+            if (response.url.startsWith("http")) {
+                try {
+                    downloadFile(response.url, response.filename);
+                } catch {
+                    window.open(response.url, "_blank", "noopener,noreferrer");
+                }
+            }
+        } finally {
+            setDownloading(false);
+        }
     };
 
     return (
-        <div
-            onClick={handleTap}
-            className="app-panel relative flex cursor-pointer items-center gap-4 overflow-hidden rounded-[28px] p-4 transition-transform duration-150 active:scale-[0.985]"
+        <button
+            type="button"
+            onClick={() => void handleDownload()}
+            className="app-panel app-card-interactive relative flex w-full min-h-[9.25rem] cursor-pointer items-center gap-4 overflow-hidden rounded-[24px] px-5 py-6 text-left"
+            style={{ paddingInline: "24px" }}
         >
             <div
-                className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[18px] text-2xl"
+                className="flex h-[3.25rem] w-[3.25rem] flex-shrink-0 items-center justify-center rounded-[16px] text-[1.35rem] "
                 style={{ backgroundColor: colors.bg }}
             >
                 {icon}
             </div>
 
-            <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1 py-0.5">
+                <div className="flex flex-wrap items-center gap-2">
                     <span
-                        className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em]"
+                        className="app-badge"
                         style={{ backgroundColor: colors.bg, color: colors.text }}
                     >
                         {formatFileType(resource.file_type)}
                     </span>
                     {isNewResource(resource.created_at) && (
-                        <span className="rounded-full bg-[#FFF6DF] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B27614]">
+                        <span className="app-badge app-badge-gold">
                             New
                         </span>
                     )}
                 </div>
 
-                <p className="mt-3 text-base font-semibold leading-snug text-[#18253D]">
+                <p className="mt-3 line-clamp-2 min-h-[2.8rem] pr-2 text-[0.97rem] font-semibold leading-snug text-[#18253D]">
                     {truncate(resource.title, 52)}
                 </p>
 
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-[#7F8CA5]">
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pr-2 text-[11px] font-medium text-[#72809a]">
                     <span>{formatDate(resource.created_at)}</span>
                     {resource.downloads_count > 0 && <span>{resource.downloads_count} downloads</span>}
                     <span>{resource.access_level === "premium" ? "Premium" : "Free"}</span>
                 </div>
             </div>
 
-            <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${isLocked ? "bg-[#FFF0ED] text-[#D95A50]" : "bg-[#18253D] text-white"}`}>
-                {isLocked ? <Lock size={16} /> : <ArrowRight size={16} />}
+            <div className={`mr-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full ${isLocked ? "bg-[rgba(245,229,226,0.96)] text-[#B75F57]" : "bg-[#18253D] text-white"}`}>
+                {downloading ? <LoaderCircle size={18} className="animate-spin" /> : isLocked ? <Lock size={18} /> : <Download size={18} />}
             </div>
-        </div>
+        </button>
     );
 }
 

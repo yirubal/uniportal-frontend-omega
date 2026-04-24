@@ -1,8 +1,15 @@
 import { create } from "zustand";
 
+export interface StudentPreferences {
+    department: number | null;
+    year: number | null;
+    semester: number | null;
+}
+
 export interface Student {
-    id: number;
+    id?: number;
     telegram_id: number;
+    name: string;
     first_name: string;
     last_name: string;
     username: string;
@@ -10,9 +17,9 @@ export interface Student {
     preferred_year: number | null;
     preferred_semester: number | null;
     onboarding_complete: boolean;
-    subscription_status: "free" | "premium";
+    is_premium: boolean;
     subscription_expiry: string | null;
-    downloads_today: number;
+    preferences: StudentPreferences;
 }
 
 interface AuthState {

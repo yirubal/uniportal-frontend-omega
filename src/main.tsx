@@ -7,11 +7,8 @@ import App from "./App.tsx";
 // Initialize Telegram WebApp
 WebApp.ready();
 WebApp.expand();
-WebApp.setHeaderColor("#0A1628");
-WebApp.setBackgroundColor("#F5F7FA");
-
-// Disable vertical swipes so the app feels native
 WebApp.disableVerticalSwipes();
+WebApp.enableClosingConfirmation();
 
 const rootElement = document.getElementById("root");
 

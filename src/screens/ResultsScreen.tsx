@@ -7,37 +7,47 @@ import { getScoreEmoji, getScoreMessage } from "../utils/format";
 
 export default function ResultsScreen() {
     const navigate = useNavigate();
-    const { score, results, questions, resetQuiz } = useQuizStore();
+    const { attemptSummary, courseId, examPaperId, mode, resetAttempt } = useQuizStore();
 
-    const total = questions.length || results.length || 1;
-    const percentage = Math.round((score / total) * 100);
+    const percentage = Math.round(attemptSummary?.score ?? 0);
     const emoji = getScoreEmoji(percentage);
     const message = getScoreMessage(percentage);
     const circumference = 2 * Math.PI * 40;
     const dashOffset = circumference - (percentage / 100) * circumference;
 
     const handleRetry = () => {
-        resetQuiz();
+        resetAttempt();
+
+        if (mode === "simulation" && examPaperId) {
+            navigate(`/simulate/${examPaperId}`, { replace: true });
+            return;
+        }
+
+        if (courseId) {
+            navigate("/quiz/list", { replace: true });
+            return;
+        }
+
         navigate("/quiz", { replace: true });
     };
 
     return (
         <div className="app-screen">
-            <div className="app-hero">
+            <div className="app-topbar">
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
-                    <p className="app-section-label text-white/70">Assessment complete</p>
-                    <h1 className="app-title mt-2 text-[2rem] font-bold text-white">
-                        Your results are ready
+                    <p className="app-section-label">Assessment complete</p>
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">
+                        Results summary
                     </h1>
-                    <p className="mt-3 text-sm text-white/72">
-                        Review the score, then scan question feedback while the session is still fresh.
+                    <p className="mt-2 text-sm text-[#53627D]">
+                        Review the score, pending items, and weak topics from the submitted attempt.
                     </p>
                 </div>
             </div>
 
-            <div className="app-scroll app-scroll-tight">
-                <div className="app-panel rounded-[34px] px-5 py-6 text-center">
+            <div className="app-scroll app-scroll-compact">
+                <div className="app-sheet px-5 py-6 text-center">
                     <div className="mx-auto relative h-32 w-32">
                         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
                             <circle cx="50" cy="50" r="40" fill="none" stroke="#E8EDF6" strokeWidth="8" />
@@ -61,45 +71,46 @@ export default function ResultsScreen() {
 
                     <p className="mt-5 text-xl font-bold text-[#18253D]">{message}</p>
                     <p className="mt-2 text-sm text-[#53627D]">
-                        {score} correct out of {total} questions
+                        Auto-graded score across {attemptSummary?.gradable_total ?? 0} gradable questions
                     </p>
 
                     <div className="mt-6 app-grid-2">
-                        <ResultStat label="Correct" value={score} tone="tone-green" />
-                        <ResultStat label="Incorrect" value={total - score} tone="tone-coral" />
+                        <ResultStat label="Gradable" value={attemptSummary?.gradable_total ?? 0} tone="tone-green" />
+                        <ResultStat label="Pending" value={attemptSummary?.pending_count ?? 0} tone="tone-gold" />
                     </div>
                 </div>
 
-                {results.length > 0 && (
+                {!!attemptSummary && Object.keys(attemptSummary.topic_breakdown).length > 0 && (
                     <div className="mt-5">
-                        <p className="app-section-label mb-3">Question review</p>
+                        <p className="app-section-label mb-3">Topic breakdown</p>
                         <div className="space-y-3">
-                            {results.map((item, index) => (
-                                <div key={item.question.id} className="app-panel rounded-[28px] p-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className={`mt-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold ${item.is_correct ? "bg-[#EAF8F1] text-[#2E9E73]" : "bg-[#FFF0ED] text-[#D95A50]"}`}>
-                                            {index + 1}
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-semibold leading-relaxed text-[#18253D]">
-                                                {item.question.text}
-                                            </p>
-                                            <p className="mt-2 text-xs text-[#7F8CA5]">
-                                                Your answer: <span className="font-semibold text-[#18253D]">{item.selected_option.toUpperCase()}</span>
-                                                {!item.is_correct && item.question.correct_option && (
-                                                    <>
-                                                        {" · "}Correct: <span className="font-semibold text-[#2E9E73]">{item.question.correct_option.toUpperCase()}</span>
-                                                    </>
-                                                )}
-                                            </p>
-                                            {item.question.explanation && (
-                                                <div className="mt-3 rounded-[22px] bg-[#FFF6DF] px-4 py-3 text-sm leading-relaxed text-[#6C5521]">
-                                                    {item.question.explanation}
-                                                </div>
-                                            )}
-                                        </div>
+                            {Object.entries(attemptSummary.topic_breakdown).map(([topic, score]) => (
+                                <div key={topic} className="app-list-item">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold leading-relaxed text-[#18253D]">
+                                            {topic}
+                                        </p>
+                                        <p className="mt-2 text-xs text-[#7F8CA5]">
+                                            {score}% topic score
+                                        </p>
                                     </div>
+                                    <span className={`app-badge ${score >= 60 ? "app-badge-green" : "app-badge-coral"} !px-3 !py-2 !text-[0.68rem]`}>
+                                        {score}%
+                                    </span>
                                 </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {!!attemptSummary?.weak_topics.length && (
+                    <div className="mt-5 app-sheet p-4">
+                        <p className="app-section-label">Weak topics</p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {attemptSummary.weak_topics.map((topic) => (
+                                <span key={topic} className="app-badge app-badge-gold !px-3 !py-2 !text-[0.7rem]">
+                                    {topic}
+                                </span>
                             ))}
                         </div>
                     </div>
@@ -109,7 +120,7 @@ export default function ResultsScreen() {
             <div className="app-footer space-y-3">
                 <Button variant="primary" size="lg" fullWidth onClick={handleRetry}>
                     <RotateCcw size={16} />
-                    Try another quiz
+                    {mode === "simulation" ? "Try another simulation" : "Try another quiz"}
                 </Button>
                 <Button variant="ghost" size="md" fullWidth onClick={() => navigate("/home")}>
                     <ArrowLeft size={16} />

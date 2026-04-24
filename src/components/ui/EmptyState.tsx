@@ -17,11 +17,11 @@ export default function EmptyState({
                                        action,
                                    }: EmptyStateProps) {
     return (
-        <div className="app-panel flex flex-col items-center justify-center rounded-[28px] px-6 py-14 text-center">
-            <span className="mb-4 text-5xl">{icon}</span>
-            <p className="text-base font-semibold text-[#18253D] mb-2">{title}</p>
+        <div className="app-state py-12">
+            <span className="app-state-icon mb-4 text-3xl">{icon}</span>
+            <p className="mb-2 text-base font-semibold text-[#18253D]">{title}</p>
             {description && (
-                <p className="mb-6 max-w-xs text-sm leading-relaxed text-[#53627D]">{description}</p>
+                <p className="app-copy mb-6 max-w-xs">{description}</p>
             )}
             {action && (
                 <Button variant="primary" size="sm" onClick={action.onClick}>

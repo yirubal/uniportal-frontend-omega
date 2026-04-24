@@ -1,4 +1,5 @@
 import React from "react";
+import WebApp from "@twa-dev/sdk";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: "primary" | "secondary" | "ghost" | "danger";
@@ -16,26 +17,33 @@ export default function Button({
                                    children,
                                    disabled,
                                    className = "",
+                                   onClick,
                                ...props
                                }: ButtonProps) {
     const base =
-        "inline-flex items-center justify-center gap-2 font-semibold rounded-[20px] transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_12px_28px_rgba(24,37,61,0.08)]";
+        "inline-flex min-h-11 items-center justify-center gap-2 font-semibold rounded-[18px] transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:cursor-not-allowed";
 
     const variants = {
-        primary: "bg-[#18253D] text-white border border-[#18253D]",
+        primary: "bg-[#18253D] text-white border border-[#18253D] shadow-[0_10px_24px_rgba(24,37,61,0.10)]",
         secondary: "bg-[#EDF2FF] text-[#2D5BFF] border border-[#DDE6FF]",
-        ghost: "bg-white/60 text-[#18253D] border border-[rgba(31,53,91,0.10)] shadow-none",
+        ghost: "bg-[rgba(244,247,252,0.92)] text-[#18253D] border border-[rgba(31,53,91,0.08)] shadow-none",
         danger: "bg-[#D95A50] text-white border border-[#D95A50]",
     };
 
     const sizes = {
         sm: "px-3.5 py-2.5 text-xs",
-        md: "px-5 py-3.5 text-sm",
-        lg: "px-6 py-4 text-[15px]",
+        md: "px-5 py-3 text-sm",
+        lg: "px-6 py-3.5 text-[15px]",
     };
 
     return (
         <button
+            onClick={(event) => {
+                if (!disabled && !loading) {
+                    WebApp.HapticFeedback.impactOccurred(variant === "ghost" ? "light" : "medium");
+                }
+                onClick?.(event);
+            }}
             className={`
         ${base}
         ${variants[variant]}

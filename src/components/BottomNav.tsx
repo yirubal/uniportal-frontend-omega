@@ -1,5 +1,6 @@
 import { Home, Library, Brain, Trophy } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import WebApp from "@twa-dev/sdk";
 
 const tabs = [
     { path: "/home", icon: Home, label: "Home" },
@@ -20,32 +21,42 @@ export default function BottomNav() {
         <nav
             className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-3 safe-bottom"
         >
-            <div className="app-panel mx-auto flex max-w-md items-center justify-between rounded-[28px] px-2 py-2">
+            <div className="app-tabbar mx-auto flex max-w-md items-center justify-between rounded-[30px] px-2 py-3">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
 
                     return (
-                    <button
-                        type="button"
-                        key={tab.path}
-                        onClick={() => navigate(tab.path)}
-                        className={`
-              nav-tab relative flex min-w-0 flex-1 appearance-none flex-col items-center gap-1 rounded-[22px]
-              px-2 py-2.5 transition-all duration-200 focus:outline-none
+                        <button
+                            type="button"
+                            key={tab.path}
+                            onClick={() => {
+                                WebApp.HapticFeedback.selectionChanged();
+                                navigate(tab.path);
+                            }}
+                            className={`
+                nav-tab relative flex min-w-0 flex-1 appearance-none flex-col items-center justify-center
+              gap-1.5 rounded-[22px] px-2 py-4 h-14
               ${isActive(tab.path)
-                            ? "bg-[#18253D] text-white shadow-[0_14px_30px_rgba(24,37,61,0.18)]"
-                            : "bg-transparent text-[#7F8CA5]"
-                        }
+                                    ? "bg-[rgba(255,255,255,0.96)] text-[#18253D] border border-[rgba(31,53,91,0.1)] shadow-[0_10px_22px_rgba(20,38,67,0.08)]"
+                                    : "bg-transparent text-[#6F7D96]"
+                                }
             `}
-                    >
-                        <Icon size={18} strokeWidth={2.2} />
-                        <span
-                            className={`text-[10px] leading-none
-                ${isActive(tab.path) ? "font-bold" : "font-medium"}`}
                         >
-              {tab.label}
-            </span>
-                    </button>
+                            <span
+                                className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors duration-200 ${isActive(tab.path)
+                                    ? "bg-[#183B9A] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
+                                    : "bg-[rgba(233,239,247,0.88)] text-[#60728F]"
+                                    }`}
+                            >
+                                <Icon size={17} strokeWidth={2.25} />
+                            </span>
+                            <span
+                                className={`text-[10px] leading-none
+                ${isActive(tab.path) ? "font-bold text-[#18253D]" : "font-medium"}`}
+                            >
+                                {tab.label}
+                            </span>
+                        </button>
                     );
                 })}
             </div>

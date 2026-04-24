@@ -1,14 +1,12 @@
 import { useAuthStore } from "../store/authStore";
 
-const FREE_QUIZ_QUESTIONS_PER_DAY = 5;
-
 export const useAccess = () => {
     const { student } = useAuthStore();
 
-    const isPremium =
-        student?.subscription_status === "premium" &&
-        student?.subscription_expiry !== null &&
+    const hasActiveExpiry =
+        !student?.subscription_expiry ||
         new Date(student.subscription_expiry) > new Date();
+    const isPremium = Boolean(student?.is_premium && hasActiveExpiry);
 
     const daysRemaining = (() => {
         if (!student?.subscription_expiry) return 0;
@@ -19,11 +17,6 @@ export const useAccess = () => {
     })();
 
     const canDownload = isPremium;
-
-    const quizQuestionsRemaining = isPremium
-        ? Infinity
-        : Math.max(0, FREE_QUIZ_QUESTIONS_PER_DAY - (student?.downloads_today ?? 0));
-
     const canAccessExitExam = isPremium;
     const canAccessPerformance = isPremium;
 
@@ -36,7 +29,6 @@ export const useAccess = () => {
         isPremium,
         daysRemaining,
         canDownload,
-        quizQuestionsRemaining,
         canAccessExitExam,
         canAccessPerformance,
         canAccessResource,

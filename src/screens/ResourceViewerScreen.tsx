@@ -6,6 +6,7 @@ import Button from "../components/ui/Button";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import TopBackButton from "../components/TopBackButton";
 import { useAccess } from "../hooks/useAccess";
+import { useTelegram } from "../hooks/useTelegram";
 import { useContentStore } from "../store/contentStore";
 import type { Resource } from "../store/contentStore";
 import { formatDate, formatFileType } from "../utils/format";
@@ -15,6 +16,7 @@ export default function ResourceViewerScreen() {
     const { id } = useParams();
     const { resources, selectedCourse } = useContentStore();
     const { canAccessResource } = useAccess();
+    const { downloadFile } = useTelegram();
 
     const [resource, setResource] = useState<Resource | null>(null);
     const [loading, setLoading] = useState(true);
@@ -56,7 +58,14 @@ export default function ResourceViewerScreen() {
 
         try {
             const response = await requestDownload(resource.id);
-            setDownloadMessage(`Dummy download ready: ${response.filename}`);
+            if (response.url.startsWith("http")) {
+                try {
+                    downloadFile(response.url, response.filename);
+                } catch {
+                    window.open(response.url, "_blank", "noopener,noreferrer");
+                }
+            }
+            setDownloadMessage(`Download ready: ${response.filename}`);
         } catch {
             setDownloadMessage("Unable to prepare the download right now.");
         } finally {
@@ -90,34 +99,34 @@ export default function ResourceViewerScreen() {
 
     return (
         <div className="app-screen">
-            <div className="app-hero">
+            <div className="app-topbar">
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate(-1)} />
-                    <p className="app-section-label text-white/70">
+                    <p className="app-section-label">
                         {formatFileType(resource.file_type)}
                     </p>
-                    <h1 className="app-title mt-2 text-[1.9rem] font-bold text-white">
+                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-[#18253D]">
                         {resource.title}
                     </h1>
-                    <p className="mt-3 text-sm text-white/72">
+                    <p className="mt-2 text-sm text-[#53627D]">
                         {selectedCourse?.code ? `${selectedCourse.code} · ` : ""}Updated {formatDate(resource.created_at)}
                     </p>
                 </div>
             </div>
 
-            <div className="app-scroll app-scroll-tight space-y-4">
-                <div className="app-panel rounded-[32px] p-5">
+            <div className="app-scroll app-scroll-compact space-y-4">
+                <div className="app-sheet p-5">
                     <div className="flex flex-wrap items-center gap-2">
-                        <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${resource.access_level === "premium" ? "bg-[#FFF0ED] text-[#D95A50]" : "bg-[#EAF8F1] text-[#2E9E73]"}`}>
+                        <span className={`app-badge ${resource.access_level === "premium" ? "app-badge-coral" : "app-badge-green"}`}>
                             {resource.access_level === "premium" ? "Premium pack" : "Free resource"}
                         </span>
-                        <span className="rounded-full bg-[#EEF3FF] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#4D6691]">
+                        <span className="app-badge app-badge-blue">
                             {resource.downloads_count} downloads
                         </span>
                     </div>
 
                     <p className="mt-4 text-sm leading-relaxed text-[#53627D]">
-                        {resource.description ?? "Dummy resource details will be replaced by backend content later."}
+                        {resource.description ?? "Resource details will appear here once backend content is available."}
                     </p>
 
                     <div className="mt-5 app-grid-2">
@@ -130,7 +139,7 @@ export default function ResourceViewerScreen() {
                     {!!resource.tags?.length && (
                         <div className="mt-5 flex flex-wrap gap-2">
                             {resource.tags.map((tag) => (
-                                <span key={tag} className="rounded-full bg-[#EEF3FF] px-3 py-1 text-[11px] font-semibold text-[#4D6691]">
+                                <span key={tag} className="app-badge app-badge-blue !text-[0.68rem]">
                                     {tag}
                                 </span>
                             ))}
@@ -138,9 +147,9 @@ export default function ResourceViewerScreen() {
                     )}
                 </div>
 
-                <div className="app-panel rounded-[32px] p-5">
+                <div className="app-sheet p-5">
                     <div className="flex items-center gap-3">
-                        <div className="rounded-[18px] bg-[#EDF2FF] p-3 text-[#2D5BFF]">
+                        <div className="app-icon-chip">
                             <Sparkles size={18} />
                         </div>
                         <div>
@@ -159,12 +168,12 @@ export default function ResourceViewerScreen() {
                 </div>
 
                 {downloadMessage && (
-                    <div className="rounded-[24px] bg-[#EAF8F1] px-4 py-4 text-sm font-semibold text-[#2E9E73]">
+                    <div className="rounded-[20px] bg-[rgba(230,242,237,0.96)] px-4 py-4 text-sm font-semibold text-[#2E7C62]">
                         {downloadMessage}
                     </div>
                 )}
 
-                <div className="app-panel rounded-[32px] p-5">
+                <div className="app-sheet p-5">
                     <p className="app-section-label">Related resources</p>
                     {relatedResources.length === 0 ? (
                         <EmptyState
@@ -177,10 +186,12 @@ export default function ResourceViewerScreen() {
                                 <button
                                     key={item.id}
                                     onClick={() => navigate(`/resources/${item.id}`)}
-                                    className="app-panel-muted w-full rounded-[24px] p-4 text-left"
+                                    className="app-list-item"
                                 >
-                                    <p className="text-sm font-semibold text-[#18253D]">{item.title}</p>
-                                    <p className="mt-1 text-xs text-[#7F8CA5]">{formatFileType(item.file_type)}</p>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold text-[#18253D]">{item.title}</p>
+                                        <p className="mt-1 text-xs text-[#7F8CA5]">{formatFileType(item.file_type)}</p>
+                                    </div>
                                 </button>
                             ))}
                         </div>
@@ -197,7 +208,7 @@ export default function ResourceViewerScreen() {
                     onClick={() => void handleDownload()}
                 >
                     {isLocked ? <Lock size={16} /> : <Download size={16} />}
-                    {isLocked ? "Unlock premium resource" : "Prepare dummy download"}
+                    {isLocked ? "Unlock premium resource" : "Download resource"}
                 </Button>
             </div>
         </div>
@@ -206,7 +217,7 @@ export default function ResourceViewerScreen() {
 
 function MetaTile({ label, value }: { label: string; value: string }) {
     return (
-        <div className="app-panel-muted rounded-[22px] p-4">
+        <div className="app-panel-muted rounded-[20px] p-4">
             <p className="app-section-label">{label}</p>
             <p className="mt-2 text-sm font-semibold text-[#18253D]">{value}</p>
         </div>

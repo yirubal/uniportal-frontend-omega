@@ -1,13 +1,22 @@
 import { create } from "zustand";
 
+export type QuestionType =
+    | "mcq"
+    | "true_false"
+    | "fill_blank"
+    | "matching"
+    | "essay";
+
 export interface Question {
     id: number;
     text: string;
+    question_type?: QuestionType;
     option_a: string;
     option_b: string;
     option_c: string;
     option_d: string;
-    correct_option?: "a" | "b" | "c" | "d";
+    option_e?: string;
+    correct_option?: string;
     explanation?: string;
     topic_tags?: string[];
     topic?: string;
@@ -17,38 +26,48 @@ export interface Question {
 
 export interface QuizAnswer {
     question_id: number;
-    selected_option: "a" | "b" | "c" | "d";
-}
-
-export interface QuizResult {
-    question: Question;
-    selected_option: "a" | "b" | "c" | "d";
-    is_correct: boolean;
+    selected_option: string;
 }
 
 export type QuizMode = "practice" | "simulation" | "topic";
 
+export interface AttemptSummary {
+    score: number;
+    gradable_total: number;
+    pending_count: number;
+    topic_breakdown: Record<string, number>;
+    weak_topics: string[];
+}
+
 interface QuizState {
-    // Quiz config
+    departmentId: number | null;
+    year: number | null;
+    semester: number | null;
     mode: QuizMode;
     courseId: number | null;
+    courseName: string | null;
+    selectedQuizId: number | null;
+    selectedQuizTitle: string | null;
     examPaperId: number | null;
-    totalTime: number | null;   // seconds, for simulation
+    totalTime: number | null;
 
-    // Active quiz
     questions: Question[];
     currentIndex: number;
-    answers: Record<number, "a" | "b" | "c" | "d">;
-    selectedOption: "a" | "b" | "c" | "d" | null;
-    showExplanation: boolean;
+    answers: Record<number, string>;
+    selectedAnswer: string | null;
     timeRemaining: number | null;
     isComplete: boolean;
 
-    // Results
-    score: number;
-    results: QuizResult[];
+    attemptSummary: AttemptSummary | null;
 
-    // Actions
+    setQuizContext: (context: {
+        departmentId: number;
+        year: number;
+        semester: number;
+        courseId: number;
+        courseName: string;
+    }) => void;
+    setSelectedQuiz: (quizId: number, quizTitle: string) => void;
     setQuiz: (
         questions: Question[],
         mode: QuizMode,
@@ -56,53 +75,73 @@ interface QuizState {
         examPaperId?: number,
         totalTime?: number
     ) => void;
-    setAnswer: (option: "a" | "b" | "c" | "d") => void;
+    setAnswer: (answer: string) => void;
     nextQuestion: () => void;
-    completeQuiz: (score: number, results: QuizResult[]) => void;
+    completeQuiz: (summary: AttemptSummary) => void;
     setTimeRemaining: (time: number) => void;
+    resetAttempt: () => void;
     resetQuiz: () => void;
 }
 
 export const useQuizStore = create<QuizState>((set, get) => ({
+    departmentId: null,
+    year: null,
+    semester: null,
     mode: "practice",
     courseId: null,
+    courseName: null,
+    selectedQuizId: null,
+    selectedQuizTitle: null,
     examPaperId: null,
     totalTime: null,
     questions: [],
     currentIndex: 0,
     answers: {},
-    selectedOption: null,
-    showExplanation: false,
+    selectedAnswer: null,
     timeRemaining: null,
     isComplete: false,
-    score: 0,
-    results: [],
+    attemptSummary: null,
+
+    setQuizContext: ({ departmentId, year, semester, courseId, courseName }) =>
+        set({
+            departmentId,
+            year,
+            semester,
+            courseId,
+            courseName,
+            selectedQuizId: null,
+            selectedQuizTitle: null,
+        }),
+
+    setSelectedQuiz: (selectedQuizId, selectedQuizTitle) =>
+        set({
+            selectedQuizId,
+            selectedQuizTitle,
+        }),
 
     setQuiz: (questions, mode, courseId, examPaperId, totalTime) =>
         set({
             questions,
             mode,
             courseId: courseId ?? null,
+            selectedQuizId: examPaperId ?? null,
             examPaperId: examPaperId ?? null,
             totalTime: totalTime ?? null,
             timeRemaining: totalTime ?? null,
             currentIndex: 0,
             answers: {},
-            selectedOption: null,
-            showExplanation: false,
+            selectedAnswer: null,
             isComplete: false,
-            score: 0,
-            results: [],
+            attemptSummary: null,
         }),
 
-    setAnswer: (option) => {
+    setAnswer: (answer) => {
         const { currentIndex, questions, answers } = get();
         const question = questions[currentIndex];
         if (!question) return;
         set({
-            selectedOption: option,
-            showExplanation: true,
-            answers: { ...answers, [question.id]: option },
+            selectedAnswer: answer,
+            answers: { ...answers, [question.id]: answer },
         });
     },
 
@@ -113,29 +152,48 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         } else {
             set({
                 currentIndex: currentIndex + 1,
-                selectedOption: null,
-                showExplanation: false,
+                selectedAnswer: get().answers[questions[currentIndex + 1].id] ?? null,
             });
         }
     },
 
-    completeQuiz: (score, results) =>
-        set({ score, results, isComplete: true }),
+    completeQuiz: (attemptSummary) =>
+        set({ attemptSummary, isComplete: true }),
 
     setTimeRemaining: (time) => set({ timeRemaining: time }),
 
-    resetQuiz: () =>
+    resetAttempt: () =>
         set({
             questions: [],
             currentIndex: 0,
             answers: {},
-            selectedOption: null,
-            showExplanation: false,
+            selectedAnswer: null,
             timeRemaining: null,
             isComplete: false,
-            score: 0,
-            results: [],
-            courseId: null,
+            attemptSummary: null,
             examPaperId: null,
+            totalTime: null,
+            selectedQuizId: null,
+            selectedQuizTitle: null,
+        }),
+
+    resetQuiz: () =>
+        set({
+            departmentId: null,
+            year: null,
+            semester: null,
+            questions: [],
+            currentIndex: 0,
+            answers: {},
+            selectedAnswer: null,
+            timeRemaining: null,
+            isComplete: false,
+            attemptSummary: null,
+            courseId: null,
+            courseName: null,
+            selectedQuizId: null,
+            selectedQuizTitle: null,
+            examPaperId: null,
+            totalTime: null,
         }),
 }));

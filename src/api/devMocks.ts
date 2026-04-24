@@ -8,7 +8,7 @@
 import type { Student } from "../store/authStore";
 import type { Course, Department, Resource } from "../store/contentStore";
 import type { PaymentInstructions, Performance, Plan, ExamPaper } from "./quiz";
-import type { Question, QuizAnswer, QuizMode, QuizResult } from "../store/quizStore";
+import type { AttemptSummary, Question, QuizAnswer, QuizMode } from "../store/quizStore";
 
 export const MOCK_DEPARTMENTS: Department[] = [
     { id: 1, name: "Computer Science & Engineering", code: "CSE" },
@@ -548,12 +548,32 @@ export const MOCK_EXAM_PAPERS: ExamPaper[] = [
     },
     {
         id: 9101,
-        title: "DSA Final Mock 2025",
+        title: "DSA Quiz Set A",
         course: 1,
-        exam_type: "final",
-        year: 2025,
-        duration_minutes: 90,
-        total_questions: 8,
+        exam_type: "quiz",
+        year: 2026,
+        duration_minutes: 20,
+        total_questions: 6,
+        access_level: "free",
+    },
+    {
+        id: 9102,
+        title: "DSA Quiz Set B",
+        course: 1,
+        exam_type: "quiz",
+        year: 2026,
+        duration_minutes: 15,
+        total_questions: 6,
+        access_level: "free",
+    },
+    {
+        id: 9103,
+        title: "Operating Systems Quiz Set A",
+        course: 2,
+        exam_type: "quiz",
+        year: 2026,
+        duration_minutes: 18,
+        total_questions: 6,
         access_level: "free",
     },
 ];
@@ -591,6 +611,7 @@ export const MOCK_PAYMENT_INSTRUCTIONS: PaymentInstructions = {
 export const MOCK_STUDENT: Student = {
     id: 1,
     telegram_id: 123456789,
+    name: "Cheri Student",
     first_name: "Cheri",
     last_name: "Student",
     username: "cheri_dev",
@@ -598,9 +619,13 @@ export const MOCK_STUDENT: Student = {
     preferred_year: 2,
     preferred_semester: 1,
     onboarding_complete: true,
-    subscription_status: "premium",
+    is_premium: true,
     subscription_expiry: "2026-12-31T23:59:59Z",
-    downloads_today: 1,
+    preferences: {
+        department: 1,
+        year: 2,
+        semester: 1,
+    },
 };
 
 export const MOCK_PERFORMANCE: Performance = {
@@ -679,27 +704,44 @@ export function evaluateMockAttempt(
     questions: Question[],
     answers: QuizAnswer[],
     _mode: QuizMode
-): { score: number; total: number; percentage: number; results: QuizResult[] } {
+): AttemptSummary {
     const answerMap = new Map(answers.map((item) => [item.question_id, item.selected_option]));
-    const results = questions.map((question) => {
+    const gradedQuestions = questions.filter((question) =>
+        !["essay", "matching"].includes(question.question_type ?? "mcq")
+    );
+    const topicBreakdown = new Map<string, { correct: number; total: number }>();
+
+    const correctCount = gradedQuestions.filter((question) => {
         const selected = answerMap.get(question.id) ?? "a";
         const isCorrect = selected === question.correct_option;
+        const topics = question.topic_tags?.length ? question.topic_tags : [question.topic ?? "General"];
 
-        return {
-            question,
-            selected_option: selected,
-            is_correct: isCorrect,
-        };
-    });
+        topics.forEach((topic) => {
+            const current = topicBreakdown.get(topic) ?? { correct: 0, total: 0 };
+            current.total += 1;
+            current.correct += isCorrect ? 1 : 0;
+            topicBreakdown.set(topic, current);
+        });
 
-    const score = results.filter((result) => result.is_correct).length;
-    const total = questions.length;
+        return isCorrect;
+    }).length;
 
     return {
-        score,
-        total,
-        percentage: total === 0 ? 0 : Math.round((score / total) * 100),
-        results,
+        score:
+            gradedQuestions.length === 0
+                ? 0
+                : Number(((correctCount / gradedQuestions.length) * 100).toFixed(1)),
+        gradable_total: gradedQuestions.length,
+        pending_count: questions.length - gradedQuestions.length,
+        topic_breakdown: Object.fromEntries(
+            [...topicBreakdown.entries()].map(([topic, stats]) => [
+                topic,
+                stats.total === 0 ? 0 : Math.round((stats.correct / stats.total) * 100),
+            ])
+        ),
+        weak_topics: [...topicBreakdown.entries()]
+            .filter(([, stats]) => stats.total > 0 && (stats.correct / stats.total) * 100 < 60)
+            .map(([topic]) => topic),
     };
 }
 

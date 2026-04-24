@@ -1,42 +1,25 @@
 import client from "./client";
-import { Question, QuizAnswer, QuizResult, QuizMode } from "../store/quizStore";
+import { AttemptSummary, Question, QuizMode } from "../store/quizStore";
 
 const isDev = import.meta.env.DEV;
+const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
 
 async function getMocks() {
     if (!isDev) return null;
     return import("./devMocks");
 }
 
-export interface QuestionsParams {
-    mode?: QuizMode;
-    limit?: number;
-    topic?: string;
-}
-
-export const getQuestions = async (
-    courseId: number,
-    params?: QuestionsParams
-): Promise<Question[]> => {
-    try {
-        const response = await client.get<Question[]>(
-            `/api/courses/${courseId}/questions/`,
-            { params }
-        );
-        return response.data;
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock questions");
-            return mocks.getMockQuestions(courseId, params);
-        }
-        throw err;
-    }
-};
-
 export const getExamQuestions = async (
     examPaperId: number
 ): Promise<Question[]> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock exam questions");
+            return mocks.getMockExamQuestions(examPaperId);
+        }
+    }
+
     try {
         const response = await client.get<Question[]>(
             `/api/exams/${examPaperId}/questions/`
@@ -56,7 +39,7 @@ export interface ExamPaper {
     id: number;
     title: string;
     course: number;
-    exam_type: "final" | "exit";
+    exam_type: "quiz" | "final" | "exit";
     year: number;
     duration_minutes: number;
     total_questions: number;
@@ -64,13 +47,30 @@ export interface ExamPaper {
 }
 
 export interface ExamPapersParams {
-    type?: "final" | "exit";
+    type?: "quiz" | "final" | "exit";
     department?: number;
+    course?: number;
 }
 
 export const getExamPapers = async (
     params?: ExamPapersParams
 ): Promise<ExamPaper[]> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock exam papers");
+            return mocks.MOCK_EXAM_PAPERS.filter((exam) => {
+                if (params?.type && exam.exam_type !== params.type) return false;
+                if (params?.course && exam.course !== params.course) return false;
+                if (params?.department) {
+                    const course = mocks.MOCK_COURSES.find((item) => item.id === exam.course);
+                    return course?.department === params.department;
+                }
+                return true;
+            });
+        }
+    }
+
     try {
         const response = await client.get<ExamPaper[]>("/api/exams/", { params });
         return response.data;
@@ -80,6 +80,7 @@ export const getExamPapers = async (
             console.info("[dev] Using mock exam papers");
             return mocks.MOCK_EXAM_PAPERS.filter((exam) => {
                 if (params?.type && exam.exam_type !== params.type) return false;
+                if (params?.course && exam.course !== params.course) return false;
                 if (params?.department) {
                     const course = mocks.MOCK_COURSES.find((item) => item.id === exam.course);
                     return course?.department === params.department;
@@ -91,31 +92,29 @@ export const getExamPapers = async (
     }
 };
 
+export const getCourseQuizzes = async (
+    courseId: number
+): Promise<ExamPaper[]> => {
+    return getExamPapers({ type: "quiz", course: courseId });
+};
+
 export const getExitExams = async (
     departmentId: number
 ): Promise<ExamPaper[]> => {
-    try {
-        const response = await client.get<ExamPaper[]>("/api/exit-exams/", {
-            params: { department: departmentId },
-        });
-        return response.data;
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock exit exams");
-            return mocks.MOCK_EXAM_PAPERS.filter((exam) => {
-                if (exam.exam_type !== "exit") return false;
-                const course = mocks.MOCK_COURSES.find((item) => item.id === exam.course);
-                return course?.department === departmentId;
-            });
-        }
-        throw err;
-    }
+    return getExamPapers({ type: "exit", department: departmentId });
 };
 
 export const getExitExamTopics = async (
     departmentId: number
 ): Promise<{ topic: string; count: number }[]> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock exit exam topics");
+            return mocks.getMockExitExamTopics(departmentId);
+        }
+    }
+
     try {
         const response = await client.get("/api/exit-exams/topics/", {
             params: { department: departmentId },
@@ -132,22 +131,32 @@ export const getExitExamTopics = async (
 };
 
 export interface SubmitAttemptPayload {
-    course_id?: number;
-    exam_paper_id?: number;
-    answers: QuizAnswer[];
+    exam_paper?: number;
+    answers: Record<string, string>;
     mode: QuizMode;
 }
 
-export interface AttemptResponse {
-    score: number;
-    total: number;
-    percentage: number;
-    results: QuizResult[];
-}
+export interface AttemptResponse extends AttemptSummary {}
 
 export const submitAttempt = async (
     payload: SubmitAttemptPayload
 ): Promise<AttemptResponse> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force evaluating mock attempt");
+            const questions = payload.exam_paper
+                ? mocks.getMockExamQuestions(payload.exam_paper)
+                : [];
+            const answers = Object.entries(payload.answers).map(([questionId, selected]) => ({
+                question_id: Number(questionId),
+                selected_option: selected,
+            }));
+
+            return mocks.evaluateMockAttempt(questions, answers, payload.mode);
+        }
+    }
+
     try {
         const response = await client.post<AttemptResponse>(
             "/api/quiz/attempts/",
@@ -158,11 +167,15 @@ export const submitAttempt = async (
         const mocks = await getMocks();
         if (mocks) {
             console.info("[dev] Evaluating mock attempt");
-            const questions = payload.exam_paper_id
-                ? mocks.getMockExamQuestions(payload.exam_paper_id)
-                : mocks.getMockQuestions(payload.course_id ?? 0, { limit: payload.answers.length || undefined });
+            const questions = payload.exam_paper
+                ? mocks.getMockExamQuestions(payload.exam_paper)
+                : [];
+            const answers = Object.entries(payload.answers).map(([questionId, selected]) => ({
+                question_id: Number(questionId),
+                selected_option: selected,
+            }));
 
-            return mocks.evaluateMockAttempt(questions, payload.answers, payload.mode);
+            return mocks.evaluateMockAttempt(questions, answers, payload.mode);
         }
         throw err;
     }

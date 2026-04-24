@@ -2,6 +2,7 @@ import client from "./client";
 import { Department, Course, Resource } from "../store/contentStore";
 
 const isDev = import.meta.env.DEV;
+const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
 
 // Lazily import mocks only in dev (tree-shaken out of production build)
 async function getMocks() {
@@ -12,6 +13,14 @@ async function getMocks() {
 // ── Departments ──────────────────────────────────────────────
 
 export const getDepartments = async (): Promise<Department[]> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock departments");
+            return mocks.MOCK_DEPARTMENTS;
+        }
+    }
+
     try {
         const response = await client.get<Department[]>("/api/departments/");
         return response.data;
@@ -32,6 +41,19 @@ export const getCourses = async (
     year: number,
     semester: number
 ): Promise<Course[]> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock courses");
+            return mocks.MOCK_COURSES.filter(
+                (c) =>
+                    c.department === departmentId &&
+                    c.year === year &&
+                    c.semester === semester
+            );
+        }
+    }
+
     try {
         const response = await client.get<Course[]>(
             `/api/departments/${departmentId}/courses/`,
@@ -64,6 +86,22 @@ export const getResources = async (
     courseId: number,
     params?: ResourcesParams
 ): Promise<Resource[]> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock resources");
+            let resources = mocks.MOCK_RESOURCES.filter((r) => r.course === courseId);
+            if (params?.type && params.type !== "All") {
+                resources = resources.filter((r) => r.file_type === params.type);
+            }
+            if (params?.search) {
+                const q = params.search.toLowerCase();
+                resources = resources.filter((r) => r.title.toLowerCase().includes(q));
+            }
+            return resources;
+        }
+    }
+
     try {
         const response = await client.get<Resource[]>(
             `/api/courses/${courseId}/resources/`,
@@ -91,6 +129,14 @@ export const getResources = async (
 export const getResourceDetail = async (
     resourceId: number
 ): Promise<Resource> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            const r = mocks.MOCK_RESOURCES.find((r) => r.id === resourceId);
+            if (r) return r;
+        }
+    }
+
     try {
         const response = await client.get<Resource>(
             `/api/resources/${resourceId}/`
@@ -115,6 +161,14 @@ export interface DownloadResponse {
 export const requestDownload = async (
     resourceId: number
 ): Promise<DownloadResponse> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force mock download response");
+            return { url: "#", filename: `resource_${resourceId}.pdf`, expires_in: 300 };
+        }
+    }
+
     try {
         const response = await client.post<DownloadResponse>(
             `/api/resources/${resourceId}/download/`

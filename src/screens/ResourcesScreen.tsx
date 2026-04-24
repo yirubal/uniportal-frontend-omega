@@ -1,4 +1,4 @@
-import { Search, Sparkles } from "lucide-react";
+import { Check, Search, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCourses, getDepartments, getResources } from "../api/content";
@@ -11,13 +11,12 @@ import { useContentStore } from "../store/contentStore";
 import type { Course, Department } from "../store/contentStore";
 
 type FilterType = "All" | "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
+const INTERACTIVE_RESOURCE_TYPES = new Set<FilterType>(["past_exam", "exit_exam"]);
 
 const FILTER_TABS: { key: FilterType; label: string }[] = [
     { key: "All", label: "All" },
     { key: "lecture_note", label: "Notes" },
     { key: "worksheet", label: "Worksheets" },
-    { key: "past_exam", label: "Past exams" },
-    { key: "exit_exam", label: "Exit exams" },
 ];
 
 const YEARS = [1, 2, 3, 4];
@@ -29,7 +28,7 @@ export default function ResourcesScreen() {
     const store = useContentStore();
     const { canAccessResource } = useAccess();
 
-    const [view, setView] = useState<"select" | "list">(store.selectedCourse ? "list" : "select");
+    const [view, setView] = useState<"select" | "list">("select");
     const [departments, setDepartments] = useState<Department[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [loadingDepts, setLoadingDepts] = useState(true);
@@ -39,8 +38,9 @@ export default function ResourcesScreen() {
     const [selDept, setSelDept] = useState<Department | null>(store.selectedDepartment);
     const [selYear, setSelYear] = useState<number | null>(store.selectedYear ?? student?.preferred_year ?? null);
     const [selSemester, setSelSemester] = useState<number | null>(store.selectedSemester ?? student?.preferred_semester ?? null);
-    const [selCourse, setSelCourse] = useState<Course | null>(store.selectedCourse);
+    const [selCourse, setSelCourse] = useState<Course | null>(null);
     const [filterType, setFilterType] = useState<FilterType>("All");
+    const [departmentSearch, setDepartmentSearch] = useState("");
     const [search, setSearch] = useState("");
 
     useEffect(() => {
@@ -89,8 +89,12 @@ export default function ResourcesScreen() {
         }
     }, [selDept, selSemester, selYear, store]);
 
+    const visibleResources = useMemo(() => {
+        return store.resources.filter((resource) => !INTERACTIVE_RESOURCE_TYPES.has(resource.file_type as FilterType));
+    }, [store.resources]);
+
     const filteredResources = useMemo(() => {
-        return store.resources.filter((resource) => {
+        return visibleResources.filter((resource) => {
             const matchesType = filterType === "All" || resource.file_type === filterType;
             const query = search.trim().toLowerCase();
             const matchesSearch = !query ||
@@ -100,36 +104,46 @@ export default function ResourcesScreen() {
 
             return matchesType && matchesSearch;
         });
-    }, [filterType, search, store.resources]);
+    }, [filterType, search, visibleResources]);
 
     const resourceStats = useMemo(() => {
-        const total = store.resources.length;
-        const notes = store.resources.filter((item) => item.file_type === "lecture_note").length;
-        const premium = store.resources.filter((item) => item.access_level === "premium").length;
-        const recent = store.resources.filter((item) => isRecent(item.created_at)).length;
+        const total = visibleResources.length;
+        const notes = visibleResources.filter((item) => item.file_type === "lecture_note").length;
+        const premium = visibleResources.filter((item) => item.access_level === "premium").length;
+        const recent = visibleResources.filter((item) => isRecent(item.created_at)).length;
         return { total, notes, premium, recent };
-    }, [store.resources]);
+    }, [visibleResources]);
 
     const featuredResource = useMemo(() => {
-        return [...store.resources].sort((a, b) => b.downloads_count - a.downloads_count)[0] ?? null;
-    }, [store.resources]);
+        return [...visibleResources].sort((a, b) => b.downloads_count - a.downloads_count)[0] ?? null;
+    }, [visibleResources]);
+
+    const filteredDepartments = useMemo(() => {
+        const query = departmentSearch.trim().toLowerCase();
+        if (!query) return departments;
+
+        return departments.filter((department) =>
+            department.name.toLowerCase().includes(query) ||
+            department.code.toLowerCase().includes(query)
+        );
+    }, [departmentSearch, departments]);
 
     if (view === "select") {
         return (
             <div className="app-screen">
-                <div className="app-hero">
+                <div className="app-topbar">
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate("/home")} label="Home" />
-                        <p className="app-section-label text-white/70">Resource library</p>
-                        <h1 className="app-title mt-2 text-[2rem] font-bold text-white">Build your reading shelf</h1>
-                        <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/72">
-                            Select a department, year, semester, and course so the library stays tightly scoped and easier to browse.
+                        <p className="app-section-label">Resource library</p>
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">Choose a course shelf</h1>
+                        <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#53627D]">
+                            Start with department, year, semester, and course so the library stays compact and useful.
                         </p>
                     </div>
                 </div>
 
-                <div className="app-scroll app-scroll-tight space-y-5">
-                    <div className="app-panel rounded-[30px] p-5">
+                <div className="app-scroll app-scroll-compact space-y-5">
+                    <div className="app-sheet p-5">
                         <div className="flex items-start gap-3">
                             <div className="rounded-[18px] bg-[#EDF2FF] p-3 text-[#2D5BFF]">
                                 <Sparkles size={18} />
@@ -147,41 +161,64 @@ export default function ResourcesScreen() {
                     <SelectorGroup
                         label="Department"
                         loading={loadingDepts}
-                        items={departments}
+                        items={filteredDepartments}
                         value={selDept?.id ?? null}
                         onSelect={(item) => setSelDept(item)}
                         getKey={(item) => item.id}
                         getLabel={(item) => item.name}
                         getMeta={(item) => item.code}
+                        searchValue={departmentSearch}
+                        onSearchChange={setDepartmentSearch}
+                        searchPlaceholder="Search departments by name"
                     />
 
                     <div>
-                        <p className="app-section-label mb-3">Year</p>
+                        <div className="mb-3 flex items-center justify-between gap-2">
+                            <p className="app-section-label">Year</p>
+                            {selYear && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-[#EDF2FF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2D5BFF]">
+                                    <Check size={12} />
+                                    Year {selYear}
+                                </span>
+                            )}
+                        </div>
                         <div className="app-grid-2">
                             {YEARS.map((year) => (
                                 <button
                                     key={year}
                                     onClick={() => setSelYear(year)}
-                                    className={`app-panel rounded-[26px] p-4 text-left ${selYear === year ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selYear === year ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
                                 >
                                     <p className="app-title text-[1.8rem] font-bold text-[#18253D]">{year}</p>
-                                    <p className="mt-1 text-sm text-[#53627D]">Year {year}</p>
+                                    <p className="mt-1 text-sm text-[#53627D]">
+                                        {selYear === year ? "Selected" : `Year ${year}`}
+                                    </p>
                                 </button>
                             ))}
                         </div>
                     </div>
 
                     <div>
-                        <p className="app-section-label mb-3">Semester</p>
+                        <div className="mb-3 flex items-center justify-between gap-2">
+                            <p className="app-section-label">Semester</p>
+                            {selSemester && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF8F1] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2E9E73]">
+                                    <Check size={12} />
+                                    Semester {selSemester}
+                                </span>
+                            )}
+                        </div>
                         <div className="app-grid-2">
                             {SEMESTERS.map((semester) => (
                                 <button
                                     key={semester}
                                     onClick={() => setSelSemester(semester)}
-                                    className={`app-panel rounded-[26px] p-4 text-left ${selSemester === semester ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selSemester === semester ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
                                 >
                                     <p className="app-title text-[1.8rem] font-bold text-[#18253D]">{semester}</p>
-                                    <p className="mt-1 text-sm text-[#53627D]">Semester {semester}</p>
+                                    <p className="mt-1 text-sm text-[#53627D]">
+                                        {selSemester === semester ? "Selected" : `Semester ${semester}`}
+                                    </p>
                                 </button>
                             ))}
                         </div>
@@ -208,9 +245,10 @@ export default function ResourcesScreen() {
                                                 setSelCourse(course);
                                                 void loadResources(course);
                                             }}
-                                            className="app-panel flex w-full items-center justify-between rounded-[28px] p-4 text-left transition-transform duration-200 active:scale-[0.985]"
+                                            style={{ paddingInline: "1.25rem" }}
+                                            className="app-panel flex min-h-[5rem] w-full items-center justify-between gap-3 overflow-hidden rounded-[16px] px-5 py-3 text-left transition-transform duration-200 active:scale-[0.985]"
                                         >
-                                            <div>
+                                            <div className="min-w-0 flex-1 pr-3">
                                                 <p className="text-base font-semibold text-[#18253D]">{course.name}</p>
                                                 <p className="mt-1 text-sm text-[#7F8CA5]">{course.code}</p>
                                             </div>
@@ -232,8 +270,8 @@ export default function ResourcesScreen() {
 
     return (
         <div className="app-screen">
-                <div className="app-hero">
-                    <div className="relative z-10">
+            <div className="app-topbar">
+                <div className="relative z-10">
                     <TopBackButton
                         onClick={() => {
                             setView("select");
@@ -242,12 +280,12 @@ export default function ResourcesScreen() {
                             store.setResources([]);
                         }}
                     />
-                    <p className="app-section-label text-white/70">{selCourse?.code}</p>
-                    <h1 className="app-title mt-2 text-[1.85rem] font-bold text-white">{selCourse?.name ?? "Resources"}</h1>
+                    <p className="app-section-label">{selCourse?.code}</p>
+                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-[#18253D]">{selCourse?.name ?? "Resources"}</h1>
                 </div>
             </div>
 
-            <div className="app-scroll app-scroll-tight">
+            <div className="app-scroll app-scroll-compact">
                 <div className="app-grid-2">
                     <MetricCard label="Resources" value={resourceStats.total} tone="tone-blue" />
                     <MetricCard label="Fresh" value={resourceStats.recent} tone="tone-green" />
@@ -256,7 +294,7 @@ export default function ResourcesScreen() {
                 </div>
 
                 {featuredResource && (
-                    <div className="mt-4 app-panel rounded-[30px] p-5">
+                    <div className="mt-4 app-sheet p-5">
                         <p className="app-section-label">Featured pack</p>
                         <div className="mt-3 flex items-start justify-between gap-3">
                             <div>
@@ -265,14 +303,15 @@ export default function ResourcesScreen() {
                                     {featuredResource.description}
                                 </p>
                             </div>
-                            <div className="rounded-full bg-[#FFF6DF] px-3 py-2 text-xs font-bold text-[#B27614]">
-                                {featuredResource.downloads_count} downloads
+                            <div className="flex min-h-[4.5rem] min-w-[5.5rem] flex-col items-center justify-start self-start rounded-[20px] bg-[#FFF6DF] px-3.5 py-2.5 text-[#B27614]">
+                                <span className="w-full text-center text-base font-black leading-none">{featuredResource.downloads_count}</span>
+                                <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em]">Downloads</span>
                             </div>
                         </div>
                     </div>
                 )}
 
-                <div className="mt-4 app-panel rounded-[30px] p-4">
+                <div className="mt-4 app-sheet p-4">
                     <div className="relative">
                         <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7F8CA5]" size={16} />
                         <input
@@ -280,6 +319,7 @@ export default function ResourcesScreen() {
                             placeholder="Search title, tag, or description"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
+                            style={{ paddingInlineStart: "2.85rem" }}
                             className="app-input pl-10"
                         />
                     </div>
@@ -350,6 +390,9 @@ function SelectorGroup<T>({
     getKey,
     getLabel,
     getMeta,
+    searchValue,
+    onSearchChange,
+    searchPlaceholder,
 }: {
     label: string;
     loading: boolean;
@@ -359,27 +402,51 @@ function SelectorGroup<T>({
     getKey: (item: T) => number;
     getLabel: (item: T) => string;
     getMeta: (item: T) => string;
+    searchValue?: string;
+    onSearchChange?: (value: string) => void;
+    searchPlaceholder?: string;
 }) {
     return (
         <div>
             <p className="app-section-label mb-3">{label}</p>
+            {onSearchChange && (
+                <div className="mb-3 app-sheet p-4">
+                    <div className="relative">
+                        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7F8CA5]" size={16} />
+                        <input
+                            type="text"
+                            placeholder={searchPlaceholder ?? "Search"}
+                            value={searchValue ?? ""}
+                            onChange={(event) => onSearchChange(event.target.value)}
+                            style={{ paddingInlineStart: "2.85rem" }}
+                            className="app-input pl-10"
+                        />
+                    </div>
+                </div>
+            )}
             {loading ? (
                 <div className="space-y-3">
                     {[1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-[28px]" />)}
                 </div>
+            ) : items.length === 0 ? (
+                <EmptyState
+                    title="No departments found"
+                    description="Try a different search term to find your department."
+                />
             ) : (
                 <div className="space-y-3">
                     {items.map((item) => (
                         <button
                             key={getKey(item)}
                             onClick={() => onSelect(item)}
-                            className={`app-panel flex w-full items-center justify-between rounded-[28px] p-4 text-left ${value === getKey(item) ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                            style={{ paddingInline: "1.25rem" }}
+                            className={`app-panel flex min-h-[5rem] w-full items-center justify-between gap-3 overflow-hidden rounded-[16px] px-5 py-3 text-left ${value === getKey(item) ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
                         >
-                            <div>
-                                <p className="text-base font-semibold text-[#18253D]">{getLabel(item)}</p>
+                            <div className="min-w-0 flex-1 pr-3">
+                                <p className="text-base font-semibold leading-snug text-[#18253D]">{getLabel(item)}</p>
                                 <p className="mt-1 text-sm text-[#7F8CA5]">{getMeta(item)}</p>
                             </div>
-                            <div className={`rounded-full px-3 py-2 text-xs font-bold ${value === getKey(item) ? "tone-blue" : "bg-[#F4F6FB] text-[#7F8CA5]"}`}>
+                            <div className={`flex-shrink-0 self-center rounded-full px-3 py-2 text-xs font-bold ${value === getKey(item) ? "tone-blue" : "bg-[#F4F6FB] text-[#7F8CA5]"}`}>
                                 {value === getKey(item) ? "Selected" : "Choose"}
                             </div>
                         </button>

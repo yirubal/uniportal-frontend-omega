@@ -58,9 +58,9 @@ body {
     margin: 0;
     padding: 0;
     background:
-        radial-gradient(circle at top left, rgba(45, 91, 255, 0.12), transparent 32%),
-        radial-gradient(circle at top right, rgba(241, 195, 100, 0.14), transparent 24%),
-        linear-gradient(180deg, #f7f9fd 0%, #eef2f8 100%);
+        radial-gradient(circle at top left, rgba(45, 91, 255, 0.08), transparent 30%),
+        radial-gradient(circle at top right, rgba(118, 84, 214, 0.08), transparent 20%),
+        linear-gradient(180deg, #e8eef5 0%, #dfe7f0 100%);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
     overflow-x: hidden;
@@ -168,9 +168,9 @@ button {
 .skeleton {
     background: linear-gradient(
             90deg,
-            #f0f0f0 25%,
-            #e0e0e0 50%,
-            #f0f0f0 75%
+            rgba(124, 145, 173, 0.12) 25%,
+            rgba(124, 145, 173, 0.22) 50%,
+            rgba(124, 145, 173, 0.12) 75%
     );
     background-size: 200% 100%;
     animation: shimmer 1.4s ease-in-out infinite;
@@ -189,26 +189,38 @@ img {
 
 :root {
     color-scheme: light;
+    --tg-bg-color: #e8eef5;
+    --tg-secondary-bg-color: #dce5ef;
+    --tg-text-color: #18253d;
+    --tg-hint-color: #7f8ca5;
+    --tg-link-color: #2d5bff;
+    --tg-button-color: #18253d;
+    --tg-button-text-color: #ffffff;
+    --tg-section-bg-color: rgba(245, 248, 252, 0.8);
+    --tg-header-bg-color: #18253d;
+    --tg-viewport-height: 100dvh;
+    --tg-viewport-stable-height: 100dvh;
 }
 
 .app-screen {
     position: fixed;
     inset: 0;
+    min-height: var(--tg-viewport-stable-height);
     display: flex;
     flex-direction: column;
     background:
-        radial-gradient(circle at top, rgba(45, 91, 255, 0.08), transparent 30%),
-        linear-gradient(180deg, #f7f9fd 0%, #eef2f8 100%);
+        radial-gradient(circle at top, rgba(45, 91, 255, 0.04), transparent 24%),
+        linear-gradient(180deg, color-mix(in srgb, var(--tg-bg-color) 96%, #f3f7fc 4%) 0%, var(--tg-secondary-bg-color) 100%);
 }
 
 .app-hero {
     position: relative;
     overflow: hidden;
-    padding: calc(env(safe-area-inset-top) + 2.8rem) 1.25rem 1.4rem;
+    padding: calc(env(safe-area-inset-top) + 2.45rem) 1.25rem 1.25rem;
     background:
-        radial-gradient(circle at top right, rgba(241, 195, 100, 0.18), transparent 28%),
-        radial-gradient(circle at top left, rgba(97, 135, 255, 0.18), transparent 36%),
-        linear-gradient(160deg, #18253d 0%, #253658 52%, #304975 100%);
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 26%),
+        radial-gradient(circle at top left, rgba(112, 148, 255, 0.16), transparent 34%),
+        linear-gradient(180deg, color-mix(in srgb, var(--tg-header-bg-color) 90%, #10192b 10%) 0%, color-mix(in srgb, var(--tg-header-bg-color) 78%, #304975 22%) 100%);
     color: white;
 }
 
@@ -234,29 +246,35 @@ img {
     flex: 1;
     overflow-y: auto;
     padding: 1.25rem 1.25rem 7.5rem;
+    overscroll-behavior-y: contain;
 }
 
 .app-scroll-tight {
     padding-top: 0.75rem;
 }
 
+.app-scroll-compact {
+    padding-top: 0.5rem;
+    padding-bottom: 6.5rem;
+}
+
 .app-footer {
     padding: 0.9rem 1.25rem calc(env(safe-area-inset-bottom) + 1rem);
-    background: rgba(247, 249, 253, 0.92);
+    background: color-mix(in srgb, var(--tg-bg-color) 90%, #f6f8fb 10%);
     border-top: 1px solid rgba(31, 53, 91, 0.08);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(22px);
 }
 
 .app-panel {
-    background: var(--color-surface);
-    border: 1px solid rgba(255, 255, 255, 0.72);
+    background: color-mix(in srgb, var(--tg-section-bg-color) 94%, #f7f9fc 6%);
+    border: 1px solid rgba(255, 255, 255, 0.42);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
-    backdrop-filter: blur(18px);
+    box-shadow: 0 10px 24px rgba(20, 38, 67, 0.05);
+    backdrop-filter: blur(20px);
 }
 
 .app-panel-muted {
-    background: rgba(248, 250, 255, 0.82);
+    background: color-mix(in srgb, var(--tg-bg-color) 88%, #f7f9fc 12%);
     border: 1px solid rgba(31, 53, 91, 0.08);
     border-radius: var(--radius-lg);
 }
@@ -267,7 +285,7 @@ img {
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: color-mix(in srgb, var(--tg-hint-color) 92%, #7f8ca5 8%);
 }
 
 .app-title {
@@ -277,34 +295,138 @@ img {
     text-wrap: balance;
 }
 
+.app-copy {
+    color: #53627d;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.app-divider {
+    height: 1px;
+    background: rgba(31, 53, 91, 0.08);
+}
+
+.app-topbar {
+    position: relative;
+    overflow: hidden;
+    padding: calc(env(safe-area-inset-top) + 1rem) 1rem 0.9rem;
+    background: color-mix(in srgb, var(--tg-bg-color) 92%, #f7f9fc 8%);
+    border-bottom: 1px solid rgba(31, 53, 91, 0.06);
+    backdrop-filter: blur(20px);
+}
+
+.app-topbar::after {
+    content: "";
+    position: absolute;
+    inset: auto -10% -70% 52%;
+    height: 120px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(45, 91, 255, 0.14) 0%, transparent 70%);
+}
+
+.app-sheet {
+    background: color-mix(in srgb, var(--tg-section-bg-color) 92%, #eef3f8 8%);
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    border-radius: 24px;
+    box-shadow: 0 8px 18px rgba(20, 38, 67, 0.04);
+    backdrop-filter: blur(18px);
+}
+
+.app-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--tg-section-bg-color) 90%, #edf3f8 10%);
+    border: 1px solid rgba(31, 53, 91, 0.06);
+    text-align: left;
+    transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease;
+}
+
+.app-list-item:active {
+    transform: scale(0.985);
+    color: inherit;
+}
+
+.app-icon-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    width: 2.75rem;
+    border-radius: 18px;
+    background: #eef3ff;
+    color: #2d5bff;
+    flex-shrink: 0;
+}
+
+.app-tabbar {
+    background: color-mix(in srgb, var(--tg-bg-color) 92%, #f7f9fc 8%);
+    border: 1px solid rgba(31, 53, 91, 0.08);
+    box-shadow: 0 10px 22px rgba(20, 38, 67, 0.06);
+    backdrop-filter: blur(22px);
+}
+
+.app-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.5rem;
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--tg-section-bg-color) 95%, #f8fafc 5%);
+    border: 1px solid rgba(255, 255, 255, 0.36);
+    box-shadow: 0 10px 24px rgba(20, 38, 67, 0.05);
+}
+
+.app-state-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.25rem;
+    height: 4.25rem;
+    border-radius: 999px;
+    background: #eef3ff;
+    color: #2d5bff;
+}
+
 .app-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
     border-radius: var(--radius-full);
-    padding: 0.55rem 0.9rem;
-    font-size: 0.75rem;
+    padding: 0.45rem 0.78rem;
+    font-size: 0.72rem;
     line-height: 1rem;
     font-weight: 700;
     border: 1px solid rgba(31, 53, 91, 0.08);
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(236, 242, 248, 0.9);
     color: var(--color-text-secondary);
-    transition: all 160ms ease;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: all 140ms ease;
 }
 
 .app-chip-active {
     background: var(--color-text-primary);
     border-color: var(--color-text-primary);
     color: white;
-    box-shadow: 0 8px 20px rgba(24, 37, 61, 0.14);
+    box-shadow: 0 6px 14px rgba(24, 37, 61, 0.12);
+}
+
+.app-chip-active:active {
+    color: white;
 }
 
 .app-input {
     width: 100%;
     border-radius: 18px;
     border: 1px solid rgba(31, 53, 91, 0.08);
-    background: rgba(255, 255, 255, 0.84);
-    color: var(--color-text-primary);
+    background: color-mix(in srgb, var(--tg-section-bg-color) 94%, #fbfcfe 6%);
+    color: var(--tg-text-color);
     padding: 0.9rem 1rem;
     font-size: 0.95rem;
     outline: none;
@@ -330,6 +452,11 @@ img {
     appearance: none;
     outline: none;
     text-decoration: none;
+    color: inherit;
+}
+
+.tg-miniapp body {
+    overscroll-behavior-y: contain;
 }
 
 .nav-tab > * {
@@ -337,32 +464,87 @@ img {
 }
 
 .app-stat-card {
-    border-radius: 22px;
+    border-radius: 20px;
     padding: 1rem;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .tone-blue {
-    background: linear-gradient(180deg, #eef3ff 0%, #e4ecff 100%);
+    background: linear-gradient(180deg, #e6edf8 0%, #dde6f2 100%);
     color: #294fb2;
 }
 
 .tone-green {
-    background: linear-gradient(180deg, #eefbf5 0%, #e3f6ed 100%);
+    background: linear-gradient(180deg, #ebf5f1 0%, #e1eee8 100%);
     color: #267a5b;
 }
 
 .tone-gold {
-    background: linear-gradient(180deg, #fff8e8 0%, #fff0cd 100%);
+    background: linear-gradient(180deg, #f5f0e2 0%, #eee6d2 100%);
     color: #b27614;
 }
 
 .tone-purple {
-    background: linear-gradient(180deg, #f5f0ff 0%, #ece4ff 100%);
+    background: linear-gradient(180deg, #efeaf8 0%, #e5ddef 100%);
     color: #6f4fd0;
 }
 
 .tone-coral {
-    background: linear-gradient(180deg, #fff1ee 0%, #ffe4df 100%);
+    background: linear-gradient(180deg, #f7ebe9 0%, #f0dfdb 100%);
     color: #bf584d;
+}
+
+.app-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.38rem;
+    min-height: 1.6rem;
+    padding: 0.24rem 0.62rem;
+    border-radius: 999px;
+    border: 1px solid rgba(31, 53, 91, 0.08);
+    background: rgba(233, 239, 247, 0.88);
+    color: #4d607f;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.app-badge-dot {
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+    background: currentColor;
+    opacity: 0.9;
+}
+
+.app-badge-blue {
+    background: rgba(227, 235, 247, 0.92);
+    color: #4d6691;
+}
+
+.app-badge-green {
+    background: rgba(230, 242, 237, 0.96);
+    color: #2e7c62;
+}
+
+.app-badge-gold {
+    background: rgba(242, 236, 221, 0.96);
+    color: #9c6d17;
+}
+
+.app-badge-coral {
+    background: rgba(245, 229, 226, 0.96);
+    color: #b75f57;
+}
+
+.app-card-interactive {
+    transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;
+}
+
+.app-card-interactive:active {
+    transform: scale(0.985);
+    color: inherit;
 }

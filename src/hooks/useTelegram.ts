@@ -42,10 +42,10 @@ export const useTelegram = () => {
             show: (callback: () => void) => {
                 WebApp.BackButton.show();
                 WebApp.BackButton.onClick(callback);
+                return () => WebApp.BackButton.offClick(callback);
             },
             hide: () => {
                 WebApp.BackButton.hide();
-                WebApp.BackButton.offClick(() => {});
             },
         },
 
@@ -54,10 +54,10 @@ export const useTelegram = () => {
                 WebApp.MainButton.setText(text);
                 WebApp.MainButton.show();
                 WebApp.MainButton.onClick(callback);
+                return () => WebApp.MainButton.offClick(callback);
             },
             hide: () => {
                 WebApp.MainButton.hide();
-                WebApp.MainButton.offClick(() => {});
             },
             setLoading: (loading: boolean) => {
                 if (loading) {

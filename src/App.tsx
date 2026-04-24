@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import { useAuth } from "./hooks/useAuth";
+import { useTelegramChrome } from "./hooks/useTelegramChrome";
 
 import SplashScreen from "./screens/SplashScreen";
 import OnboardingScreen from "./screens/OnboardingScreen";
@@ -14,6 +15,8 @@ import HomeScreen from "./screens/HomeScreen";
 import ResourcesScreen from "./screens/ResourcesScreen";
 import ResourceViewerScreen from "./screens/ResourceViewerScreen";
 import QuizScreen from "./screens/QuizScreen";
+import QuizListScreen from "./screens/QuizListScreen";
+import QuizAttemptScreen from "./screens/QuizAttemptScreen";
 import ExitExamScreen from "./screens/ExitExamScreen";
 import SimulationScreen from "./screens/SimulationScreen";
 import ResultsScreen from "./screens/ResultsScreen";
@@ -91,6 +94,22 @@ function AppRoutes() {
                     }
                 />
                 <Route
+                    path="/quiz/list"
+                    element={
+                        <ProtectedRoute>
+                            <QuizListScreen />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/quiz/take/:quizId"
+                    element={
+                        <ProtectedRoute>
+                            <QuizAttemptScreen />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
                     path="/exit-exam"
                     element={
                         <ProtectedRoute>
@@ -143,6 +162,7 @@ function AppRoutes() {
 
 export default function App() {
     const { initAuth } = useAuth();
+    useTelegramChrome();
 
     useEffect(() => {
         initAuth();

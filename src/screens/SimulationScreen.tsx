@@ -83,18 +83,15 @@ export default function SimulationScreen() {
         setSubmitting(true);
 
         try {
-            const answers = Object.entries(quiz.answers).map(([questionId, selected]) => ({
-                question_id: Number(questionId),
-                selected_option: selected as "a" | "b" | "c" | "d",
-            }));
-
             const result = await submitAttempt({
-                exam_paper_id: exam.id,
-                answers,
+                exam_paper: exam.id,
+                answers: Object.fromEntries(
+                    Object.entries(quiz.answers).map(([questionId, selected]) => [String(questionId), selected])
+                ),
                 mode: "simulation",
             });
 
-            quiz.completeQuiz(result.score, result.results);
+            quiz.completeQuiz(result);
         } catch {
             setError("Failed to submit the simulation.");
         } finally {
@@ -124,29 +121,29 @@ export default function SimulationScreen() {
     if (!isQuizActive) {
         return (
             <div className="app-screen">
-                <div className="app-hero">
+                <div className="app-topbar">
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate("/exit-exam")} />
-                        <p className="app-section-label text-white/70">Simulation</p>
-                        <h1 className="app-title mt-2 text-[2rem] font-bold text-white">{exam?.title}</h1>
-                        <p className="mt-3 text-sm leading-relaxed text-white/72">
-                            A timed mock exam flow with enough breathing room to reduce scanning fatigue before you start.
+                        <p className="app-section-label">Simulation</p>
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">{exam?.title}</h1>
+                        <p className="mt-2 text-sm leading-relaxed text-[#53627D]">
+                            Timed mode with clear pacing, compact instructions, and minimal clutter.
                         </p>
                     </div>
                 </div>
 
-                <div className="app-scroll app-scroll-tight space-y-4">
+                <div className="app-scroll app-scroll-compact space-y-4">
                     <div className="app-grid-2">
                         <InfoTile label="Questions" value={exam?.total_questions ?? 0} />
                         <InfoTile label="Duration" value={formatDuration(exam?.duration_minutes ?? 0)} />
                     </div>
 
-                    <div className="app-panel rounded-[32px] p-5">
-                        <p className="app-section-label">Simulation rules</p>
+                    <div className="app-sheet p-5">
+                        <p className="app-section-label">Rules</p>
                         <ul className="mt-4 space-y-2 text-sm leading-relaxed text-[#53627D]">
-                            <li>Answers are hidden until submission.</li>
-                            <li>The timer runs continuously once you begin.</li>
-                            <li>Unanswered questions count as incorrect.</li>
+                            <li>Answers stay hidden until the attempt is submitted.</li>
+                            <li>The timer runs continuously once the simulation starts.</li>
+                            <li>Unanswered questions lower the final auto-graded score.</li>
                         </ul>
                     </div>
 
@@ -167,43 +164,32 @@ export default function SimulationScreen() {
 
     return (
         <div className="app-screen">
-            <div className="app-hero">
+            <div className="app-topbar">
                 <div className="relative z-10">
                     <TopBackButton
                         onClick={() => navigate("/exit-exam")}
                         label="Leave"
                         trailing={(
-                            <span className={`rounded-full px-3 py-2 text-xs font-bold ${(quiz.timeRemaining ?? 0) < 300 ? "bg-[#FFF0ED] text-[#D95A50]" : "bg-white/12 text-white"}`}>
+                            <span className={`rounded-full px-3 py-2 text-xs font-bold ${(quiz.timeRemaining ?? 0) < 300 ? "bg-[#FFF0ED] text-[#D95A50]" : "bg-[#18253D] text-white"}`}>
                                 {formatTimeRemaining(quiz.timeRemaining ?? 0)}
                             </span>
                         )}
                     />
 
-                    <div className="mt-5 app-grid-2">
-                        <div className="rounded-[24px] bg-white/10 p-4 backdrop-blur">
-                            <p className="app-section-label text-white/60">Progress</p>
-                            <p className="mt-2 text-base font-semibold text-white">
-                                {quiz.currentIndex + 1}/{quiz.questions.length}
-                            </p>
-                        </div>
-                        <div className="rounded-[24px] bg-white/10 p-4 backdrop-blur">
-                            <p className="app-section-label text-white/60">Answered</p>
-                            <p className="mt-2 text-base font-semibold text-white">
-                                {answeredCount}/{quiz.questions.length}
-                            </p>
-                        </div>
+                    <div className="mt-2 app-grid-2">
+                        <InfoTile label="Progress" value={`${quiz.currentIndex + 1}/${quiz.questions.length}`} />
+                        <InfoTile label="Answered" value={`${answeredCount}/${quiz.questions.length}`} />
                     </div>
                 </div>
             </div>
 
-            <div className="app-scroll app-scroll-tight">
+            <div className="app-scroll app-scroll-compact">
                 <QuestionCard
                     question={currentQuestion}
                     questionNumber={quiz.currentIndex + 1}
                     totalQuestions={quiz.questions.length}
-                    selectedOption={quiz.selectedOption}
-                    showExplanation={false}
-                    onSelect={(option) => quiz.setAnswer(option)}
+                    selectedAnswer={quiz.selectedAnswer}
+                    onSelect={(answer) => quiz.setAnswer(answer)}
                     simulationMode
                 />
             </div>
@@ -233,7 +219,7 @@ export default function SimulationScreen() {
 
 function InfoTile({ label, value }: { label: string; value: string | number }) {
     return (
-        <div className="app-panel rounded-[28px] p-4">
+        <div className="app-sheet p-4">
             <p className="app-section-label">{label}</p>
             <p className="mt-2 text-lg font-black text-[#18253D]">{value}</p>
         </div>

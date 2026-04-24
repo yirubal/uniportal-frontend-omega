@@ -23,9 +23,9 @@ export default function Card({
     return (
         <div
             className={`
-        app-panel rounded-[28px]
+        app-panel rounded-[24px]
         ${paddings[padding]}
-        ${onClick ? "cursor-pointer active:scale-[0.985] transition-transform duration-150" : ""}
+        ${onClick ? "app-card-interactive cursor-pointer" : ""}
         ${className}
       `}
             onClick={onClick}

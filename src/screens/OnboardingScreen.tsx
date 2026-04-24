@@ -12,9 +12,9 @@ const YEARS = [1, 2, 3, 4];
 const SEMESTERS = [1, 2];
 
 const STEP_LABELS = [
-    { title: "Department", hint: "Choose the academic lane you want the app to prioritise.", icon: Building2 },
-    { title: "Year", hint: "Your current year keeps notes and quizzes relevant.", icon: GraduationCap },
-    { title: "Semester", hint: "Semester filters keep the library compact and easier to scan.", icon: Layers3 },
+    { title: "Department", hint: "Pick the academic lane the app should prioritize.", icon: Building2 },
+    { title: "Year", hint: "Your year keeps quizzes and resources relevant.", icon: GraduationCap },
+    { title: "Semester", hint: "Semester keeps the library small and easier to browse.", icon: Layers3 },
 ];
 
 export default function OnboardingScreen() {
@@ -70,7 +70,7 @@ export default function OnboardingScreen() {
 
     return (
         <div className="app-screen">
-            <div className="app-hero">
+            <div className="app-topbar">
                 <div className="relative z-10">
                     <TopBackButton
                         onClick={() => {
@@ -80,23 +80,25 @@ export default function OnboardingScreen() {
                             }
                             navigate("/");
                         }}
-                        label={step > 0 ? "Previous step" : "Back"}
+                        label={step > 0 ? "Previous" : "Back"}
                     />
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-[18px] bg-white/10 text-white backdrop-blur">
-                        <StepIcon size={22} />
-                    </div>
-                    <p className="app-section-label text-white/70">Student setup</p>
-                    <h1 className="app-title mt-2 text-[2rem] font-bold text-white">
-                        Personalise your study path
+                    <p className="app-section-label">Student setup</p>
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">
+                        Personalize your study path
                     </h1>
-                    <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/72">
-                        Start with the essentials so the mini app stays uncluttered and only shows the most relevant material.
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#53627D]">
+                        Three quick choices so the mini app stays focused on the right courses.
                     </p>
                 </div>
+            </div>
 
-                <div className="relative z-10 mt-6 app-panel rounded-[28px] p-4">
-                    <div className="flex items-start justify-between gap-4">
-                        <div>
+            <div className="app-scroll app-scroll-compact">
+                <div className="app-sheet p-4">
+                    <div className="flex items-start gap-3">
+                        <div className="app-icon-chip">
+                            <StepIcon size={20} />
+                        </div>
+                        <div className="min-w-0 flex-1">
                             <p className="app-section-label">Step {step + 1} of 3</p>
                             <p className="mt-2 text-base font-semibold text-[#18253D]">
                                 {activeStep.title}
@@ -109,71 +111,74 @@ export default function OnboardingScreen() {
                         {STEP_LABELS.map((item, index) => (
                             <div
                                 key={item.title}
-                                className={`h-2 rounded-full transition-all duration-300 ${index === step ? "flex-[1.6] bg-[#2D5BFF]" : index < step ? "flex-1 bg-[#B9CBFF]" : "flex-1 bg-[#E6ECFA]"}`}
+                                className={`h-2 rounded-full transition-all duration-300 ${index === step ? "flex-[1.6] bg-[#2D5BFF]" : index < step ? "flex-1 bg-[#B9CBFF]" : "flex-1 bg-[#DCE4F0]"}`}
                             />
                         ))}
                     </div>
                 </div>
-            </div>
 
-            <div className="app-scroll">
-                {step === 0 && (
-                    <div className="grid gap-3">
-                        {loadingDepts ? (
-                            Array.from({ length: 5 }).map((_, index) => (
-                                <div key={index} className="skeleton h-20 rounded-[24px]" />
-                            ))
-                        ) : (
-                            departments.map((dept) => (
+                <div className="mt-4">
+                    {step === 0 && (
+                        <div className="space-y-3">
+                            {loadingDepts ? (
+                                Array.from({ length: 5 }).map((_, index) => (
+                                    <div key={index} className="skeleton h-20 rounded-[24px]" />
+                                ))
+                            ) : (
+                                departments.map((dept) => (
+                                    <button
+                                        key={dept.id}
+                                        onClick={() => setSelectedDept(dept)}
+                                        className={`app-list-item ${selectedDept?.id === dept.id ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    >
+                                        <div className="app-icon-chip">
+                                            <Building2 size={18} />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-semibold text-[#18253D]">{dept.name}</p>
+                                            <p className="mt-1 text-xs text-[#7F8CA5]">{dept.code}</p>
+                                        </div>
+                                        <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedDept?.id === dept.id ? "tone-blue" : "bg-[#EFF3F8] text-[#7F8CA5]"}`}>
+                                            {selectedDept?.id === dept.id ? "Selected" : "Choose"}
+                                        </div>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    )}
+
+                    {step === 1 && (
+                        <div className="app-grid-2">
+                            {YEARS.map((year) => (
                                 <button
-                                    key={dept.id}
-                                    onClick={() => setSelectedDept(dept)}
-                                    className={`app-panel flex items-center justify-between rounded-[28px] p-4 text-left transition-transform duration-200 active:scale-[0.985] ${selectedDept?.id === dept.id ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    key={year}
+                                    onClick={() => setSelectedYear(year)}
+                                    className={`app-sheet min-h-[134px] p-5 text-left ${selectedYear === year ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
                                 >
-                                    <div>
-                                        <p className="text-base font-semibold text-[#18253D]">{dept.name}</p>
-                                        <p className="mt-1 text-sm text-[#7F8CA5]">{dept.code}</p>
-                                    </div>
-                                    <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedDept?.id === dept.id ? "tone-blue" : "bg-[#F4F6FB] text-[#7F8CA5]"}`}>
-                                        {selectedDept?.id === dept.id ? "Selected" : "Choose"}
-                                    </div>
+                                    <p className="app-section-label">Academic year</p>
+                                    <p className="app-title mt-5 text-[2rem] font-bold text-[#18253D]">{year}</p>
+                                    <p className="mt-2 text-sm text-[#53627D]">Year {year}</p>
                                 </button>
-                            ))
-                        )}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
 
-                {step === 1 && (
-                    <div className="app-grid-2">
-                        {YEARS.map((year) => (
-                            <button
-                                key={year}
-                                onClick={() => setSelectedYear(year)}
-                                className={`app-panel min-h-[142px] rounded-[28px] p-5 text-left transition-transform duration-200 active:scale-[0.985] ${selectedYear === year ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
-                            >
-                                <p className="app-section-label">Academic year</p>
-                                <p className="app-title mt-5 text-[2.2rem] font-bold text-[#18253D]">{year}</p>
-                                <p className="mt-2 text-sm text-[#53627D]">Year {year} content focus</p>
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {step === 2 && (
-                    <div className="app-grid-2">
-                        {SEMESTERS.map((semester) => (
-                            <button
-                                key={semester}
-                                onClick={() => setSelectedSemester(semester)}
-                                className={`app-panel min-h-[160px] rounded-[28px] p-5 text-left transition-transform duration-200 active:scale-[0.985] ${selectedSemester === semester ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
-                            >
-                                <p className="app-section-label">Current term</p>
-                                <p className="app-title mt-5 text-[2.4rem] font-bold text-[#18253D]">{semester}</p>
-                                <p className="mt-2 text-sm text-[#53627D]">Semester {semester}</p>
-                            </button>
-                        ))}
-                    </div>
-                )}
+                    {step === 2 && (
+                        <div className="app-grid-2">
+                            {SEMESTERS.map((semester) => (
+                                <button
+                                    key={semester}
+                                    onClick={() => setSelectedSemester(semester)}
+                                    className={`app-sheet min-h-[134px] p-5 text-left ${selectedSemester === semester ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                >
+                                    <p className="app-section-label">Current term</p>
+                                    <p className="app-title mt-5 text-[2rem] font-bold text-[#18253D]">{semester}</p>
+                                    <p className="mt-2 text-sm text-[#53627D]">Semester {semester}</p>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 {error && (
                     <p className="mt-4 text-center text-sm text-[#D95A50]">{error}</p>
@@ -198,15 +203,6 @@ export default function OnboardingScreen() {
                 >
                     {step < 2 ? "Continue" : "Finish setup"}
                 </Button>
-
-                {step > 0 && (
-                    <button
-                        onClick={() => setStep((current) => current - 1)}
-                        className="mt-3 w-full text-center text-sm font-medium text-[#53627D]"
-                    >
-                        Back
-                    </button>
-                )}
             </div>
         </div>
     );
