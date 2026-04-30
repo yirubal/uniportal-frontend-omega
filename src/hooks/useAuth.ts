@@ -1,14 +1,14 @@
 import { useAuthStore } from "../store/authStore";
 import { getMyProfile, loginWithDevMode, loginWithTelegram } from "../api/auth";
-import { useTelegram } from "./useTelegram";
+import { getRawTelegramInitData } from "./useTelegram";
 
 export const useAuth = () => {
     const { setAuth, setLoading, setError, clearAuth } = useAuthStore();
-    const { initData } = useTelegram();
 
     const initAuth = async () => {
         try {
             setLoading(true);
+            const initData = getRawTelegramInitData();
 
             if (!initData) {
                 if (import.meta.env.DEV) {

@@ -153,6 +153,9 @@ This file is the durable handoff for future Codex sessions working in this repos
   - results now compute fallback percentage from `score / gradable_total` and labels non-auto-graded items as `Not graded`
 - Deliberately deferred full pending-review UI for non-auto-graded questions per user instruction.
 - Verification after this pass: `npm run lint` and `npm run build` both passed.
+- Auth validation was tightened after backend integration feedback:
+  - Telegram login now reads `window.Telegram.WebApp.initData` directly at auth time and sends it as `init_data` without encoding, decoding, parsing, or rebuilding
+  - keep this raw string behavior unchanged because Telegram signature validation is sensitive to any initData mutation
 
 ## Next Work
 
