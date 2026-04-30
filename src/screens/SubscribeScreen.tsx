@@ -133,12 +133,12 @@ export default function SubscribeScreen() {
                                         aria-pressed={isSelected}
                                         onClick={() => setSelectedPlan(plan.id)}
                                         className={`w-full rounded-[22px] border p-4 text-left transition-colors ${isSelected
-                                                ? "border-[#3F6F6A] bg-[#EAF4F1] shadow-[0_10px_22px_rgba(63,111,106,0.10)]"
-                                                : "border-[rgba(23,43,47,0.10)] bg-white/85"
+                                            ? "border-[#3F6F6A] bg-[#EAF4F1] shadow-[0_10px_22px_rgba(63,111,106,0.10)]"
+                                            : "border-[rgba(23,43,47,0.10)] bg-white/85"
                                             }`}
                                     >
                                         <div className="flex min-w-0 flex-col gap-3">
-                                            <div className="min-w-0">
+                                            <div className="min-w-0 py-4 border-2 border-red-400">
                                                 <p className="break-words text-sm font-semibold leading-snug text-[#172B2F]">
                                                     {plan.name}
                                                 </p>
@@ -146,10 +146,10 @@ export default function SubscribeScreen() {
                                                     {plan.description}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3">
+                                            <div className=" border-2 border-red-400 flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3 py-4">
                                                 <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${isSelected
-                                                        ? "bg-[#3F6F6A] text-white"
-                                                        : "bg-[#F4F8F5] text-[#526B70]"
+                                                    ? "bg-[#3F6F6A] text-white"
+                                                    : "bg-[#F4F8F5] text-[#526B70]"
                                                     }`}>
                                                     {isSelected ? "Selected" : `${plan.days} days`}
                                                 </span>
@@ -219,8 +219,8 @@ export default function SubscribeScreen() {
                                 type="button"
                                 onClick={() => setPaymentMethod(method)}
                                 className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${paymentMethod === method
-                                        ? "border-[#3F6F6A] bg-[#DCEBE7] text-[#172B2F] shadow-[0_8px_18px_rgba(63,111,106,0.12)]"
-                                        : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F]"
+                                    ? "border-[#3F6F6A] bg-[#DCEBE7] text-[#172B2F] shadow-[0_8px_18px_rgba(63,111,106,0.12)]"
+                                    : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F]"
                                     }`}
                             >
                                 {method === "telebirr" ? "Telebirr" : "CBE"}
