@@ -218,6 +218,7 @@ export default function SubscribeScreen() {
                                 key={method}
                                 type="button"
                                 onClick={() => setPaymentMethod(method)}
+                                style={paymentMethod === method ? { backgroundColor: "#3F6F6A", border: "1px solid #3F6F6A", color: "#FFFFFF" } : undefined}
                                 className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${paymentMethod === method
                                     ? "border-[#3F6F6A] bg-[#3F6F6A] text-white"
                                     : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F]"
