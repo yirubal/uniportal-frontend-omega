@@ -13,7 +13,7 @@ const QUICK_ACTIONS = [
         label: "Resource Library",
         desc: "Browse notes, worksheets, and exam papers by course.",
         meta: "Study materials",
-        tint: "bg-[#EEF3FF] text-[#2D5BFF]",
+        tint: "bg-[#EAF4F1] text-[#3F6F6A]",
     },
     {
         path: "/quiz",
@@ -57,13 +57,13 @@ export default function HomeScreen() {
             <div className="app-topbar">
                 <div className="relative z-10 flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7F8CA5]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#70868B]">
                             {greeting}
                         </p>
-                        <h1 className="app-title mt-1 text-[1.55rem] font-bold text-[#18253D]">
+                        <h1 className="app-title mt-1 text-[1.55rem] font-bold text-[#172B2F]">
                             {student?.first_name ?? student?.name ?? "Student"}
                         </h1>
-                        <p className="mt-1 text-sm text-[#53627D]">
+                        <p className="mt-1 text-sm text-[#526B70]">
                             Unity University student portal
                         </p>
                     </div>
@@ -79,21 +79,21 @@ export default function HomeScreen() {
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                             <p className="app-section-label">Current profile</p>
-                            <p className="mt-1 text-sm text-[#53627D]">
+                            <p className="mt-1 text-sm text-[#526B70]">
                                 Department-based content and exam prep
                             </p>
                             <div className="mt-3 flex flex-wrap gap-2">
                                 {profileBadges.map((badge) => (
                                     <span
                                         key={badge}
-                                        className="inline-flex items-center justify-center rounded-full bg-[#F4F7FD] px-3 py-2 text-xs font-semibold text-[#18253D]"
+                                        className="inline-flex items-center justify-center rounded-full bg-[#F4F8F5] px-3 py-2 text-xs font-semibold text-[#172B2F]"
                                     >
                                         {badge}
                                     </span>
                                 ))}
                             </div>
                         </div>
-                        <div className="shrink-0 rounded-full bg-[#F4F7FD] px-3 py-2 text-xs font-semibold text-[#53627D]">
+                        <div className="shrink-0 rounded-full bg-[#F4F8F5] px-3 py-2 text-xs font-semibold text-[#526B70]">
                             {isPremium ? formatDaysRemaining(daysRemaining) : "Upgrade available"}
                         </div>
                     </div>
@@ -102,7 +102,7 @@ export default function HomeScreen() {
                         {!isPremium && (
                             <button
                                 onClick={() => navigate("/subscribe")}
-                                className="inline-flex items-center gap-2 rounded-full bg-[#18253D] px-4 py-2.5 text-sm font-semibold text-white"
+                                className="inline-flex items-center gap-2 rounded-full bg-[#172B2F] px-4 py-2.5 text-sm font-semibold text-white"
                             >
                                 <Sparkles size={14} />
                                 Unlock premium tools
@@ -123,7 +123,7 @@ export default function HomeScreen() {
                 <div className="mt-5">
                     <div className="mb-3 px-1">
                         <p className="app-section-label">Quick access</p>
-                        <h2 className="mt-2 text-lg font-bold text-[#18253D]">
+                        <h2 className="mt-2 text-lg font-bold text-[#172B2F]">
                             Continue where you need to work
                         </h2>
                     </div>
@@ -144,19 +144,19 @@ export default function HomeScreen() {
 
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <p className="truncate text-sm font-semibold text-[#18253D]">
+                                            <p className="truncate text-sm font-semibold text-[#172B2F]">
                                                 {action.label}
                                             </p>
-                                            <span className="inline-flex items-center justify-center rounded-full bg-[#F4F7FD] px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#7F8CA5]">
+                                            <span className="inline-flex items-center justify-center rounded-full bg-[#F4F8F5] px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#70868B]">
                                                 {action.meta}
                                             </span>
                                         </div>
-                                        <p className="mt-1 text-sm leading-relaxed text-[#53627D]">
+                                        <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
                                             {action.desc}
                                         </p>
                                     </div>
 
-                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F4F7FD] text-[#18253D]">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F4F8F5] text-[#172B2F]">
                                         <ArrowRight size={16} />
                                     </div>
                                 </button>
@@ -168,19 +168,19 @@ export default function HomeScreen() {
                 <div className="mt-5 app-sheet p-4">
                     <p className="app-section-label">This week</p>
                     <div className="mt-3 grid gap-3">
-                        <div className="rounded-[20px] bg-[#F6F8FD] px-4 py-3">
-                            <p className="text-sm font-semibold text-[#18253D]">
+                        <div className="rounded-[20px] bg-[#F6FAF7] px-4 py-3">
+                            <p className="text-sm font-semibold text-[#172B2F]">
                                 Keep resource browsing course-first
                             </p>
-                            <p className="mt-1 text-sm text-[#53627D]">
+                            <p className="mt-1 text-sm text-[#526B70]">
                                 Library and quizzes work best after department, program, year, and period are selected.
                             </p>
                         </div>
-                        <div className="rounded-[20px] bg-[#F6F8FD] px-4 py-3">
-                            <p className="text-sm font-semibold text-[#18253D]">
+                        <div className="rounded-[20px] bg-[#F6FAF7] px-4 py-3">
+                            <p className="text-sm font-semibold text-[#172B2F]">
                                 Use practice for speed, simulations for pressure
                             </p>
-                            <p className="mt-1 text-sm text-[#53627D]">
+                            <p className="mt-1 text-sm text-[#526B70]">
                                 The app now supports real backend-driven quiz summaries and exit exam flows.
                             </p>
                         </div>

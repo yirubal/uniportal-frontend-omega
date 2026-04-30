@@ -25,9 +25,9 @@ export default function Button({
         "inline-flex min-h-11 items-center justify-center gap-2 font-semibold rounded-[18px] transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:cursor-not-allowed";
 
     const variants = {
-        primary: "bg-[#18253D] text-white border border-[#18253D] shadow-[0_10px_24px_rgba(24,37,61,0.10)]",
-        secondary: "bg-[#EDF2FF] text-[#2D5BFF] border border-[#DDE6FF]",
-        ghost: "bg-[rgba(244,247,252,0.92)] text-[#18253D] border border-[rgba(31,53,91,0.08)] shadow-none",
+        primary: "bg-[#172B2F] text-white border border-[#172B2F] shadow-[0_10px_24px_rgba(23,43,47,0.10)]",
+        secondary: "bg-[#EAF4F1] text-[#3F6F6A] border border-[#CFE2DE]",
+        ghost: "bg-[rgba(244,247,252,0.92)] text-[#172B2F] border border-[rgba(23,43,47,0.08)] shadow-none",
         danger: "bg-[#D95A50] text-white border border-[#D95A50]",
     };
 

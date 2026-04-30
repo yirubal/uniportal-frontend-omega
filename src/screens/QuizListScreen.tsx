@@ -82,10 +82,10 @@ export default function QuizListScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/quiz/setup")} label="Setup" />
                     <p className="app-section-label">{meta.sectionLabel}</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
                         {courseName ?? meta.listLabel}
                     </h1>
-                    <p className="mt-2 text-sm leading-relaxed text-[#53627D]">
+                    <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
                         {meta.listDescription}
                     </p>
                 </div>
@@ -99,8 +99,8 @@ export default function QuizListScreen() {
                         </div>
                         <div>
                             <p className="app-section-label">Selected course</p>
-                            <p className="mt-2 text-sm font-semibold text-[#18253D]">{courseName}</p>
-                            <p className="mt-1 text-sm text-[#53627D]">
+                            <p className="mt-2 text-sm font-semibold text-[#172B2F]">{courseName}</p>
+                            <p className="mt-1 text-sm text-[#526B70]">
                                 {practiceContentType === "quiz"
                                     ? "Each quiz loads independently and submits as a separate attempt."
                                     : "Each past exam paper loads as its own practice attempt."}
@@ -170,18 +170,18 @@ function QuizPaperButton({
         <button
             type="button"
             onClick={onOpen}
-            className={`app-list-item ${isSelected ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+            className={`app-list-item ${isSelected ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
         >
-            <div className={`app-icon-chip ${practiceContentType === "quiz" ? "bg-[#EEF3FF] text-[#2D5BFF]" : "bg-[#FFF6DF] text-[#B27614]"}`}>
+            <div className={`app-icon-chip ${practiceContentType === "quiz" ? "bg-[#EAF4F1] text-[#3F6F6A]" : "bg-[#FFF6DF] text-[#B27614]"}`}>
                 {practiceContentType === "quiz" ? <BookOpenCheck size={18} /> : <FileText size={18} />}
             </div>
 
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${practiceContentType === "quiz" ? "bg-[#EEF3FF] text-[#2D5BFF]" : "bg-[#FFF6DF] text-[#B27614]"}`}>
+                    <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${practiceContentType === "quiz" ? "bg-[#EAF4F1] text-[#3F6F6A]" : "bg-[#FFF6DF] text-[#B27614]"}`}>
                         {practiceContentType === "quiz" ? "Quiz" : "Past exam"}
                     </span>
-                    <span className="rounded-full bg-[#F4F7FD] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#60728F]">
+                    <span className="rounded-full bg-[#F4F8F5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#60728F]">
                         {quiz.year}
                     </span>
                     {isLocked && (
@@ -190,17 +190,17 @@ function QuizPaperButton({
                         </span>
                     )}
                 </div>
-                <p className="mt-3 text-sm font-semibold leading-snug text-[#18253D]">
+                <p className="mt-3 text-sm font-semibold leading-snug text-[#172B2F]">
                     {quiz.title}
                 </p>
-                <div className="mt-2 flex flex-wrap gap-3 text-xs font-medium text-[#7F8CA5]">
+                <div className="mt-2 flex flex-wrap gap-3 text-xs font-medium text-[#70868B]">
                     <span>{quiz.total_questions} questions</span>
                     <span>{formatDuration(quiz.duration_minutes)}</span>
                     <span>{quiz.access_level}</span>
                 </div>
             </div>
 
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isLocked ? "bg-[#FFF0ED] text-[#B75F57]" : "bg-[#F4F7FD] text-[#18253D]"}`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isLocked ? "bg-[#FFF0ED] text-[#B75F57]" : "bg-[#F4F8F5] text-[#172B2F]"}`}>
                 {isLocked ? <Lock size={18} /> : <TimerReset size={18} />}
             </div>
         </button>

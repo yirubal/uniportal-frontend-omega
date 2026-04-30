@@ -142,8 +142,8 @@ export default function ResourcesScreen() {
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate("/home")} label="Home" />
                         <p className="app-section-label">Resource library</p>
-                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">Choose a course shelf</h1>
-                        <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#53627D]">
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">Choose a course shelf</h1>
+                        <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
                             Start with department, program, year, period, and course so the library stays compact and useful.
                         </p>
                     </div>
@@ -152,13 +152,13 @@ export default function ResourcesScreen() {
                 <div className="app-scroll app-scroll-compact space-y-5">
                     <div className="app-sheet p-5">
                         <div className="flex items-start gap-3">
-                            <div className="rounded-[18px] bg-[#EDF2FF] p-3 text-[#2D5BFF]">
+                            <div className="rounded-[18px] bg-[#EAF4F1] p-3 text-[#3F6F6A]">
                                 <Sparkles size={18} />
                             </div>
                             <div>
                                 <p className="app-section-label">Smart start</p>
-                                <p className="mt-2 text-base font-semibold text-[#18253D]">Start with the right course context</p>
-                                <p className="mt-1 text-sm leading-relaxed text-[#53627D]">
+                                <p className="mt-2 text-base font-semibold text-[#172B2F]">Start with the right course context</p>
+                                <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
                                     This keeps management case notes, accounting worksheets, and future computing resources separated cleanly.
                                 </p>
                             </div>
@@ -194,9 +194,9 @@ export default function ResourcesScreen() {
                                 <button
                                     key={program.value}
                                     onClick={() => setSelProgram(program.value)}
-                                    className={`app-sheet flex min-h-[5rem] flex-1 items-center justify-center rounded-[20px] px-4 py-3 text-center ${selProgram === program.value ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    className={`app-sheet flex min-h-[5rem] flex-1 items-center justify-center rounded-[20px] px-4 py-3 text-center ${selProgram === program.value ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
                                 >
-                                    <p className="text-sm font-bold text-[#18253D]">{program.label}</p>
+                                    <p className="text-sm font-bold text-[#172B2F]">{program.label}</p>
                                 </button>
                             ))}
                         </div>
@@ -206,7 +206,7 @@ export default function ResourcesScreen() {
                         <div className="mb-3 flex items-center justify-between gap-2">
                             <p className="app-section-label">Year</p>
                             {selYear && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-[#EDF2FF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2D5BFF]">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF4F1] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#3F6F6A]">
                                     <Check size={12} />
                                     Year {selYear}
                                 </span>
@@ -217,10 +217,10 @@ export default function ResourcesScreen() {
                                 <button
                                     key={year}
                                     onClick={() => setSelYear(year)}
-                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selYear === year ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selYear === year ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
                                 >
-                                    <p className="app-title text-[1.8rem] font-bold text-[#18253D]">{year}</p>
-                                    <p className="mt-1 text-sm text-[#53627D]">
+                                    <p className="app-title text-[1.8rem] font-bold text-[#172B2F]">{year}</p>
+                                    <p className="mt-1 text-sm text-[#526B70]">
                                         {selYear === year ? "Selected" : `Year ${year}`}
                                     </p>
                                 </button>
@@ -243,10 +243,10 @@ export default function ResourcesScreen() {
                                 <button
                                     key={period.value}
                                     onClick={() => setSelPeriod(period.value)}
-                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selPeriod === period.value ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selPeriod === period.value ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
                                 >
-                                    <p className="app-title text-[1.3rem] font-bold text-[#18253D]">{period.label}</p>
-                                    <p className="mt-1 text-sm text-[#53627D]">
+                                    <p className="app-title text-[1.3rem] font-bold text-[#172B2F]">{period.label}</p>
+                                    <p className="mt-1 text-sm text-[#526B70]">
                                         {selPeriod === period.value ? "Selected" : period.label}
                                     </p>
                                 </button>
@@ -279,12 +279,12 @@ export default function ResourcesScreen() {
                                             className="app-panel flex min-h-[5rem] w-full items-center justify-between gap-3 overflow-hidden rounded-[16px] px-5 py-3 text-left transition-transform duration-200 active:scale-[0.985]"
                                         >
                                             <div className="min-w-0 flex-1 pr-3">
-                                                <p className="text-base font-semibold text-[#18253D]">{course.name}</p>
-                                                <p className="mt-1 text-sm text-[#7F8CA5]">
+                                                <p className="text-base font-semibold text-[#172B2F]">{course.name}</p>
+                                                <p className="mt-1 text-sm text-[#70868B]">
                                                     {course.code} · {getProgramLabel(selProgram)} · {getPeriodLabel(selPeriod, selProgram)}
                                                 </p>
                                             </div>
-                                            <div className="rounded-full bg-[#18253D] px-3 py-2 text-xs font-bold text-white">
+                                            <div className="rounded-full bg-[#172B2F] px-3 py-2 text-xs font-bold text-white">
                                                 Open
                                             </div>
                                         </button>
@@ -313,7 +313,7 @@ export default function ResourcesScreen() {
                         }}
                     />
                     <p className="app-section-label">{selCourse?.code}</p>
-                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-[#18253D]">{selCourse?.name ?? "Resources"}</h1>
+                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-[#172B2F]">{selCourse?.name ?? "Resources"}</h1>
                 </div>
             </div>
 
@@ -330,8 +330,8 @@ export default function ResourcesScreen() {
                         <p className="app-section-label">Featured pack</p>
                         <div className="mt-3 flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-base font-semibold text-[#18253D]">{featuredResource.title}</p>
-                                <p className="mt-2 text-sm leading-relaxed text-[#53627D]">
+                                <p className="text-base font-semibold text-[#172B2F]">{featuredResource.title}</p>
+                                <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
                                     {featuredResource.description}
                                 </p>
                             </div>
@@ -345,7 +345,7 @@ export default function ResourcesScreen() {
 
                 <div className="mt-4 app-sheet p-4">
                     <div className="relative">
-                        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7F8CA5]" size={16} />
+                        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#70868B]" size={16} />
                         <input
                             type="text"
                             placeholder="Search title, tag, or description"
@@ -397,7 +397,7 @@ export default function ResourcesScreen() {
                                     {!!resource.tags?.length && (
                                         <div className="ml-2 mt-2 flex flex-wrap gap-2">
                                             {resource.tags.slice(0, 3).map((tag) => (
-                                                <span key={`${resource.id}-${tag}`} className="rounded-full bg-[#EEF3FF] px-3 py-1 text-[11px] font-semibold text-[#4D6691]">
+                                                <span key={`${resource.id}-${tag}`} className="rounded-full bg-[#EAF4F1] px-3 py-1 text-[11px] font-semibold text-[#4D6691]">
                                                     {tag}
                                                 </span>
                                             ))}
@@ -444,7 +444,7 @@ function SelectorGroup<T>({
             {onSearchChange && (
                 <div className="mb-3 app-sheet p-4">
                     <div className="relative">
-                        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7F8CA5]" size={16} />
+                        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#70868B]" size={16} />
                         <input
                             type="text"
                             placeholder={searchPlaceholder ?? "Search"}
@@ -472,13 +472,13 @@ function SelectorGroup<T>({
                             key={getKey(item)}
                             onClick={() => onSelect(item)}
                             style={{ paddingInline: "1.25rem" }}
-                            className={`app-panel flex min-h-[5rem] w-full items-center justify-between gap-3 overflow-hidden rounded-[16px] px-5 py-3 text-left ${value === getKey(item) ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                            className={`app-panel flex min-h-[5rem] w-full items-center justify-between gap-3 overflow-hidden rounded-[16px] px-5 py-3 text-left ${value === getKey(item) ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
                         >
                             <div className="min-w-0 flex-1 pr-3">
-                                <p className="text-base font-semibold leading-snug text-[#18253D]">{getLabel(item)}</p>
-                                <p className="mt-1 text-sm text-[#7F8CA5]">{getMeta(item)}</p>
+                                <p className="text-base font-semibold leading-snug text-[#172B2F]">{getLabel(item)}</p>
+                                <p className="mt-1 text-sm text-[#70868B]">{getMeta(item)}</p>
                             </div>
-                            <div className={`flex-shrink-0 self-center rounded-full px-3 py-2 text-xs font-bold ${value === getKey(item) ? "tone-blue" : "bg-[#F4F6FB] text-[#7F8CA5]"}`}>
+                            <div className={`flex-shrink-0 self-center rounded-full px-3 py-2 text-xs font-bold ${value === getKey(item) ? "tone-blue" : "bg-[#F4F8F5] text-[#70868B]"}`}>
                                 {value === getKey(item) ? "Selected" : "Choose"}
                             </div>
                         </button>

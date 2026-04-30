@@ -53,8 +53,8 @@ export default function SubscribeScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
                     <p className="app-section-label">Premium access</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">Unlock the full study suite</h1>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#53627D]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">Unlock the full study suite</h1>
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
                         Keep subscription choices simple, clear, and fast to scan inside Telegram.
                     </p>
                 </div>
@@ -68,7 +68,7 @@ export default function SubscribeScreen() {
                         </div>
                         <div>
                             <p className="app-section-label">Premium includes</p>
-                            <p className="mt-1 text-base font-semibold text-[#18253D]">Focused exam-prep tools</p>
+                            <p className="mt-1 text-base font-semibold text-[#172B2F]">Focused exam-prep tools</p>
                         </div>
                     </div>
 
@@ -83,7 +83,7 @@ export default function SubscribeScreen() {
                                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF8F1] text-[#2E9E73]">
                                     <Check size={14} />
                                 </div>
-                                <p className="text-sm text-[#18253D]">{benefit}</p>
+                                <p className="text-sm text-[#172B2F]">{benefit}</p>
                             </div>
                         ))}
                     </div>
@@ -105,16 +105,16 @@ export default function SubscribeScreen() {
                                 <button
                                     key={plan.id}
                                     onClick={() => setSelectedPlan(plan.id)}
-                                    className={`w-full rounded-[24px] border p-4 text-left transition-colors ${selectedPlan === plan.id ? "border-[#2D5BFF] bg-[#EEF3FF]" : "border-[rgba(31,53,91,0.08)] bg-[rgba(244,247,252,0.82)]"}`}
+                                    className={`w-full rounded-[24px] border p-4 text-left transition-colors ${selectedPlan === plan.id ? "border-[#3F6F6A] bg-[#EAF4F1]" : "border-[rgba(23,43,47,0.08)] bg-[rgba(244,247,252,0.82)]"}`}
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <p className="text-sm font-semibold text-[#18253D]">{plan.name}</p>
-                                            <p className="mt-1 text-sm leading-relaxed text-[#53627D]">{plan.description}</p>
+                                            <p className="text-sm font-semibold text-[#172B2F]">{plan.name}</p>
+                                            <p className="mt-1 text-sm leading-relaxed text-[#526B70]">{plan.description}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-lg font-black text-[#18253D]">{formatETB(plan.price)}</p>
-                                            <p className="mt-1 text-xs text-[#7F8CA5]">{plan.days} days</p>
+                                            <p className="text-lg font-black text-[#172B2F]">{formatETB(plan.price)}</p>
+                                            <p className="mt-1 text-xs text-[#70868B]">{plan.days} days</p>
                                         </div>
                                     </div>
                                 </button>
@@ -129,17 +129,17 @@ export default function SubscribeScreen() {
                             {instructions.status === "pending" ? "Pending request" : "Payment instructions"}
                         </p>
                         {instructions.instructions && (
-                            <p className="mt-3 text-sm font-semibold leading-relaxed text-[#18253D]">
+                            <p className="mt-3 text-sm font-semibold leading-relaxed text-[#172B2F]">
                                 {instructions.instructions}
                             </p>
                         )}
-                        <div className="mt-4 rounded-[22px] bg-[#F4F7FD] p-4">
+                        <div className="mt-4 rounded-[22px] bg-[#F4F8F5] p-4">
                             <p className="app-section-label">Reference</p>
-                            <p className="mt-2 text-lg font-bold text-[#18253D]">{instructions.reference}</p>
-                            <p className="mt-1 text-sm font-semibold text-[#18253D]">
+                            <p className="mt-2 text-lg font-bold text-[#172B2F]">{instructions.reference}</p>
+                            <p className="mt-1 text-sm font-semibold text-[#172B2F]">
                                 {instructions.plan} · {formatETB(instructions.amount)} · {instructions.days} days
                             </p>
-                            <p className="mt-3 text-sm leading-relaxed text-[#53627D]">{instructions.note}</p>
+                            <p className="mt-3 text-sm leading-relaxed text-[#526B70]">{instructions.note}</p>
                         </div>
 
                         <div className="mt-4 grid gap-3">
@@ -171,8 +171,8 @@ export default function SubscribeScreen() {
                                 onClick={() => setPaymentMethod(method)}
                                 className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${
                                     paymentMethod === method
-                                        ? "border-[#18253D] bg-[#18253D] text-white"
-                                        : "border-[rgba(31,53,91,0.08)] bg-[#F4F7FD] text-[#18253D]"
+                                        ? "border-[#172B2F] bg-[#172B2F] text-white"
+                                        : "border-[rgba(23,43,47,0.08)] bg-[#F4F8F5] text-[#172B2F]"
                                 }`}
                             >
                                 {method === "telebirr" ? "Telebirr" : "CBE"}
@@ -211,10 +211,10 @@ export default function SubscribeScreen() {
 
 function PaymentOption({ label, primary, secondary }: { label: string; primary: string; secondary: string }) {
     return (
-        <div className="rounded-[20px] border border-[rgba(31,53,91,0.08)] bg-white/70 px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7F8CA5]">{label}</p>
-            <p className="mt-1 text-sm font-bold text-[#18253D]">{primary}</p>
-            <p className="mt-1 text-xs font-semibold text-[#53627D]">{secondary}</p>
+        <div className="rounded-[20px] border border-[rgba(23,43,47,0.08)] bg-white/70 px-4 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#70868B]">{label}</p>
+            <p className="mt-1 text-sm font-bold text-[#172B2F]">{primary}</p>
+            <p className="mt-1 text-xs font-semibold text-[#526B70]">{secondary}</p>
         </div>
     );
 }

@@ -54,19 +54,19 @@ export default function QuestionCard({
     return (
         <div className="flex flex-col gap-4">
             <div className="mb-1 flex items-center justify-between">
-                <span className="rounded-full bg-[#F4F7FD] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
+                <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
                     Question {questionNumber} of {totalQuestions}
                 </span>
                 {hasSavedAnswer && (
-                    <span className="rounded-full bg-[#EEF3FF] px-3 py-1.5 text-[11px] font-bold text-[#2D5BFF]">
+                    <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[11px] font-bold text-[#3F6F6A]">
                         {questionType === "matching" ? "Ready to continue" : "Answer saved"}
                     </span>
                 )}
             </div>
 
-            <div className="h-2 overflow-hidden rounded-full bg-[rgba(31,53,91,0.08)]">
+            <div className="h-2 overflow-hidden rounded-full bg-[rgba(23,43,47,0.08)]">
                 <div
-                    className="h-full rounded-full bg-[#18253D] transition-all duration-200"
+                    className="h-full rounded-full bg-[#172B2F] transition-all duration-200"
                     style={{ width: `${progressPercent}%` }}
                 />
             </div>
@@ -85,7 +85,7 @@ export default function QuestionCard({
                             </span>
                         )}
                         {question.year_source && (
-                            <span className="rounded-full bg-[#F4F7FD] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
+                            <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
                                 {question.year_source}
                             </span>
                         )}
@@ -99,8 +99,8 @@ export default function QuestionCard({
                             }}
                             className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
                                 showHint
-                                    ? "bg-[#18253D] text-white"
-                                    : "bg-[#EEF3FF] text-[#2D5BFF]"
+                                    ? "bg-[#172B2F] text-white"
+                                    : "bg-[#EAF4F1] text-[#3F6F6A]"
                             }`}
                         >
                             {showHint ? "Hide hint" : "Show hint"}
@@ -113,9 +113,9 @@ export default function QuestionCard({
                 </p>
 
                 {question.hint && showHint && (
-                    <div className="mt-4 rounded-[20px] border border-[rgba(31,53,91,0.06)] bg-[rgba(244,247,252,0.92)] px-4 py-3">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7F8CA5]">Hint</p>
-                        <p className="mt-2 text-sm leading-relaxed text-[#53627D]">{question.hint}</p>
+                    <div className="mt-4 rounded-[20px] border border-[rgba(23,43,47,0.06)] bg-[rgba(244,247,252,0.92)] px-4 py-3">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#70868B]">Hint</p>
+                        <p className="mt-2 text-sm leading-relaxed text-[#526B70]">{question.hint}</p>
                     </div>
                 )}
             </div>
@@ -144,7 +144,7 @@ export default function QuestionCard({
                                     className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200"
                                     style={{
                                         backgroundColor: style.labelBg,
-                                        color: isSelected ? "#FFFFFF" : "#53627D",
+                                        color: isSelected ? "#FFFFFF" : "#526B70",
                                     }}
                                 >
                                     {OPTION_LABELS[option] ?? option.toUpperCase()}
@@ -178,7 +178,7 @@ export default function QuestionCard({
                     <button
                         type="button"
                         onClick={handleSaveTextAnswer}
-                        className="mt-4 inline-flex min-h-11 items-center rounded-[18px] bg-[#18253D] px-5 py-3 text-sm font-semibold text-white"
+                        className="mt-4 inline-flex min-h-11 items-center rounded-[18px] bg-[#172B2F] px-5 py-3 text-sm font-semibold text-white"
                     >
                         {hasSavedAnswer ? "Update answer" : "Save answer"}
                     </button>
@@ -194,22 +194,22 @@ export default function QuestionCard({
                             return (
                                 <div
                                     key={option}
-                                    className="rounded-[22px] border border-[rgba(31,53,91,0.08)] bg-[rgba(239,244,249,0.84)] px-4 py-4"
+                                    className="rounded-[22px] border border-[rgba(23,43,47,0.08)] bg-[rgba(239,244,249,0.84)] px-4 py-4"
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="min-w-0">
-                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#7F8CA5]">
+                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">
                                                 Term
                                             </p>
-                                            <p className="mt-2 text-sm font-semibold text-[#18253D]">
+                                            <p className="mt-2 text-sm font-semibold text-[#172B2F]">
                                                 {pair.left}
                                             </p>
                                         </div>
                                         <div className="min-w-0 text-right">
-                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#7F8CA5]">
+                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">
                                                 Match
                                             </p>
-                                            <p className="mt-2 text-sm text-[#53627D]">
+                                            <p className="mt-2 text-sm text-[#526B70]">
                                                 {pair.right || label}
                                             </p>
                                         </div>
@@ -219,7 +219,7 @@ export default function QuestionCard({
                         })}
                     </div>
 
-                    <div className="mt-4 rounded-[18px] bg-[#F4F7FD] px-4 py-3 text-sm text-[#53627D]">
+                    <div className="mt-4 rounded-[18px] bg-[#F4F8F5] px-4 py-3 text-sm text-[#526B70]">
                         This matching item is read-only. No answer is required before continuing.
                     </div>
                 </div>
@@ -241,7 +241,7 @@ export default function QuestionCard({
                     <button
                         type="button"
                         onClick={handleSaveTextAnswer}
-                        className="mt-4 inline-flex min-h-11 items-center rounded-[18px] bg-[#18253D] px-5 py-3 text-sm font-semibold text-white"
+                        className="mt-4 inline-flex min-h-11 items-center rounded-[18px] bg-[#172B2F] px-5 py-3 text-sm font-semibold text-white"
                     >
                         {hasSavedAnswer ? "Update answer" : "Save answer"}
                     </button>
@@ -254,9 +254,9 @@ export default function QuestionCard({
 function getOptionStyle(option: string, selectedAnswer: string | null, simulationMode: boolean) {
     if (selectedAnswer === null) {
         return {
-            border: "rgba(31, 53, 91, 0.08)",
+            border: "rgba(23, 43, 47, 0.08)",
             bg: "rgba(239, 244, 249, 0.9)",
-            text: "#18253D",
+            text: "#172B2F",
             labelBg: "rgba(224, 232, 241, 0.95)",
         };
     }
@@ -271,7 +271,7 @@ function getOptionStyle(option: string, selectedAnswer: string | null, simulatio
     }
 
     return {
-        border: "rgba(31, 53, 91, 0.08)",
+        border: "rgba(23, 43, 47, 0.08)",
         bg: "rgba(239, 244, 249, 0.72)",
         text: "#4D607F",
         labelBg: "rgba(224, 232, 241, 0.95)",

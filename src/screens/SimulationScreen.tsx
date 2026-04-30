@@ -149,8 +149,8 @@ export default function SimulationScreen() {
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate(backTarget)} label="Back" />
                         <p className="app-section-label">{exitExamMeta?.badgeLabel ?? "Simulation"}</p>
-                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">{exam?.title}</h1>
-                        <p className="mt-2 text-sm leading-relaxed text-[#53627D]">
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">{exam?.title}</h1>
+                        <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
                             Timed mode with clear pacing, compact instructions, and minimal clutter.
                         </p>
                     </div>
@@ -164,17 +164,17 @@ export default function SimulationScreen() {
 
                     <div className="app-sheet p-5">
                         <p className="app-section-label">Rules</p>
-                        <ul className="mt-4 space-y-2 text-sm leading-relaxed text-[#53627D]">
+                        <ul className="mt-4 space-y-2 text-sm leading-relaxed text-[#526B70]">
                             <li>Answers stay hidden until the attempt is submitted.</li>
                             <li>The timer starts only after you tap the start button below.</li>
                             <li>Unanswered questions lower the final auto-graded score.</li>
                         </ul>
 
-                        <div className="mt-4 rounded-[20px] bg-[#F4F7FD] px-4 py-3">
-                            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7F8CA5]">
+                        <div className="mt-4 rounded-[20px] bg-[#F4F8F5] px-4 py-3">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#70868B]">
                                 Before you start
                             </p>
-                            <p className="mt-2 text-sm leading-relaxed text-[#53627D]">
+                            <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
                                 Read the rules first, then tap start. The countdown bar and timer chip begin immediately after that.
                             </p>
                         </div>
@@ -183,11 +183,11 @@ export default function SimulationScreen() {
                             type="button"
                             onClick={() => void handleStart()}
                             disabled={starting}
-                            className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-[20px] bg-[#18253D] px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(24,37,61,0.18)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-[20px] bg-[#172B2F] px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(23,43,47,0.18)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60"
                             style={{
-                                backgroundColor: "#18253D",
+                                backgroundColor: "#172B2F",
                                 color: "#FFFFFF",
-                                border: "1px solid #18253D",
+                                border: "1px solid #172B2F",
                             }}
                         >
                             {starting ? "Starting..." : startLabel}
@@ -213,7 +213,7 @@ export default function SimulationScreen() {
                         onClick={() => setShowLeaveModal(true)}
                         label="Leave"
                         trailing={(
-                            <span className={`rounded-full px-3 py-2 text-xs font-bold transition-all ${isLowTime ? "bg-[#FFF0ED] text-[#D95A50]" : "bg-[#18253D] text-white"} ${isCriticalTime ? "animate-pulse shadow-[0_0_0_6px_rgba(217,90,80,0.12)]" : ""}`}>
+                            <span className={`rounded-full px-3 py-2 text-xs font-bold transition-all ${isLowTime ? "bg-[#FFF0ED] text-[#D95A50]" : "bg-[#172B2F] text-white"} ${isCriticalTime ? "animate-pulse shadow-[0_0_0_6px_rgba(217,90,80,0.12)]" : ""}`}>
                                 {formatTimeRemaining(timeRemaining)}
                             </span>
                         )}
@@ -231,9 +231,9 @@ export default function SimulationScreen() {
                                 {timeProgress.toFixed(0)}% left
                             </span>
                         </div>
-                        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[rgba(31,53,91,0.08)]">
+                        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[rgba(23,43,47,0.08)]">
                             <div
-                                className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${isLowTime ? "bg-[#D95A50]" : "bg-[#18253D]"} ${isCriticalTime ? "animate-pulse" : ""}`}
+                                className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${isLowTime ? "bg-[#D95A50]" : "bg-[#172B2F]"} ${isCriticalTime ? "animate-pulse" : ""}`}
                                 style={{ width: `${timeProgress}%` }}
                             />
                         </div>
@@ -242,7 +242,7 @@ export default function SimulationScreen() {
                     <div className="mt-3 app-sheet p-4">
                         <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
-                                <div className="app-icon-chip h-10 w-10 bg-[#EEF3FF] text-[#2D5BFF]">
+                                <div className="app-icon-chip h-10 w-10 bg-[#EAF4F1] text-[#3F6F6A]">
                                     <LayoutGrid size={16} />
                                 </div>
                                 <div>
@@ -255,7 +255,7 @@ export default function SimulationScreen() {
                             <button
                                 type="button"
                                 onClick={() => setShowNavigator((current) => !current)}
-                                className="inline-flex items-center gap-2 rounded-full bg-[#F4F7FD] px-3 py-2 text-xs font-bold text-[#18253D]"
+                                className="inline-flex items-center gap-2 rounded-full bg-[#F4F8F5] px-3 py-2 text-xs font-bold text-[#172B2F]"
                             >
                                 {showNavigator ? "Hide" : "Open"}
                                 {showNavigator ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -263,13 +263,13 @@ export default function SimulationScreen() {
                         </div>
 
                         <div className="mt-3 flex flex-wrap gap-2">
-                            <span className="rounded-full bg-[#EEF3FF] px-3 py-1.5 text-[11px] font-bold text-[#2D5BFF]">
+                            <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[11px] font-bold text-[#3F6F6A]">
                                 {answeredCount} answered
                             </span>
                             <span className="rounded-full bg-[#FFF6DF] px-3 py-1.5 text-[11px] font-bold text-[#B27614]">
                                 {reviewCount} review
                             </span>
-                            <span className="rounded-full bg-[#F4F7FD] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
+                            <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
                                 {unansweredCount} unanswered
                             </span>
                         </div>
@@ -277,7 +277,7 @@ export default function SimulationScreen() {
                         <button
                             type="button"
                             onClick={() => quiz.toggleMarkedForReview()}
-                            className={`mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[18px] px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.985] ${currentMarkedForReview ? "bg-[#FFF6DF] text-[#8E5A00]" : "bg-[#F4F7FD] text-[#18253D]"}`}
+                            className={`mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[18px] px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.985] ${currentMarkedForReview ? "bg-[#FFF6DF] text-[#8E5A00]" : "bg-[#F4F8F5] text-[#172B2F]"}`}
                         >
                             <Bookmark size={16} />
                             {currentMarkedForReview ? "Marked for review" : "Mark this question for review"}
@@ -292,12 +292,12 @@ export default function SimulationScreen() {
                                         const isMarked = Boolean(quiz.markedForReview[question.id]);
 
                                         const paletteClass = isCurrent
-                                            ? "bg-[#18253D] text-white"
+                                            ? "bg-[#172B2F] text-white"
                                             : isMarked
                                                 ? "bg-[#FFF6DF] text-[#8E5A00] border border-[#F1C364]"
                                                 : isAnswered
-                                                    ? "bg-[#EEF3FF] text-[#2D5BFF]"
-                                                    : "bg-[#F4F7FD] text-[#60728F]";
+                                                    ? "bg-[#EAF4F1] text-[#3F6F6A]"
+                                                    : "bg-[#F4F8F5] text-[#60728F]";
 
                                         return (
                                             <button
@@ -316,10 +316,10 @@ export default function SimulationScreen() {
                                 </div>
 
                                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-[#60728F]">
-                                    <span className="rounded-full bg-[#18253D] px-3 py-1.5 text-white">Current</span>
-                                    <span className="rounded-full bg-[#EEF3FF] px-3 py-1.5 text-[#2D5BFF]">Answered</span>
+                                    <span className="rounded-full bg-[#172B2F] px-3 py-1.5 text-white">Current</span>
+                                    <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[#3F6F6A]">Answered</span>
                                     <span className="rounded-full bg-[#FFF6DF] px-3 py-1.5 text-[#8E5A00]">Review</span>
-                                    <span className="rounded-full bg-[#F4F7FD] px-3 py-1.5 text-[#60728F]">Unanswered</span>
+                                    <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[#60728F]">Unanswered</span>
                                 </div>
                             </div>
                         )}
@@ -345,9 +345,9 @@ export default function SimulationScreen() {
                     size="lg"
                     fullWidth
                     style={{
-                        backgroundColor: "#18253D",
+                        backgroundColor: "#172B2F",
                         color: "#FFFFFF",
-                        borderColor: "#18253D",
+                        borderColor: "#172B2F",
                     }}
                     onClick={() => {
                         if (isLast) {
@@ -385,7 +385,7 @@ function InfoTile({ label, value }: { label: string; value: string | number }) {
     return (
         <div className="app-sheet p-4">
             <p className="app-section-label">{label}</p>
-            <p className="mt-2 text-lg font-black text-[#18253D]">{value}</p>
+            <p className="mt-2 text-lg font-black text-[#172B2F]">{value}</p>
         </div>
     );
 }

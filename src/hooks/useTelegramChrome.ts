@@ -1,19 +1,30 @@
 import { useEffect } from "react";
 import WebApp from "@twa-dev/sdk";
 
+const APP_THEME = {
+    background: "#eef3f0",
+    secondaryBackground: "#e2ebe8",
+    text: "#172b2f",
+    hint: "#667c82",
+    link: "#3f6f6a",
+    button: "#172b2f",
+    buttonText: "#ffffff",
+    section: "rgba(250,252,250,0.94)",
+    header: "#172b2f",
+};
+
 function setTelegramThemeVars() {
     const root = document.documentElement;
-    const theme = WebApp.themeParams;
 
-    root.style.setProperty("--tg-bg-color", theme.bg_color || "#f4f6fb");
-    root.style.setProperty("--tg-secondary-bg-color", theme.secondary_bg_color || "#eef2f8");
-    root.style.setProperty("--tg-text-color", theme.text_color || "#18253d");
-    root.style.setProperty("--tg-hint-color", theme.hint_color || "#7f8ca5");
-    root.style.setProperty("--tg-link-color", theme.link_color || "#2d5bff");
-    root.style.setProperty("--tg-button-color", theme.button_color || "#18253d");
-    root.style.setProperty("--tg-button-text-color", theme.button_text_color || "#ffffff");
-    root.style.setProperty("--tg-section-bg-color", theme.section_bg_color || "rgba(255,255,255,0.92)");
-    root.style.setProperty("--tg-header-bg-color", theme.header_bg_color || "#18253d");
+    root.style.setProperty("--tg-bg-color", APP_THEME.background);
+    root.style.setProperty("--tg-secondary-bg-color", APP_THEME.secondaryBackground);
+    root.style.setProperty("--tg-text-color", APP_THEME.text);
+    root.style.setProperty("--tg-hint-color", APP_THEME.hint);
+    root.style.setProperty("--tg-link-color", APP_THEME.link);
+    root.style.setProperty("--tg-button-color", APP_THEME.button);
+    root.style.setProperty("--tg-button-text-color", APP_THEME.buttonText);
+    root.style.setProperty("--tg-section-bg-color", APP_THEME.section);
+    root.style.setProperty("--tg-header-bg-color", APP_THEME.header);
 }
 
 function setTelegramViewportVars() {
@@ -37,12 +48,8 @@ export function useTelegramChrome() {
         const handleViewportChange = () => setTelegramViewportVars();
 
         if (supportsModernChrome) {
-            WebApp.setBackgroundColor(
-                WebApp.themeParams.bg_color || "#F4F6FB"
-            );
-            WebApp.setHeaderColor(
-                WebApp.themeParams.header_bg_color || "#18253D"
-            );
+            WebApp.setBackgroundColor(APP_THEME.background);
+            WebApp.setHeaderColor(APP_THEME.header);
         }
 
         WebApp.onEvent("themeChanged", handleThemeChange);

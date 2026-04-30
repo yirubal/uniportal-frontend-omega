@@ -38,7 +38,7 @@ export default function PerformanceScreen() {
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate("/home")} label="Home" />
                         <p className="app-section-label">Performance</p>
-                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">Track your growth over time</h1>
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">Track your growth over time</h1>
                     </div>
                 </div>
                 <div className="app-scroll app-scroll-compact">
@@ -79,8 +79,8 @@ export default function PerformanceScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
                     <p className="app-section-label">Performance</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">Academic pulse</h1>
-                    <p className="mt-2 text-sm leading-relaxed text-[#53627D]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">Academic pulse</h1>
+                    <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
                         Keep the analytics dense, readable, and focused on what to revise next.
                     </p>
                 </div>
@@ -98,7 +98,7 @@ export default function PerformanceScreen() {
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <p className="app-section-label">Score over time</p>
-                            <p className="mt-2 text-base font-semibold text-[#18253D]">Recent sessions</p>
+                            <p className="mt-2 text-base font-semibold text-[#172B2F]">Recent sessions</p>
                         </div>
                         <span className="rounded-full bg-[#EAF8F1] px-3 py-2 text-xs font-bold text-[#2E9E73]">
                             {performance.score_over_time.length} sessions
@@ -109,9 +109,9 @@ export default function PerformanceScreen() {
                         {performance.score_over_time.map((point) => (
                             <div key={point.date} className="flex flex-1 flex-col items-center gap-2">
                                 <div className="relative w-full overflow-hidden rounded-t-[18px] bg-[#E6ECF7]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }}>
-                                    <div className="absolute inset-x-0 bottom-0 rounded-t-[18px] bg-[linear-gradient(180deg,#5F82FF_0%,#18253D_100%)]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }} />
+                                    <div className="absolute inset-x-0 bottom-0 rounded-t-[18px] bg-[linear-gradient(180deg,#5D8F88_0%,#172B2F_100%)]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }} />
                                 </div>
-                                <span className="text-[10px] font-semibold text-[#7F8CA5]">
+                                <span className="text-[10px] font-semibold text-[#70868B]">
                                     {new Date(point.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                                 </span>
                             </div>
@@ -128,7 +128,7 @@ export default function PerformanceScreen() {
                             </span>
                         ))}
                     </div>
-                    <p className="mt-4 text-sm leading-relaxed text-[#53627D]">
+                    <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
                         These need attention first. Pair topic-based practice with matching resources to improve recall.
                     </p>
                 </div>
@@ -140,13 +140,13 @@ export default function PerformanceScreen() {
                             <div key={course.course_name} className="app-panel-muted rounded-[24px] p-4">
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
-                                        <p className="text-sm font-semibold text-[#18253D]">{course.course_name}</p>
-                                        <p className="mt-1 text-xs text-[#7F8CA5]">{course.attempts} attempts</p>
+                                        <p className="text-sm font-semibold text-[#172B2F]">{course.course_name}</p>
+                                        <p className="mt-1 text-xs text-[#70868B]">{course.attempts} attempts</p>
                                     </div>
-                                    <span className="text-lg font-black text-[#18253D]">{course.average}%</span>
+                                    <span className="text-lg font-black text-[#172B2F]">{course.average}%</span>
                                 </div>
                                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E1E7F2]">
-                                    <div className="h-full rounded-full bg-[linear-gradient(90deg,#5F82FF_0%,#18253D_100%)]" style={{ width: `${course.average}%` }} />
+                                    <div className="h-full rounded-full bg-[linear-gradient(90deg,#5D8F88_0%,#172B2F_100%)]" style={{ width: `${course.average}%` }} />
                                 </div>
                             </div>
                         ))}

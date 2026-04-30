@@ -25,10 +25,10 @@ export default function ExitExamScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
                     <p className="app-section-label">Exit exams</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
                         Choose a timed exit exam path
                     </h1>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#53627D]">
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
                         Every exit exam path runs with a timer. Start from past years papers or model papers.
                     </p>
                 </div>
@@ -44,7 +44,7 @@ export default function ExitExamScreen() {
                     <div className="space-y-4">
                         <div className="app-sheet p-5">
                             <p className="app-section-label">Timed modes</p>
-                            <p className="mt-3 text-sm leading-relaxed text-[#53627D]">
+                            <p className="mt-3 text-sm leading-relaxed text-[#526B70]">
                                 Past years exit exams and exit exam models both use the timed simulation flow.
                             </p>
                         </div>
@@ -67,19 +67,19 @@ export default function ExitExamScreen() {
 
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-2">
-                                                <p className="text-sm font-semibold text-[#18253D]">
+                                                <p className="text-sm font-semibold text-[#172B2F]">
                                                     {meta.label}
                                                 </p>
-                                                <span className="rounded-full bg-[#F4F7FD] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#7F8CA5]">
+                                                <span className="rounded-full bg-[#F4F8F5] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#70868B]">
                                                     Timed
                                                 </span>
                                             </div>
-                                            <p className="mt-1 text-sm leading-relaxed text-[#53627D]">
+                                            <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
                                                 {meta.description}
                                             </p>
                                         </div>
 
-                                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F4F7FD] text-[#18253D]">
+                                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F4F8F5] text-[#172B2F]">
                                             <ArrowRight size={16} />
                                         </div>
                                     </button>

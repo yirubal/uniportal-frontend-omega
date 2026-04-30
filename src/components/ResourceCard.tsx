@@ -85,7 +85,7 @@ export default function ResourceCard({
                     )}
                 </div>
 
-                <p className="mt-3 line-clamp-2 min-h-[2.8rem] pr-2 text-[0.97rem] font-semibold leading-snug text-[#18253D]">
+                <p className="mt-3 line-clamp-2 min-h-[2.8rem] pr-2 text-[0.97rem] font-semibold leading-snug text-[#172B2F]">
                     {truncate(resource.title, 52)}
                 </p>
 
@@ -96,7 +96,7 @@ export default function ResourceCard({
                 </div>
             </div>
 
-            <div className={`mr-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full ${isLocked ? "bg-[rgba(245,229,226,0.96)] text-[#B75F57]" : "bg-[#18253D] text-white"}`}>
+            <div className={`mr-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full ${isLocked ? "bg-[rgba(245,229,226,0.96)] text-[#B75F57]" : "bg-[#172B2F] text-white"}`}>
                 {downloading ? <LoaderCircle size={18} className="animate-spin" /> : isLocked ? <Lock size={18} /> : <Download size={18} />}
             </div>
         </button>

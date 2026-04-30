@@ -158,6 +158,9 @@ This file is the durable handoff for future Codex sessions working in this repos
   - `window.Telegram.WebApp.ready()` is called again in the auth function before reading `initData`
   - the auth POST now uses native `fetch` with `JSON.stringify({ init_data: initData })` to avoid Axios/interceptor questions on the Telegram login request
   - keep this raw string behavior unchanged because Telegram signature validation is sensitive to any initData mutation
+- Telegram-native color override was disabled for app UI:
+  - `useTelegramChrome` now writes a fixed UniPortal palette into `--tg-*` variables instead of copying Telegram theme colors
+  - the global palette moved from saturated blue/navy toward softer green-slate, warm gold, and calm neutral surfaces for better readability inside Telegram
 
 ## Next Work
 

@@ -94,7 +94,7 @@ export default function ResourceViewerScreen() {
         return (
             <div className="app-screen">
                 <div className="app-scroll pt-12">
-                    <button onClick={() => navigate(-1)} className="mb-4 text-sm font-medium text-[#53627D]">
+                    <button onClick={() => navigate(-1)} className="mb-4 text-sm font-medium text-[#526B70]">
                         Back
                     </button>
                     <ErrorState message={error ?? "Resource not found."} onRetry={() => window.location.reload()} />
@@ -111,10 +111,10 @@ export default function ResourceViewerScreen() {
                     <p className="app-section-label">
                         {formatFileType(resource.file_type)}
                     </p>
-                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-[#18253D]">
+                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-[#172B2F]">
                         {resource.title}
                     </h1>
-                    <p className="mt-2 text-sm text-[#53627D]">
+                    <p className="mt-2 text-sm text-[#526B70]">
                         {selectedCourse?.code ? `${selectedCourse.code} · ` : ""}Updated {formatDate(resource.created_at)}
                     </p>
                 </div>
@@ -131,7 +131,7 @@ export default function ResourceViewerScreen() {
                         </span>
                     </div>
 
-                    <p className="mt-4 text-sm leading-relaxed text-[#53627D]">
+                    <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
                         {resource.description ?? "Resource details will appear here once backend content is available."}
                     </p>
 
@@ -160,12 +160,12 @@ export default function ResourceViewerScreen() {
                         </div>
                         <div>
                             <p className="app-section-label">Preview</p>
-                            <p className="mt-1 text-base font-semibold text-[#18253D]">What this pack usually contains</p>
+                            <p className="mt-1 text-base font-semibold text-[#172B2F]">What this pack usually contains</p>
                         </div>
                     </div>
 
                     <div className="mt-4 app-panel-muted rounded-[24px] p-4">
-                        <ul className="space-y-2 text-sm leading-relaxed text-[#53627D]">
+                        <ul className="space-y-2 text-sm leading-relaxed text-[#526B70]">
                             <li>Concise topic summaries and worked examples.</li>
                             <li>Exam traps, key terms, and short revision cues.</li>
                             <li>Practice prompts aligned to the course outline.</li>
@@ -195,8 +195,8 @@ export default function ResourceViewerScreen() {
                                     className="app-list-item"
                                 >
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-semibold text-[#18253D]">{item.title}</p>
-                                        <p className="mt-1 text-xs text-[#7F8CA5]">{formatFileType(item.file_type)}</p>
+                                        <p className="text-sm font-semibold text-[#172B2F]">{item.title}</p>
+                                        <p className="mt-1 text-xs text-[#70868B]">{formatFileType(item.file_type)}</p>
                                     </div>
                                 </button>
                             ))}
@@ -225,7 +225,7 @@ function MetaTile({ label, value }: { label: string; value: string }) {
     return (
         <div className="app-panel-muted rounded-[20px] p-4">
             <p className="app-section-label">{label}</p>
-            <p className="mt-2 text-sm font-semibold text-[#18253D]">{value}</p>
+            <p className="mt-2 text-sm font-semibold text-[#172B2F]">{value}</p>
         </div>
     );
 }

@@ -56,7 +56,7 @@ export default function TopBackButton({
             paddingBlock: "0.75rem",
         };
     const shadowClass = isSurfaceTone
-        ? "shadow-[0_10px_24px_rgba(24,37,61,0.08)]"
+        ? "shadow-[0_10px_24px_rgba(23,43,47,0.08)]"
         : "shadow-[0_10px_24px_rgba(7,14,28,0.2)]";
 
     return (

@@ -11,19 +11,19 @@ export default function SlowRequestLoader() {
             <div
                 role="status"
                 aria-live="polite"
-                className="app-panel flex w-full max-w-xs items-center gap-3 rounded-full px-4 py-3 shadow-[0_18px_40px_rgba(24,37,61,0.16)]"
+                className="app-panel flex w-full max-w-xs items-center gap-3 rounded-full px-4 py-3 shadow-[0_18px_40px_rgba(23,43,47,0.16)]"
             >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EEF3FF] text-[#2D5BFF]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EAF4F1] text-[#3F6F6A]">
                     <Wifi size={18} />
                 </div>
 
                 <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#18253D]">Syncing with server</p>
+                    <p className="text-sm font-semibold text-[#172B2F]">Syncing with server</p>
                     <div className="mt-1 flex items-center gap-1.5">
                         {[0, 1, 2].map((index) => (
                             <span
                                 key={index}
-                                className="inline-block h-2 w-2 rounded-full bg-[#2D5BFF]"
+                                className="inline-block h-2 w-2 rounded-full bg-[#3F6F6A]"
                                 style={{
                                     animation: "pulse 1.05s ease-in-out infinite",
                                     animationDelay: `${index * 0.16}s`,

@@ -44,10 +44,10 @@ export default function ResultsScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
                     <p className="app-section-label">Assessment complete</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
                         {mode === "simulation" ? "Simulation summary" : meta.resultsSummaryLabel}
                     </h1>
-                    <p className="mt-2 text-sm text-[#53627D]">
+                    <p className="mt-2 text-sm text-[#526B70]">
                         Review the score, pending items, and weak topics from the submitted attempt.
                     </p>
                 </div>
@@ -72,12 +72,12 @@ export default function ResultsScreen() {
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className="text-3xl">{emoji}</span>
-                            <span className="mt-1 text-xl font-black text-[#18253D]">{percentage}%</span>
+                            <span className="mt-1 text-xl font-black text-[#172B2F]">{percentage}%</span>
                         </div>
                     </div>
 
-                    <p className="mt-5 text-xl font-bold text-[#18253D]">{message}</p>
-                    <p className="mt-2 text-sm text-[#53627D]">
+                    <p className="mt-5 text-xl font-bold text-[#172B2F]">{message}</p>
+                    <p className="mt-2 text-sm text-[#526B70]">
                         Auto-graded score across {attemptSummary?.gradable_total ?? 0} gradable questions
                     </p>
 
@@ -94,10 +94,10 @@ export default function ResultsScreen() {
                             {Object.entries(attemptSummary.topic_breakdown).map(([topic, score]) => (
                                 <div key={topic} className="app-list-item">
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-semibold leading-relaxed text-[#18253D]">
+                                        <p className="text-sm font-semibold leading-relaxed text-[#172B2F]">
                                             {topic}
                                         </p>
-                                        <p className="mt-2 text-xs text-[#7F8CA5]">
+                                        <p className="mt-2 text-xs text-[#70868B]">
                                             {score}% topic score
                                         </p>
                                     </div>
@@ -130,9 +130,9 @@ export default function ResultsScreen() {
                     size="lg"
                     fullWidth
                     style={{
-                        backgroundColor: "#18253D",
+                        backgroundColor: "#172B2F",
                         color: "#FFFFFF",
-                        borderColor: "#18253D",
+                        borderColor: "#172B2F",
                     }}
                     onClick={handleRetry}
                 >

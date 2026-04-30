@@ -19,7 +19,7 @@ export default function EmptyState({
     return (
         <div className="app-state py-12">
             <span className="app-state-icon mb-4 text-3xl">{icon}</span>
-            <p className="mb-2 text-base font-semibold text-[#18253D]">{title}</p>
+            <p className="mb-2 text-base font-semibold text-[#172B2F]">{title}</p>
             {description && (
                 <p className="app-copy mb-6 max-w-xs">{description}</p>
             )}

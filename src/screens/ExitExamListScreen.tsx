@@ -74,10 +74,10 @@ export default function ExitExamListScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/exit-exam")} label="Exams" />
                     <p className="app-section-label">Exit exams</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
                         {meta.title}
                     </h1>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#53627D]">
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
                         {meta.description}
                     </p>
                 </div>
@@ -104,7 +104,7 @@ export default function ExitExamListScreen() {
                                 <p className="app-section-label">Topic clusters</p>
                                 <div className="mt-4 flex flex-wrap gap-2">
                                     {topics.map((topic) => (
-                                        <span key={topic.topic} className="rounded-full bg-[#EEF3FF] px-3 py-2 text-[12px] font-semibold text-[#4D6691]">
+                                        <span key={topic.topic} className="rounded-full bg-[#EAF4F1] px-3 py-2 text-[12px] font-semibold text-[#4D6691]">
                                             {topic.topic} · {topic.count}
                                         </span>
                                     ))}
@@ -140,8 +140,8 @@ export default function ExitExamListScreen() {
                                                 {exam.year}
                                             </span>
                                         </div>
-                                        <p className="mt-3 text-sm font-semibold leading-snug text-[#18253D]">{exam.title}</p>
-                                        <div className="mt-2 flex flex-wrap gap-3 text-xs font-medium text-[#7F8CA5]">
+                                        <p className="mt-3 text-sm font-semibold leading-snug text-[#172B2F]">{exam.title}</p>
+                                        <div className="mt-2 flex flex-wrap gap-3 text-xs font-medium text-[#70868B]">
                                             <span>{exam.total_questions} questions</span>
                                             <span>{formatDuration(exam.duration_minutes)}</span>
                                             <span>Timed simulation</span>
@@ -149,10 +149,10 @@ export default function ExitExamListScreen() {
                                     </div>
 
                                     <div className="flex flex-col items-end gap-2">
-                                        <span className="rounded-full bg-[#18253D] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                                        <span className="rounded-full bg-[#172B2F] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
                                             Rules
                                         </span>
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F4F7FD] text-[#18253D]">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F4F8F5] text-[#172B2F]">
                                             <TimerReset size={18} />
                                         </div>
                                     </div>
