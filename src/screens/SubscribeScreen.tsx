@@ -219,8 +219,8 @@ export default function SubscribeScreen() {
                                 type="button"
                                 onClick={() => setPaymentMethod(method)}
                                 className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${paymentMethod === method
-                                    ? "border-[#3F6F6A] bg-[#DCEBE7] text-[#172B2F] shadow-[0_8px_18px_rgba(63,111,106,0.12)]"
-                                    : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F] border-2 border-red-400"
+                                    ? "border-[#3F6F6A] bg-[#EAF4F1] text-[#172B2F]"
+                                    : "border-[rgba(23,43,47,0.10)] bg-whit3/80 text-[#172B2F]"
                                     }`}
                             >
                                 {method === "telebirr" ? "Telebirr" : "CBE"}
