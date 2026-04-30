@@ -183,6 +183,11 @@ This file is the durable handoff for future Codex sessions working in this repos
   - the payment proof field is now labeled as a payment reference instead of asking CBE users for a full sender account number
   - `LockedOverlay` now forces the premium upgrade CTA to dark background/white text so the `Upgrade from ETB 99` button cannot render white-on-white
   - verification after this pass: `npm run lint` and `npm run build` both passed
+- Subscription request UX follow-up:
+  - `SubscribeScreen` now has an inline `Request subscription` button directly after the payment reference field, while the sticky footer CTA uses the same request action
+  - submitting opens a status modal that shows request submission, pending payment processing, approved payment confirmation, or rejected payment messaging from `PaymentInstructions.status`
+  - primary request buttons use explicit inline brand fill colors so the global button reset cannot hide their backgrounds
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

@@ -1,4 +1,4 @@
-import { Check, Sparkles } from "lucide-react";
+import { Check, CheckCircle2, Clock3, Sparkles, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getPlans, getSubscriptionRequest, requestSubscription, type PaymentInstructions, type Plan } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
@@ -17,6 +17,7 @@ export default function SubscribeScreen() {
     const [loading, setLoading] = useState(true);
     const [requesting, setRequesting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [statusModalOpen, setStatusModalOpen] = useState(false);
     const paymentReferenceCopy =
         paymentMethod === "telebirr"
             ? {
@@ -35,8 +36,11 @@ export default function SubscribeScreen() {
             .then(([items, pendingRequest]) => {
                 setPlans(items);
                 setSelectedPlan(items[1]?.id ?? items[0]?.id ?? null);
-                if (pendingRequest?.status === "pending") {
+                if (pendingRequest) {
                     setInstructions(pendingRequest);
+                    if (pendingRequest.status === "approved") {
+                        setStatusModalOpen(true);
+                    }
                 }
             })
             .catch(() => setError("Failed to load subscription plans."))
@@ -48,11 +52,13 @@ export default function SubscribeScreen() {
 
         setRequesting(true);
         setError(null);
+        setStatusModalOpen(true);
 
         try {
             const response = await requestSubscription(selectedPlan, paymentMethod, paidFrom.trim());
             setInstructions(response);
         } catch {
+            setStatusModalOpen(false);
             setError("Failed to generate payment instructions.");
         } finally {
             setRequesting(false);
@@ -240,6 +246,22 @@ export default function SubscribeScreen() {
                             {paymentReferenceCopy.helper}
                         </span>
                     </label>
+                    <Button
+                        variant="primary"
+                        size="lg"
+                        fullWidth
+                        loading={requesting}
+                        disabled={!selectedPlan || !paidFrom.trim()}
+                        onClick={() => void handleRequest()}
+                        style={{
+                            backgroundColor: !selectedPlan || !paidFrom.trim() ? "#D5E1DD" : "#172B2F",
+                            borderColor: !selectedPlan || !paidFrom.trim() ? "#D5E1DD" : "#172B2F",
+                            color: !selectedPlan || !paidFrom.trim() ? "#344E53" : "#FFFFFF",
+                        }}
+                        className="mt-5"
+                    >
+                        Request subscription
+                    </Button>
                 </div>
 
                 {error && plans.length > 0 && <ErrorState message={error} />}
@@ -253,10 +275,22 @@ export default function SubscribeScreen() {
                     loading={requesting}
                     disabled={!selectedPlan || !paidFrom.trim()}
                     onClick={() => void handleRequest()}
+                    style={{
+                        backgroundColor: !selectedPlan || !paidFrom.trim() ? "#D5E1DD" : "#172B2F",
+                        borderColor: !selectedPlan || !paidFrom.trim() ? "#D5E1DD" : "#172B2F",
+                        color: !selectedPlan || !paidFrom.trim() ? "#344E53" : "#FFFFFF",
+                    }}
                 >
-                    Continue with premium
+                    Request subscription
                 </Button>
             </div>
+
+            <SubscriptionStatusModal
+                open={statusModalOpen}
+                requesting={requesting}
+                instructions={instructions}
+                onClose={() => setStatusModalOpen(false)}
+            />
         </div>
     );
 }
@@ -269,4 +303,108 @@ function PaymentOption({ label, primary, secondary }: { label: string; primary: 
             <p className="mt-1 text-xs font-semibold text-[#354F55]">{secondary}</p>
         </div>
     );
+}
+
+function SubscriptionStatusModal({
+    open,
+    requesting,
+    instructions,
+    onClose,
+}: {
+    open: boolean;
+    requesting: boolean;
+    instructions: PaymentInstructions | null;
+    onClose: () => void;
+}) {
+    if (!open) return null;
+
+    const status = requesting ? "submitting" : instructions?.status ?? "pending";
+    const config = getSubscriptionStatusConfig(status);
+    const Icon = config.icon;
+
+    return (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgba(10,22,40,0.46)] p-4 sm:items-center">
+            <div className="w-full max-w-md rounded-[28px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-5 shadow-[0_24px_60px_rgba(10,22,40,0.22)] backdrop-blur-xl">
+                <div
+                    className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
+                    style={{ backgroundColor: config.iconBg, color: config.iconColor }}
+                >
+                    <Icon size={26} className={requesting ? "animate-spin" : ""} />
+                </div>
+                <p className="app-section-label mt-5 text-center">{config.label}</p>
+                <h2 className="mt-2 text-center text-xl font-bold text-[#172B2F]">{config.title}</h2>
+                <p className="mt-3 text-center text-sm leading-relaxed text-[#526B70]">
+                    {config.description}
+                </p>
+                {instructions && !requesting && (
+                    <div className="mt-5 rounded-[20px] border border-[#CFE2DE] bg-[#EAF4F1] px-4 py-3">
+                        <p className="app-section-label">Reference</p>
+                        <p className="mt-1 break-words text-base font-bold text-[#172B2F]">{instructions.reference}</p>
+                        <p className="mt-1 text-sm font-semibold text-[#354F55]">
+                            {instructions.plan} · {formatETB(instructions.amount)}
+                        </p>
+                    </div>
+                )}
+                <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    disabled={requesting}
+                    onClick={onClose}
+                    style={{
+                        backgroundColor: requesting ? "#D5E1DD" : "#172B2F",
+                        borderColor: requesting ? "#D5E1DD" : "#172B2F",
+                        color: requesting ? "#344E53" : "#FFFFFF",
+                    }}
+                    className="mt-5"
+                >
+                    {requesting ? "Submitting..." : "Done"}
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+function getSubscriptionStatusConfig(status: PaymentInstructions["status"] | "submitting") {
+    if (status === "approved") {
+        return {
+            label: "Payment confirmed",
+            title: "Your subscription is active",
+            description: "Your payment has been confirmed. Premium study resources are now available on your account.",
+            icon: CheckCircle2,
+            iconBg: "#EAF8F1",
+            iconColor: "#2E9E73",
+        };
+    }
+
+    if (status === "rejected") {
+        return {
+            label: "Payment not confirmed",
+            title: "We could not confirm this payment",
+            description: "Please check your payment reference and submit the correct receipt or transaction reference again.",
+            icon: XCircle,
+            iconBg: "#FFF0ED",
+            iconColor: "#D95A50",
+        };
+    }
+
+    if (status === "submitting") {
+        return {
+            label: "Requesting subscription",
+            title: "Sending your request",
+            description: "Please wait while we submit your payment reference for review.",
+            icon: Clock3,
+            iconBg: "#EAF4F1",
+            iconColor: "#3F6F6A",
+        };
+    }
+
+    return {
+        label: "Payment processing",
+        title: "Your request is under review",
+        description: "Your payment reference has been sent. Once the payment is confirmed, this screen will show that your subscription is active.",
+        icon: Clock3,
+        iconBg: "#EAF4F1",
+        iconColor: "#3F6F6A",
+    };
 }
