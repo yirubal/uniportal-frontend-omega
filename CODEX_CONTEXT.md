@@ -155,6 +155,7 @@ This file is the durable handoff for future Codex sessions working in this repos
 - Verification after this pass: `npm run lint` and `npm run build` both passed.
 - Auth validation was tightened after backend integration feedback:
   - Telegram login now reads `window.Telegram.WebApp.initData` directly at auth time and sends it as `init_data` without encoding, decoding, parsing, or rebuilding
+  - the auth POST now uses native `fetch` with `JSON.stringify({ init_data: initData })` to avoid Axios/interceptor questions on the Telegram login request
   - keep this raw string behavior unchanged because Telegram signature validation is sensitive to any initData mutation
 
 ## Next Work

@@ -148,12 +148,27 @@ export function normalizeStudent(student: BackendStudent): Student {
 export const loginWithTelegram = async (
     initData: string
 ): Promise<LoginResponse> => {
-    const response = await client.post<{ token: string; student: BackendStudent }>("/api/auth/telegram/", {
-        init_data: initData,
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/telegram/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            init_data: initData,
+        }),
     });
+
+    if (!response.ok) {
+        throw {
+            status: response.status,
+            message: "Authentication failed. Please try again.",
+            upgrade_required: false,
+        };
+    }
+
+    const data = await response.json() as { token: string; student: BackendStudent };
+
     return {
-        token: response.data.token,
-        student: normalizeStudent(response.data.student),
+        token: data.token,
+        student: normalizeStudent(data.student),
     };
 };
 
