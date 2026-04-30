@@ -1,18 +1,5 @@
 import WebApp from "@twa-dev/sdk";
 
-type TelegramWindow = Window & {
-    Telegram?: {
-        WebApp?: {
-            initData?: string;
-        };
-    };
-};
-
-export const getRawTelegramInitData = () => {
-    if (typeof window === "undefined") return WebApp.initData;
-    return (window as TelegramWindow).Telegram?.WebApp?.initData ?? WebApp.initData;
-};
-
 export const useTelegram = () => {
     const user = WebApp.initDataUnsafe?.user;
     const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
@@ -29,7 +16,6 @@ export const useTelegram = () => {
 
     return {
         webApp: WebApp,
-        initData: getRawTelegramInitData(),
         user,
         colorScheme: WebApp.colorScheme,
         themeParams: WebApp.themeParams,

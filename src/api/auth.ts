@@ -7,6 +7,15 @@ const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
 const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 const DEV_STUDENT_STORAGE_KEY = "uniportal-dev-student";
 
+type TelegramWindow = Window & {
+    Telegram?: {
+        WebApp?: {
+            initData?: string;
+            ready?: () => void;
+        };
+    };
+};
+
 interface BackendStudent {
     id?: number;
     telegram_id: number;
@@ -28,6 +37,22 @@ interface BackendStudent {
 interface LoginResponse {
     token: string;
     student: Student;
+}
+
+export class MissingTelegramInitDataError extends Error {
+    constructor() {
+        super("Telegram initData is required.");
+        this.name = "MissingTelegramInitDataError";
+    }
+}
+
+export function isMissingTelegramInitDataError(error: unknown) {
+    return error instanceof MissingTelegramInitDataError;
+}
+
+function getTelegramWebApp() {
+    if (typeof window === "undefined") return undefined;
+    return (window as TelegramWindow).Telegram?.WebApp;
 }
 
 async function getMockStudent(): Promise<Student | null> {
@@ -145,9 +170,20 @@ export function normalizeStudent(student: BackendStudent): Student {
     };
 }
 
-export const loginWithTelegram = async (
-    initData: string
-): Promise<LoginResponse> => {
+export const loginWithTelegram = async (): Promise<LoginResponse> => {
+    const webApp = getTelegramWebApp();
+    webApp?.ready?.();
+    const initData = webApp?.initData;
+
+    console.info("initData exists:", Boolean(initData));
+    console.info("initData length:", initData?.length ?? 0);
+    console.info("initData preview:", initData?.substring(0, 100) ?? "");
+
+    if (!initData) {
+        console.error("initData is empty - app may not be running inside Telegram");
+        throw new MissingTelegramInitDataError();
+    }
+
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/telegram/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
