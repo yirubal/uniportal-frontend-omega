@@ -8,10 +8,10 @@ interface LockedOverlayProps {
 }
 
 export default function LockedOverlay({
-                                          feature,
-                                          description,
-                                          price = "ETB 99",
-                                      }: LockedOverlayProps) {
+    feature,
+    description,
+    price = "ETB 99",
+}: LockedOverlayProps) {
     const navigate = useNavigate();
 
     return (

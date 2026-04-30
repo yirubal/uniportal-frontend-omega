@@ -161,6 +161,17 @@ This file is the durable handoff for future Codex sessions working in this repos
 - Telegram-native color override was disabled for app UI:
   - `useTelegramChrome` now writes a fixed UniPortal palette into `--tg-*` variables instead of copying Telegram theme colors
   - the global palette moved from saturated blue/navy toward softer green-slate, warm gold, and calm neutral surfaces for better readability inside Telegram
+- Started UI/UX polishing from the exam upgrade path:
+  - shared `Button` disabled states now use explicit readable colors instead of opacity-based gray/white contrast
+  - the locked premium CTA that says `Upgrade from ETB 99` keeps the same primary-button treatment as the rest of the app
+  - `SubscribeScreen` was restyled for stronger contrast across premium benefits, selected plan cards, payment method buttons, payment reference, and payment option text
+  - verification after this pass: `npm run lint` and `npm run build` both passed
+- Implemented profile-first content tailoring after onboarding:
+  - added `src/hooks/useStudentProfile.ts` as the shared reader for the saved department/program/year/period profile
+  - `ResourcesScreen` now opens on the saved-profile course shelf first, with `Change filters` and `Edit profile` as secondary actions
+  - `PracticeSetupScreen` now opens on the saved-profile course shelf for both quiz and past-exam paths before loading `/quiz/list`
+  - `ExitExamScreen` and `ExitExamListScreen` now show saved-profile context in their copy while continuing to load exit exams from the student department
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

@@ -6,6 +6,7 @@ import LockedOverlay from "../components/LockedOverlay";
 import TopBackButton from "../components/TopBackButton";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import { useAccess } from "../hooks/useAccess";
+import { useStudentProfile } from "../hooks/useStudentProfile";
 import { useAuthStore } from "../store/authStore";
 import { useQuizStore } from "../store/quizStore";
 import { formatDuration } from "../utils/format";
@@ -20,6 +21,7 @@ export default function ExitExamListScreen() {
     const { category } = useParams();
     const { student } = useAuthStore();
     const { canAccessExitExam } = useAccess();
+    const profile = useStudentProfile();
     const resetAttempt = useQuizStore((state) => state.resetAttempt);
 
     const [exams, setExams] = useState<ExamPaper[]>([]);
@@ -78,7 +80,9 @@ export default function ExitExamListScreen() {
                         {meta.title}
                     </h1>
                     <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
-                        {meta.description}
+                        {profile.hasCompleteProfile
+                            ? `${meta.description} Showing papers from your saved ${profile.profileLabel.toLowerCase()} profile.`
+                            : meta.description}
                     </p>
                 </div>
             </div>

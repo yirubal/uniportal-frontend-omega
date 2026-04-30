@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import LockedOverlay from "../components/LockedOverlay";
 import TopBackButton from "../components/TopBackButton";
 import { useAccess } from "../hooks/useAccess";
+import { useStudentProfile } from "../hooks/useStudentProfile";
 import {
     EXIT_EXAM_CATEGORIES,
     getExitExamMeta,
@@ -18,6 +19,7 @@ function getExitExamIcon(category: ExitExamCategory) {
 export default function ExitExamScreen() {
     const navigate = useNavigate();
     const { canAccessExitExam } = useAccess();
+    const profile = useStudentProfile();
 
     return (
         <div className="app-screen">
@@ -29,7 +31,9 @@ export default function ExitExamScreen() {
                         Choose a timed exit exam path
                     </h1>
                     <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
-                        Every exit exam path runs with a timer. Start from past years papers or model papers.
+                        {profile.hasCompleteProfile
+                            ? `Timed exams are tailored from your saved ${profile.profileLabel.toLowerCase()} profile.`
+                            : "Every exit exam path runs with a timer. Start from past years papers or model papers."}
                     </p>
                 </div>
             </div>
@@ -43,9 +47,13 @@ export default function ExitExamScreen() {
                 ) : (
                     <div className="space-y-4">
                         <div className="app-sheet p-5">
-                            <p className="app-section-label">Timed modes</p>
+                            <p className="app-section-label">
+                                {profile.hasCompleteProfile ? "Saved profile" : "Timed modes"}
+                            </p>
                             <p className="mt-3 text-sm leading-relaxed text-[#526B70]">
-                                Past years exit exams and exit exam models both use the timed simulation flow.
+                                {profile.hasCompleteProfile
+                                    ? `Showing exit exam paths for your current academic scope: ${profile.profileLabel}.`
+                                    : "Past years exit exams and exit exam models both use the timed simulation flow."}
                             </p>
                         </div>
 

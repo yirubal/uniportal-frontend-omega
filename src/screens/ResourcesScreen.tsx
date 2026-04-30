@@ -6,7 +6,7 @@ import ResourceCard from "../components/ResourceCard";
 import TopBackButton from "../components/TopBackButton";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import { useAccess } from "../hooks/useAccess";
-import { useAuthStore } from "../store/authStore";
+import { useStudentProfile } from "../hooks/useStudentProfile";
 import { useContentStore } from "../store/contentStore";
 import type { Course, Department } from "../store/contentStore";
 import { getPeriodLabel, getPeriodOptions, getProgramLabel, PROGRAM_OPTIONS, type ProgramType, YEAR_OPTIONS } from "../utils/periods";
@@ -22,38 +22,59 @@ const FILTER_TABS: { key: FilterType; label: string }[] = [
 
 export default function ResourcesScreen() {
     const navigate = useNavigate();
-    const { student } = useAuthStore();
+    const profile = useStudentProfile();
     const store = useContentStore();
     const { canAccessResource } = useAccess();
 
     const [view, setView] = useState<"select" | "list">("select");
+    const [customizingProfile, setCustomizingProfile] = useState(false);
     const [departments, setDepartments] = useState<Department[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [loadingDepts, setLoadingDepts] = useState(true);
     const [loadingCourses, setLoadingCourses] = useState(false);
     const [loadingResources, setLoadingResources] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [selDept, setSelDept] = useState<Department | null>(store.selectedDepartment);
-    const [selProgram, setSelProgram] = useState<ProgramType | null>(store.selectedProgram ?? student?.preferred_program ?? null);
-    const [selYear, setSelYear] = useState<number | null>(store.selectedYear ?? student?.preferred_year ?? null);
-    const [selPeriod, setSelPeriod] = useState<number | null>(store.selectedPeriod ?? student?.preferred_period ?? null);
+    const [selDept, setSelDept] = useState<Department | null>(
+        store.selectedDepartment?.id === profile.departmentId ? store.selectedDepartment : null
+    );
+    const [selProgram, setSelProgram] = useState<ProgramType | null>(profile.program ?? store.selectedProgram ?? null);
+    const [selYear, setSelYear] = useState<number | null>(profile.year ?? store.selectedYear ?? null);
+    const [selPeriod, setSelPeriod] = useState<number | null>(profile.period ?? store.selectedPeriod ?? null);
     const [selCourse, setSelCourse] = useState<Course | null>(null);
     const [filterType, setFilterType] = useState<FilterType>("All");
     const [departmentSearch, setDepartmentSearch] = useState("");
     const [search, setSearch] = useState("");
+    const useTailoredStart = profile.hasCompleteProfile && !customizingProfile;
+    const canLoadCourseShelf = Boolean(selDept && selProgram && selYear && selPeriod);
+    const selectedDepartmentName = selDept?.name ?? "Your department";
 
     useEffect(() => {
         getDepartments()
             .then((items) => {
                 setDepartments(items);
-                if (!selDept && student?.preferred_department) {
-                    const preferred = items.find((item) => item.id === student.preferred_department);
-                    if (preferred) setSelDept(preferred);
-                }
             })
             .catch(() => setError("Failed to load departments."))
             .finally(() => setLoadingDepts(false));
-    }, [selDept, student?.preferred_department]);
+    }, []);
+
+    useEffect(() => {
+        if (!profile.hasCompleteProfile || customizingProfile) return;
+
+        setSelProgram(profile.program);
+        setSelYear(profile.year);
+        setSelPeriod(profile.period);
+
+        const preferred = departments.find((item) => item.id === profile.departmentId) ?? null;
+        if (preferred) setSelDept(preferred);
+    }, [
+        customizingProfile,
+        departments,
+        profile.departmentId,
+        profile.hasCompleteProfile,
+        profile.period,
+        profile.program,
+        profile.year,
+    ]);
 
     useEffect(() => {
         const validPeriods = getPeriodOptions(selProgram).map((item) => item.value);
@@ -142,9 +163,13 @@ export default function ResourcesScreen() {
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate("/home")} label="Home" />
                         <p className="app-section-label">Resource library</p>
-                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">Choose a course shelf</h1>
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
+                            {useTailoredStart ? "Your course shelf" : "Choose a course shelf"}
+                        </h1>
                         <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
-                            Start with department, program, year, period, and course so the library stays compact and useful.
+                            {useTailoredStart
+                                ? "Resources are loaded from the profile you saved during setup."
+                                : "Start with department, program, year, period, and course so the library stays compact and useful."}
                         </p>
                     </div>
                 </div>
@@ -156,108 +181,146 @@ export default function ResourcesScreen() {
                                 <Sparkles size={18} />
                             </div>
                             <div>
-                                <p className="app-section-label">Smart start</p>
-                                <p className="mt-2 text-base font-semibold text-[#172B2F]">Start with the right course context</p>
+                                <p className="app-section-label">
+                                    {useTailoredStart ? "Saved profile" : "Smart start"}
+                                </p>
+                                <p className="mt-2 text-base font-semibold text-[#172B2F]">
+                                    {useTailoredStart ? selectedDepartmentName : "Start with the right course context"}
+                                </p>
                                 <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
-                                    This keeps management case notes, accounting worksheets, and future computing resources separated cleanly.
+                                    {useTailoredStart
+                                        ? profile.profileLabel
+                                        : "This keeps management case notes, accounting worksheets, and future computing resources separated cleanly."}
                                 </p>
                             </div>
                         </div>
-                    </div>
-
-                    <SelectorGroup
-                        label="Department"
-                        loading={loadingDepts}
-                        items={filteredDepartments}
-                        value={selDept?.id ?? null}
-                        onSelect={(item) => setSelDept(item)}
-                        getKey={(item) => item.id}
-                        getLabel={(item) => item.name}
-                        getMeta={(item) => item.code}
-                        searchValue={departmentSearch}
-                        onSearchChange={setDepartmentSearch}
-                        searchPlaceholder="Search departments by name"
-                    />
-
-                    <div>
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                            <p className="app-section-label">Program</p>
-                            {selProgram && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF6DF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#B27614]">
-                                    <Check size={12} />
-                                    {getProgramLabel(selProgram)}
-                                </span>
-                            )}
-                        </div>
-                        <div className="mb-5 flex gap-2">
-                            {PROGRAM_OPTIONS.map((program) => (
+                        {useTailoredStart && (
+                            <div className="mt-4 flex items-center justify-between gap-3">
                                 <button
-                                    key={program.value}
-                                    onClick={() => setSelProgram(program.value)}
-                                    className={`app-sheet flex min-h-[5rem] flex-1 items-center justify-center rounded-[20px] px-4 py-3 text-center ${selProgram === program.value ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                    type="button"
+                                    onClick={() => setCustomizingProfile(true)}
+                                    className="flex-1 rounded-full border border-[rgba(23,43,47,0.10)] bg-white/85 px-3.5 py-2 text-xs font-bold text-[#172B2F]"
                                 >
-                                    <p className="text-sm font-bold text-[#172B2F]">{program.label}</p>
+                                    Change filters
                                 </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div>
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                            <p className="app-section-label">Year</p>
-                            {selYear && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF4F1] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#3F6F6A]">
-                                    <Check size={12} />
-                                    Year {selYear}
-                                </span>
-                            )}
-                        </div>
-                        <div className="app-grid-2">
-                            {YEAR_OPTIONS.map((year) => (
                                 <button
-                                    key={year}
-                                    onClick={() => setSelYear(year)}
-                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selYear === year ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                    type="button"
+                                    onClick={() => navigate("/onboarding")}
+                                    className="flex-1 rounded-full bg-[#EAF4F1] px-3.5 py-2 text-xs font-bold text-[#234C48]"
                                 >
-                                    <p className="app-title text-[1.8rem] font-bold text-[#172B2F]">{year}</p>
-                                    <p className="mt-1 text-sm text-[#526B70]">
-                                        {selYear === year ? "Selected" : `Year ${year}`}
-                                    </p>
+                                    Edit profile
                                 </button>
-                            ))}
-                        </div>
+                            </div>
+                        )}
                     </div>
 
-                    <div>
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                            <p className="app-section-label">Period</p>
-                            {selPeriod && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF8F1] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2E9E73]">
-                                    <Check size={12} />
-                                    {getPeriodLabel(selPeriod, selProgram)}
-                                </span>
-                            )}
-                        </div>
-                        <div className="app-grid-2">
-                            {getPeriodOptions(selProgram).map((period) => (
-                                <button
-                                    key={period.value}
-                                    onClick={() => setSelPeriod(period.value)}
-                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selPeriod === period.value ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
-                                >
-                                    <p className="app-title text-[1.3rem] font-bold text-[#172B2F]">{period.label}</p>
-                                    <p className="mt-1 text-sm text-[#526B70]">
-                                        {selPeriod === period.value ? "Selected" : period.label}
-                                    </p>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                    {!useTailoredStart && (
+                        <>
+                            <SelectorGroup
+                                label="Department"
+                                loading={loadingDepts}
+                                items={filteredDepartments}
+                                value={selDept?.id ?? null}
+                                onSelect={(item) => setSelDept(item)}
+                                getKey={(item) => item.id}
+                                getLabel={(item) => item.name}
+                                getMeta={(item) => item.code}
+                                searchValue={departmentSearch}
+                                onSearchChange={setDepartmentSearch}
+                                searchPlaceholder="Search departments by name"
+                            />
 
-                    {selDept && selProgram && selYear && selPeriod && (
+                            <div>
+                                <div className="mb-3 flex items-center justify-between gap-2">
+                                    <p className="app-section-label">Program</p>
+                                    {selProgram && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF6DF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#B27614]">
+                                            <Check size={12} />
+                                            {getProgramLabel(selProgram)}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="mb-5 flex gap-2">
+                                    {PROGRAM_OPTIONS.map((program) => (
+                                        <button
+                                            type="button"
+                                            key={program.value}
+                                            onClick={() => setSelProgram(program.value)}
+                                            className={`app-sheet flex min-h-[5rem] flex-1 items-center justify-center rounded-[20px] px-4 py-3 text-center ${selProgram === program.value ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                        >
+                                            <p className="text-sm font-bold text-[#172B2F]">{program.label}</p>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="mb-3 flex items-center justify-between gap-2">
+                                    <p className="app-section-label">Year</p>
+                                    {selYear && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF4F1] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#3F6F6A]">
+                                            <Check size={12} />
+                                            Year {selYear}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="app-grid-2">
+                                    {YEAR_OPTIONS.map((year) => (
+                                        <button
+                                            type="button"
+                                            key={year}
+                                            onClick={() => setSelYear(year)}
+                                            className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selYear === year ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                        >
+                                            <p className="app-title text-[1.8rem] font-bold text-[#172B2F]">{year}</p>
+                                            <p className="mt-1 text-sm text-[#526B70]">
+                                                {selYear === year ? "Selected" : `Year ${year}`}
+                                            </p>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="mb-3 flex items-center justify-between gap-2">
+                                    <p className="app-section-label">Period</p>
+                                    {selPeriod && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF8F1] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2E9E73]">
+                                            <Check size={12} />
+                                            {getPeriodLabel(selPeriod, selProgram)}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="app-grid-2">
+                                    {getPeriodOptions(selProgram).map((period) => (
+                                        <button
+                                            type="button"
+                                            key={period.value}
+                                            onClick={() => setSelPeriod(period.value)}
+                                            className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selPeriod === period.value ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                        >
+                                            <p className="app-title text-[1.3rem] font-bold text-[#172B2F]">{period.label}</p>
+                                            <p className="mt-1 text-sm text-[#526B70]">
+                                                {selPeriod === period.value ? "Selected" : period.label}
+                                            </p>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {(canLoadCourseShelf || useTailoredStart) && (
                         <div>
-                            <p className="app-section-label mb-3">Course</p>
-                            {loadingCourses ? (
+                            <div className="mb-3 flex items-center justify-between gap-2">
+                                <p className="app-section-label">Courses</p>
+                                {canLoadCourseShelf && (
+                                    <span className="rounded-full bg-[#F4F8F5] px-2.5 py-1 text-[11px] font-bold text-[#526B70]">
+                                        {getPeriodLabel(selPeriod, selProgram)}
+                                    </span>
+                                )}
+                            </div>
+                            {loadingDepts || loadingCourses || !canLoadCourseShelf ? (
                                 <div className="space-y-3">
                                     {[1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-[28px]" />)}
                                 </div>
