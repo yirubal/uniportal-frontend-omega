@@ -50,6 +50,11 @@ export default function LockedOverlay({
                     size="lg"
                     fullWidth
                     className="mt-6"
+                    style={{
+                        backgroundColor: "#172B2F",
+                        borderColor: "#172B2F",
+                        color: "#FFFFFF",
+                    }}
                     onClick={() => navigate("/subscribe")}
                 >
                     Upgrade from {price}

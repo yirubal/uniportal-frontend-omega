@@ -17,6 +17,18 @@ export default function SubscribeScreen() {
     const [loading, setLoading] = useState(true);
     const [requesting, setRequesting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const paymentReferenceCopy =
+        paymentMethod === "telebirr"
+            ? {
+                label: "Payment reference",
+                placeholder: "Phone number or Telebirr transaction ID",
+                helper: "Use the phone number or transaction ID shown on your Telebirr receipt.",
+            }
+            : {
+                label: "Payment reference",
+                placeholder: "CBE transaction or receipt reference",
+                helper: "CBE does not show the full sender account. Use the transaction/reference number from the receipt.",
+            };
 
     useEffect(() => {
         Promise.all([getPlans(), getSubscriptionRequest()])
@@ -120,11 +132,10 @@ export default function SubscribeScreen() {
                                         key={plan.id}
                                         aria-pressed={isSelected}
                                         onClick={() => setSelectedPlan(plan.id)}
-                                        className={`w-full rounded-[22px] border p-4 text-left transition-colors ${
-                                            isSelected
+                                        className={`w-full rounded-[22px] border p-4 text-left transition-colors ${isSelected
                                                 ? "border-[#3F6F6A] bg-[#EAF4F1] shadow-[0_10px_22px_rgba(63,111,106,0.10)]"
                                                 : "border-[rgba(23,43,47,0.10)] bg-white/85"
-                                        }`}
+                                            }`}
                                     >
                                         <div className="flex min-w-0 flex-col gap-3">
                                             <div className="min-w-0">
@@ -136,14 +147,13 @@ export default function SubscribeScreen() {
                                                 </p>
                                             </div>
                                             <div className="flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3">
-                                                <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
-                                                    isSelected
+                                                <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${isSelected
                                                         ? "bg-[#3F6F6A] text-white"
                                                         : "bg-[#F4F8F5] text-[#526B70]"
-                                                }`}>
+                                                    }`}>
                                                     {isSelected ? "Selected" : `${plan.days} days`}
                                                 </span>
-                                                <div className="shrink-0 text-right">
+                                                <div className="shrink-0 text-right px-6">
                                                     <p className="text-lg font-black leading-tight text-[#172B2F]">
                                                         {formatETB(plan.price)}
                                                     </p>
@@ -208,24 +218,26 @@ export default function SubscribeScreen() {
                                 key={method}
                                 type="button"
                                 onClick={() => setPaymentMethod(method)}
-                                className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${
-                                    paymentMethod === method
-                                        ? "border-[#3F6F6A] bg-[#EAF4F1] text-[#234C48] shadow-[0_8px_18px_rgba(63,111,106,0.10)]"
+                                className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${paymentMethod === method
+                                        ? "border-[#3F6F6A] bg-[#DCEBE7] text-[#172B2F] shadow-[0_8px_18px_rgba(63,111,106,0.12)]"
                                         : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F]"
-                                }`}
+                                    }`}
                             >
                                 {method === "telebirr" ? "Telebirr" : "CBE"}
                             </button>
                         ))}
                     </div>
                     <label className="mt-4 block">
-                        <span className="app-section-label">Paid from</span>
+                        <span className="app-section-label">{paymentReferenceCopy.label}</span>
                         <input
                             value={paidFrom}
                             onChange={(event) => setPaidFrom(event.target.value)}
-                            placeholder={paymentMethod === "telebirr" ? "Phone number used for payment" : "Bank account used for payment"}
+                            placeholder={paymentReferenceCopy.placeholder}
                             className="app-input mt-3"
                         />
+                        <span className="mt-2 block text-xs font-medium leading-relaxed text-[#526B70]">
+                            {paymentReferenceCopy.helper}
+                        </span>
                     </label>
                 </div>
 

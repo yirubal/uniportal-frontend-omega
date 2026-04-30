@@ -177,6 +177,12 @@ This file is the durable handoff for future Codex sessions working in this repos
   - plan cards now use neutral surfaces, green-slate selected state, dark readable text, and stacked price/duration rows to avoid cramped mobile alignment
   - payment instructions and payment method controls now use the same green-slate brand treatment as other selected states
   - verification after this pass: `npm run lint` and `npm run build` both passed
+- Follow-up subscription/payment proof polish:
+  - kept the extra pricing-side spacing that prevents plan duration/price text from crowding the card edge
+  - selected payment methods now use a stronger green-slate selected fill
+  - the payment proof field is now labeled as a payment reference instead of asking CBE users for a full sender account number
+  - `LockedOverlay` now forces the premium upgrade CTA to dark background/white text so the `Upgrade from ETB 99` button cannot render white-on-white
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 
