@@ -1,8 +1,16 @@
 import client from "./client";
-import { AttemptSummary, Question, QuizMode } from "../store/quizStore";
+import {
+    AttemptSummary,
+    PracticeContentType,
+    Question,
+    QuizMode,
+} from "../store/quizStore";
+import type { ExitExamCategory } from "../utils/exitExams";
+import { getPracticeContentMeta } from "../utils/practice";
 
 const isDev = import.meta.env.DEV;
 const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
+const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
 async function getMocks() {
     if (!isDev) return null;
@@ -10,7 +18,8 @@ async function getMocks() {
 }
 
 export const getExamQuestions = async (
-    examPaperId: number
+    examPaperId: number,
+    mode: "practice" | "simulation" = "practice"
 ): Promise<Question[]> => {
     if (forceDevMocks) {
         const mocks = await getMocks();
@@ -22,7 +31,8 @@ export const getExamQuestions = async (
 
     try {
         const response = await client.get<Question[]>(
-            `/api/exams/${examPaperId}/questions/`
+            `/api/exams/${examPaperId}/questions/`,
+            { params: { mode } }
         );
         return response.data;
     } catch (err) {
@@ -40,6 +50,7 @@ export interface ExamPaper {
     title: string;
     course: number;
     exam_type: "quiz" | "final" | "exit";
+    exit_category?: ExitExamCategory | null;
     year: number;
     duration_minutes: number;
     total_questions: number;
@@ -98,6 +109,16 @@ export const getCourseQuizzes = async (
     return getExamPapers({ type: "quiz", course: courseId });
 };
 
+export const getCoursePracticePapers = async (
+    courseId: number,
+    practiceContentType: PracticeContentType
+): Promise<ExamPaper[]> => {
+    return getExamPapers({
+        type: getPracticeContentMeta(practiceContentType).apiExamType,
+        course: courseId,
+    });
+};
+
 export const getExitExams = async (
     departmentId: number
 ): Promise<ExamPaper[]> => {
@@ -141,6 +162,15 @@ export interface AttemptResponse extends AttemptSummary {}
 export const submitAttempt = async (
     payload: SubmitAttemptPayload
 ): Promise<AttemptResponse> => {
+    const requestPayload = {
+        exam_paper_id: payload.exam_paper,
+        mode: payload.mode,
+        answers: Object.entries(payload.answers).map(([questionId, selected]) => ({
+            question_id: Number(questionId),
+            selected_option: selected,
+        })),
+    };
+
     if (forceDevMocks) {
         const mocks = await getMocks();
         if (mocks) {
@@ -148,19 +178,14 @@ export const submitAttempt = async (
             const questions = payload.exam_paper
                 ? mocks.getMockExamQuestions(payload.exam_paper)
                 : [];
-            const answers = Object.entries(payload.answers).map(([questionId, selected]) => ({
-                question_id: Number(questionId),
-                selected_option: selected,
-            }));
-
-            return mocks.evaluateMockAttempt(questions, answers, payload.mode);
+            return mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode);
         }
     }
 
     try {
         const response = await client.post<AttemptResponse>(
             "/api/quiz/attempts/",
-            payload
+            requestPayload
         );
         return response.data;
     } catch (err) {
@@ -170,18 +195,48 @@ export const submitAttempt = async (
             const questions = payload.exam_paper
                 ? mocks.getMockExamQuestions(payload.exam_paper)
                 : [];
-            const answers = Object.entries(payload.answers).map(([questionId, selected]) => ({
-                question_id: Number(questionId),
-                selected_option: selected,
-            }));
+            return mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode);
+        }
+        throw err;
+    }
+};
 
-            return mocks.evaluateMockAttempt(questions, answers, payload.mode);
+export const getExitExamTopicQuestions = async (
+    departmentId: number,
+    topic: string
+): Promise<Question[]> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock exit exam topic questions");
+            return mocks.getMockExitExamTopicQuestions(departmentId, topic);
+        }
+    }
+
+    try {
+        const response = await client.get<Question[]>("/api/exit-exams/topics/questions/", {
+            params: { department: departmentId, topic },
+        });
+        return response.data;
+    } catch (err) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Using mock exit exam topic questions");
+            return mocks.getMockExitExamTopicQuestions(departmentId, topic);
         }
         throw err;
     }
 };
 
 export const getMyAttempts = async () => {
+    if (forceDevMocks || (isDev && isLocalDevHost)) {
+        console.info("[dev] Using mock attempts");
+        return [
+            { id: 1, score: 7, total: 10, mode: "practice", created_at: "2026-03-01T09:20:00Z" },
+            { id: 2, score: 5, total: 6, mode: "simulation", created_at: "2026-03-10T14:10:00Z" },
+        ];
+    }
+
     try {
         const response = await client.get("/api/quiz/attempts/");
         return response.data;
@@ -212,6 +267,14 @@ export interface Performance {
 }
 
 export const getMyPerformance = async (): Promise<Performance> => {
+    if (forceDevMocks || (isDev && isLocalDevHost)) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Using mock performance");
+            return mocks.MOCK_PERFORMANCE;
+        }
+    }
+
     try {
         const response = await client.get<Performance>(
             "/api/students/me/performance/"
@@ -236,9 +299,23 @@ export interface Plan {
 }
 
 export interface PaymentInstructions {
-    instructions: string;
     reference: string;
+    plan: string;
+    amount: number;
+    days: number;
+    status: "pending" | "approved" | "rejected";
     note: string;
+    instructions?: string;
+    payment_options: {
+        telebirr?: {
+            number: string;
+            name: string;
+        };
+        cbe?: {
+            account: string;
+            name: string;
+        };
+    };
 }
 
 export const getPlans = async (): Promise<Plan[]> => {
@@ -256,12 +333,18 @@ export const getPlans = async (): Promise<Plan[]> => {
 };
 
 export const requestSubscription = async (
-    planId: string
+    planId: string,
+    paymentMethod: "telebirr" | "cbe",
+    paidFrom: string
 ): Promise<PaymentInstructions> => {
     try {
         const response = await client.post<PaymentInstructions>(
             "/api/subscription/request/",
-            { plan: planId }
+            {
+                plan: planId,
+                payment_method: paymentMethod,
+                paid_from: paidFrom,
+            }
         );
         return response.data;
     } catch (err) {
@@ -272,6 +355,24 @@ export const requestSubscription = async (
                 ...mocks.MOCK_PAYMENT_INSTRUCTIONS,
                 reference: `${mocks.MOCK_PAYMENT_INSTRUCTIONS.reference}-${planId.toUpperCase()}`,
             };
+        }
+        throw err;
+    }
+};
+
+export const getSubscriptionRequest = async (): Promise<PaymentInstructions | null> => {
+    try {
+        const response = await client.get<PaymentInstructions>("/api/subscription/request/");
+        return response.data;
+    } catch (err) {
+        if (typeof err === "object" && err !== null && "status" in err && err.status === 404) {
+            return null;
+        }
+
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Using mock pending subscription request");
+            return null;
         }
         throw err;
     }

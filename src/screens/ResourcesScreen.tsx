@@ -9,6 +9,7 @@ import { useAccess } from "../hooks/useAccess";
 import { useAuthStore } from "../store/authStore";
 import { useContentStore } from "../store/contentStore";
 import type { Course, Department } from "../store/contentStore";
+import { getPeriodLabel, getPeriodOptions, getProgramLabel, PROGRAM_OPTIONS, type ProgramType, YEAR_OPTIONS } from "../utils/periods";
 
 type FilterType = "All" | "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
 const INTERACTIVE_RESOURCE_TYPES = new Set<FilterType>(["past_exam", "exit_exam"]);
@@ -18,9 +19,6 @@ const FILTER_TABS: { key: FilterType; label: string }[] = [
     { key: "lecture_note", label: "Notes" },
     { key: "worksheet", label: "Worksheets" },
 ];
-
-const YEARS = [1, 2, 3, 4];
-const SEMESTERS = [1, 2];
 
 export default function ResourcesScreen() {
     const navigate = useNavigate();
@@ -36,8 +34,9 @@ export default function ResourcesScreen() {
     const [loadingResources, setLoadingResources] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [selDept, setSelDept] = useState<Department | null>(store.selectedDepartment);
+    const [selProgram, setSelProgram] = useState<ProgramType | null>(store.selectedProgram ?? student?.preferred_program ?? null);
     const [selYear, setSelYear] = useState<number | null>(store.selectedYear ?? student?.preferred_year ?? null);
-    const [selSemester, setSelSemester] = useState<number | null>(store.selectedSemester ?? student?.preferred_semester ?? null);
+    const [selPeriod, setSelPeriod] = useState<number | null>(store.selectedPeriod ?? student?.preferred_period ?? null);
     const [selCourse, setSelCourse] = useState<Course | null>(null);
     const [filterType, setFilterType] = useState<FilterType>("All");
     const [departmentSearch, setDepartmentSearch] = useState("");
@@ -57,25 +56,33 @@ export default function ResourcesScreen() {
     }, [selDept, student?.preferred_department]);
 
     useEffect(() => {
-        if (!selDept || !selYear || !selSemester) return;
+        const validPeriods = getPeriodOptions(selProgram).map((item) => item.value);
+        if (selPeriod && !validPeriods.includes(selPeriod)) {
+            setSelPeriod(null);
+        }
+    }, [selPeriod, selProgram]);
+
+    useEffect(() => {
+        if (!selDept || !selProgram || !selYear || !selPeriod) return;
 
         setLoadingCourses(true);
         setCourses([]);
         setSelCourse(null);
 
-        getCourses(selDept.id, selYear, selSemester)
+        getCourses(selDept.id, selProgram, selYear, selPeriod)
             .then(setCourses)
             .catch(() => setError("Failed to load courses."))
             .finally(() => setLoadingCourses(false));
-    }, [selDept?.id, selYear, selSemester]);
+    }, [selDept?.id, selProgram, selYear, selPeriod]);
 
     const loadResources = useCallback(async (course: Course) => {
         setLoadingResources(true);
         setError(null);
 
         store.setSelectedDepartment(selDept);
+        store.setSelectedProgram(selProgram);
         store.setSelectedYear(selYear);
-        store.setSelectedSemester(selSemester);
+        store.setSelectedPeriod(selPeriod);
         store.setSelectedCourse(course);
 
         try {
@@ -87,7 +94,7 @@ export default function ResourcesScreen() {
         } finally {
             setLoadingResources(false);
         }
-    }, [selDept, selSemester, selYear, store]);
+    }, [selDept, selPeriod, selProgram, selYear, store]);
 
     const visibleResources = useMemo(() => {
         return store.resources.filter((resource) => !INTERACTIVE_RESOURCE_TYPES.has(resource.file_type as FilterType));
@@ -137,7 +144,7 @@ export default function ResourcesScreen() {
                         <p className="app-section-label">Resource library</p>
                         <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">Choose a course shelf</h1>
                         <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#53627D]">
-                            Start with department, year, semester, and course so the library stays compact and useful.
+                            Start with department, program, year, period, and course so the library stays compact and useful.
                         </p>
                     </div>
                 </div>
@@ -174,6 +181,30 @@ export default function ResourcesScreen() {
 
                     <div>
                         <div className="mb-3 flex items-center justify-between gap-2">
+                            <p className="app-section-label">Program</p>
+                            {selProgram && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF6DF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#B27614]">
+                                    <Check size={12} />
+                                    {getProgramLabel(selProgram)}
+                                </span>
+                            )}
+                        </div>
+                        <div className="mb-5 flex gap-2">
+                            {PROGRAM_OPTIONS.map((program) => (
+                                <button
+                                    key={program.value}
+                                    onClick={() => setSelProgram(program.value)}
+                                    className={`app-sheet flex min-h-[5rem] flex-1 flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selProgram === program.value ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                >
+                                    <p className="text-sm font-bold text-[#18253D]">{program.label}</p>
+                                    <p className="mt-1 text-xs text-[#53627D]">{program.description}</p>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div className="mb-3 flex items-center justify-between gap-2">
                             <p className="app-section-label">Year</p>
                             {selYear && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-[#EDF2FF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2D5BFF]">
@@ -183,7 +214,7 @@ export default function ResourcesScreen() {
                             )}
                         </div>
                         <div className="app-grid-2">
-                            {YEARS.map((year) => (
+                            {YEAR_OPTIONS.map((year) => (
                                 <button
                                     key={year}
                                     onClick={() => setSelYear(year)}
@@ -200,31 +231,31 @@ export default function ResourcesScreen() {
 
                     <div>
                         <div className="mb-3 flex items-center justify-between gap-2">
-                            <p className="app-section-label">Semester</p>
-                            {selSemester && (
+                            <p className="app-section-label">Period</p>
+                            {selPeriod && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF8F1] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2E9E73]">
                                     <Check size={12} />
-                                    Semester {selSemester}
+                                    {getPeriodLabel(selPeriod, selProgram)}
                                 </span>
                             )}
                         </div>
                         <div className="app-grid-2">
-                            {SEMESTERS.map((semester) => (
+                            {getPeriodOptions(selProgram).map((period) => (
                                 <button
-                                    key={semester}
-                                    onClick={() => setSelSemester(semester)}
-                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selSemester === semester ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    key={period.value}
+                                    onClick={() => setSelPeriod(period.value)}
+                                    className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selPeriod === period.value ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
                                 >
-                                    <p className="app-title text-[1.8rem] font-bold text-[#18253D]">{semester}</p>
+                                    <p className="app-title text-[1.3rem] font-bold text-[#18253D]">{period.label}</p>
                                     <p className="mt-1 text-sm text-[#53627D]">
-                                        {selSemester === semester ? "Selected" : `Semester ${semester}`}
+                                        {selPeriod === period.value ? "Selected" : period.label}
                                     </p>
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {selDept && selYear && selSemester && (
+                    {selDept && selProgram && selYear && selPeriod && (
                         <div>
                             <p className="app-section-label mb-3">Course</p>
                             {loadingCourses ? (
@@ -250,7 +281,9 @@ export default function ResourcesScreen() {
                                         >
                                             <div className="min-w-0 flex-1 pr-3">
                                                 <p className="text-base font-semibold text-[#18253D]">{course.name}</p>
-                                                <p className="mt-1 text-sm text-[#7F8CA5]">{course.code}</p>
+                                                <p className="mt-1 text-sm text-[#7F8CA5]">
+                                                    {course.code} · {getProgramLabel(selProgram)} · {getPeriodLabel(selPeriod, selProgram)}
+                                                </p>
                                             </div>
                                             <div className="rounded-full bg-[#18253D] px-3 py-2 text-xs font-bold text-white">
                                                 Open
@@ -360,7 +393,7 @@ export default function ResourcesScreen() {
                                 <div key={resource.id}>
                                     <ResourceCard
                                         resource={resource}
-                                        isLocked={!canAccessResource(resource.access_level)}
+                                        isLocked={resource.is_locked || !canAccessResource(resource.access_level)}
                                     />
                                     {!!resource.tags?.length && (
                                         <div className="ml-2 mt-2 flex flex-wrap gap-2">

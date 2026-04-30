@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Question } from "../store/quizStore";
+import type { Question } from "../store/quizStore";
 import { useTelegram } from "../hooks/useTelegram";
+import { getQuestionOptions, getResolvedQuestionType, splitMatchingPair } from "../utils/questions";
 
 interface QuestionCardProps {
     question: Question;
@@ -9,6 +10,7 @@ interface QuestionCardProps {
     selectedAnswer: string | null;
     onSelect: (answer: string) => void;
     simulationMode?: boolean;
+    showQuestionType?: boolean;
 }
 
 const OPTION_LABELS: Record<string, string> = {
@@ -26,62 +28,28 @@ export default function QuestionCard({
     selectedAnswer,
     onSelect,
     simulationMode = false,
+    showQuestionType = true,
 }: QuestionCardProps) {
     const { haptic } = useTelegram();
     const [draftAnswer, setDraftAnswer] = useState(selectedAnswer ?? "");
     const [showHint, setShowHint] = useState(false);
-    const optionKeys = getOptionKeys(question);
-    const isTextQuestion = isFreeTextQuestion(question.question_type);
+    const optionEntries = getQuestionOptions(question);
+    const questionType = getResolvedQuestionType(question);
+    const hasSavedAnswer = hasMeaningfulAnswer(questionType, selectedAnswer);
+    const progressPercent = ((questionNumber - 1) / totalQuestions) * 100;
 
     useEffect(() => {
         setDraftAnswer(selectedAnswer ?? "");
         setShowHint(false);
-    }, [question.id, selectedAnswer]);
+    }, [question.id]);
 
-    const getOptionText = (option: string): string => {
-        const map: Record<string, string | undefined> = {
-            a: question.option_a,
-            b: question.option_b,
-            c: question.option_c,
-            d: question.option_d,
-            e: question.option_e,
-        };
-        return map[option] ?? "";
-    };
+    const handleSaveTextAnswer = () => {
+        const nextAnswer = draftAnswer.trim();
+        if (!nextAnswer) return;
 
-    const getOptionStyle = (option: string): { border: string; bg: string; text: string; labelBg: string } => {
-        if (selectedAnswer === null) {
-            return {
-                border: "rgba(31, 53, 91, 0.08)",
-                bg: "rgba(239, 244, 249, 0.9)",
-                text: "#18253D",
-                labelBg: "rgba(224, 232, 241, 0.95)",
-            };
-        }
-
-        if (option === selectedAnswer) {
-            return {
-                border: "#0A1628",
-                bg: simulationMode ? "#DDE6F2" : "#E5ECF6",
-                text: "#0A1628",
-                labelBg: "#0A1628",
-            };
-        }
-        return {
-            border: "rgba(31, 53, 91, 0.08)",
-            bg: "rgba(239, 244, 249, 0.72)",
-            text: "#4D607F",
-            labelBg: "rgba(224, 232, 241, 0.95)",
-        };
-    };
-
-    const handleSelect = (option: string) => {
-        if (selectedAnswer !== null) return;
         haptic.medium();
-        onSelect(option);
+        onSelect(nextAnswer);
     };
-
-    const progressPercent = ((questionNumber - 1) / totalQuestions) * 100;
 
     return (
         <div className="flex flex-col gap-4">
@@ -89,9 +57,9 @@ export default function QuestionCard({
                 <span className="rounded-full bg-[#F4F7FD] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
                     Question {questionNumber} of {totalQuestions}
                 </span>
-                {selectedAnswer && (
+                {hasSavedAnswer && (
                     <span className="rounded-full bg-[#EEF3FF] px-3 py-1.5 text-[11px] font-bold text-[#2D5BFF]">
-                        Answer saved
+                        {questionType === "matching" ? "Ready to continue" : "Answer saved"}
                     </span>
                 )}
             </div>
@@ -106,14 +74,19 @@ export default function QuestionCard({
             <div className="app-sheet overflow-hidden p-5">
                 <div className="mb-4 flex items-start justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2">
-                        {question.question_type && (
+                        {showQuestionType && questionType && (
                             <p className="app-section-label">
-                                {formatQuestionType(question.question_type)}
+                                {formatQuestionType(questionType)}
                             </p>
                         )}
                         {question.difficulty && (
                             <span className="rounded-full bg-[#FFF6DF] px-3 py-1.5 text-[11px] font-semibold capitalize text-[#B27614]">
                                 {question.difficulty}
+                            </span>
+                        )}
+                        {question.year_source && (
+                            <span className="rounded-full bg-[#F4F7FD] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
+                                {question.year_source}
                             </span>
                         )}
                     </div>
@@ -134,9 +107,11 @@ export default function QuestionCard({
                         </button>
                     )}
                 </div>
+
                 <p className="text-[1.02rem] font-semibold leading-relaxed text-[#1A1A1A]">
                     {question.text}
                 </p>
+
                 {question.hint && showHint && (
                     <div className="mt-4 rounded-[20px] border border-[rgba(31,53,91,0.06)] bg-[rgba(244,247,252,0.92)] px-4 py-3">
                         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7F8CA5]">Hint</p>
@@ -145,110 +120,162 @@ export default function QuestionCard({
                 )}
             </div>
 
-            {isTextQuestion ? (
-                <div className="app-sheet p-5">
-                    {question.question_type === "matching" && optionKeys.length > 0 && (
-                        <div className="mb-4 space-y-2">
-                            {optionKeys.map((option) => (
-                                <div key={option} className="rounded-[18px] bg-[rgba(233,239,247,0.88)] px-4 py-3 text-sm text-[#53627D]">
-                                    {getOptionText(option)}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    <textarea
-                        value={draftAnswer}
-                        onChange={(event) => setDraftAnswer(event.target.value)}
-                        disabled={selectedAnswer !== null}
-                        rows={question.question_type === "essay" ? 6 : 4}
-                        placeholder={
-                            question.question_type === "matching"
-                                ? "Type your matching answer"
-                                : "Type your answer"
-                        }
-                        className="app-input min-h-[120px] resize-none"
-                    />
-                    {!selectedAnswer && (
-                        <button
-                            onClick={() => {
-                                const nextAnswer = draftAnswer.trim();
-                                if (!nextAnswer) return;
-                                haptic.medium();
-                                onSelect(nextAnswer);
-                            }}
-                            className="mt-4 inline-flex min-h-11 items-center rounded-[18px] bg-[#18253D] px-5 py-3 text-sm font-semibold text-white"
-                        >
-                            Save answer and continue
-                        </button>
-                    )}
-                </div>
-            ) : (
+            {(questionType === "mcq" || questionType === "true_false") && (
                 <div className="flex flex-col gap-3">
-                    {optionKeys.map((option) => {
-                        const style = getOptionStyle(option);
-                        const isAnswered = selectedAnswer !== null;
+                    {optionEntries.map(([option, label]) => {
+                        const style = getOptionStyle(option, selectedAnswer, simulationMode);
+                        const isSelected = option === selectedAnswer;
 
                         return (
                             <button
+                                type="button"
                                 key={option}
-                                onClick={() => handleSelect(option)}
-                                disabled={isAnswered}
-                                className="flex items-center gap-3 rounded-[22px] p-4
-                         text-left transition-all duration-200
-                         active:scale-[0.98] disabled:cursor-default"
+                                onClick={() => {
+                                    haptic.medium();
+                                    onSelect(option);
+                                }}
+                                className="flex items-center gap-3 rounded-[22px] p-4 text-left transition-all duration-200 active:scale-[0.98]"
                                 style={{
                                     border: `1px solid ${style.border}`,
                                     backgroundColor: style.bg,
                                 }}
                             >
                                 <span
-                                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full
-                           text-xs font-bold transition-colors duration-200"
+                                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200"
                                     style={{
                                         backgroundColor: style.labelBg,
-                                        color: isAnswered && option === selectedAnswer ? "#FFFFFF" : "#53627D",
+                                        color: isSelected ? "#FFFFFF" : "#53627D",
                                     }}
                                 >
-                                    {OPTION_LABELS[option]}
+                                    {OPTION_LABELS[option] ?? option.toUpperCase()}
                                 </span>
 
                                 <span
                                     className="flex-1 text-sm font-medium leading-relaxed"
                                     style={{ color: style.text }}
                                 >
-                                    {getOptionText(option)}
+                                    {label}
                                 </span>
                             </button>
                         );
                     })}
                 </div>
             )}
+
+            {questionType === "fill_blank" && (
+                <div className="app-sheet p-5">
+                    <input
+                        type="text"
+                        value={draftAnswer}
+                        onChange={(event) => {
+                            const nextValue = event.target.value;
+                            setDraftAnswer(nextValue);
+                            onSelect(nextValue);
+                        }}
+                        placeholder="Type your answer"
+                        className="app-input min-h-12"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleSaveTextAnswer}
+                        className="mt-4 inline-flex min-h-11 items-center rounded-[18px] bg-[#18253D] px-5 py-3 text-sm font-semibold text-white"
+                    >
+                        {hasSavedAnswer ? "Update answer" : "Save answer"}
+                    </button>
+                </div>
+            )}
+
+            {questionType === "matching" && (
+                <div className="app-sheet p-5">
+                    <div className="space-y-3">
+                        {optionEntries.map(([option, label]) => {
+                            const pair = splitMatchingPair(label);
+
+                            return (
+                                <div
+                                    key={option}
+                                    className="rounded-[22px] border border-[rgba(31,53,91,0.08)] bg-[rgba(239,244,249,0.84)] px-4 py-4"
+                                >
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#7F8CA5]">
+                                                Term
+                                            </p>
+                                            <p className="mt-2 text-sm font-semibold text-[#18253D]">
+                                                {pair.left}
+                                            </p>
+                                        </div>
+                                        <div className="min-w-0 text-right">
+                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#7F8CA5]">
+                                                Match
+                                            </p>
+                                            <p className="mt-2 text-sm text-[#53627D]">
+                                                {pair.right || label}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <div className="mt-4 rounded-[18px] bg-[#F4F7FD] px-4 py-3 text-sm text-[#53627D]">
+                        This matching item is read-only. No answer is required before continuing.
+                    </div>
+                </div>
+            )}
+
+            {questionType === "essay" && (
+                <div className="app-sheet p-5">
+                    <textarea
+                        value={draftAnswer}
+                        onChange={(event) => {
+                            const nextValue = event.target.value;
+                            setDraftAnswer(nextValue);
+                            onSelect(nextValue);
+                        }}
+                        rows={6}
+                        placeholder="Write your answer"
+                        className="app-input min-h-[140px] resize-none"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleSaveTextAnswer}
+                        className="mt-4 inline-flex min-h-11 items-center rounded-[18px] bg-[#18253D] px-5 py-3 text-sm font-semibold text-white"
+                    >
+                        {hasSavedAnswer ? "Update answer" : "Save answer"}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
 
-function getOptionValue(question: Question, key: string): string | undefined {
-    const map: Record<string, string | undefined> = {
-        a: question.option_a,
-        b: question.option_b,
-        c: question.option_c,
-        d: question.option_d,
-        e: question.option_e,
-    };
-
-    return map[key];
-}
-
-function getOptionKeys(question: Question): string[] {
-    const keys = ["a", "b", "c", "d", "e"];
-    if (question.question_type === "true_false") {
-        return keys.filter((key) => ["a", "b"].includes(key) && Boolean(getOptionValue(question, key)));
+function getOptionStyle(option: string, selectedAnswer: string | null, simulationMode: boolean) {
+    if (selectedAnswer === null) {
+        return {
+            border: "rgba(31, 53, 91, 0.08)",
+            bg: "rgba(239, 244, 249, 0.9)",
+            text: "#18253D",
+            labelBg: "rgba(224, 232, 241, 0.95)",
+        };
     }
-    return keys.filter((key) => Boolean(getOptionValue(question, key)));
-}
 
-function isFreeTextQuestion(questionType?: string) {
-    return questionType === "fill_blank" || questionType === "matching" || questionType === "essay";
+    if (option === selectedAnswer) {
+        return {
+            border: "#0A1628",
+            bg: simulationMode ? "#DDE6F2" : "#E5ECF6",
+            text: "#0A1628",
+            labelBg: "#0A1628",
+        };
+    }
+
+    return {
+        border: "rgba(31, 53, 91, 0.08)",
+        bg: "rgba(239, 244, 249, 0.72)",
+        text: "#4D607F",
+        labelBg: "rgba(224, 232, 241, 0.95)",
+    };
 }
 
 function formatQuestionType(questionType: string) {
@@ -261,4 +288,16 @@ function formatQuestionType(questionType: string) {
     };
 
     return labels[questionType] ?? questionType;
+}
+
+function hasMeaningfulAnswer(questionType: string | undefined, selectedAnswer: string | null) {
+    if (questionType === "matching") {
+        return true;
+    }
+
+    if (questionType === "fill_blank" || questionType === "essay") {
+        return (selectedAnswer ?? "").trim().length > 0;
+    }
+
+    return selectedAnswer !== null;
 }

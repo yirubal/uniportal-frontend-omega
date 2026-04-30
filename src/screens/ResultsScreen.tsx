@@ -4,12 +4,19 @@ import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { useQuizStore } from "../store/quizStore";
 import { getScoreEmoji, getScoreMessage } from "../utils/format";
+import { getPracticeContentMeta } from "../utils/practice";
 
 export default function ResultsScreen() {
     const navigate = useNavigate();
-    const { attemptSummary, courseId, examPaperId, mode, resetAttempt } = useQuizStore();
+    const { attemptSummary, courseId, examPaperId, mode, practiceContentType, resetAttempt } = useQuizStore();
+    const meta = getPracticeContentMeta(practiceContentType);
 
-    const percentage = Math.round(attemptSummary?.score ?? 0);
+    const percentage = Math.round(
+        attemptSummary?.percentage ??
+        (attemptSummary?.gradable_total
+            ? (attemptSummary.score / attemptSummary.gradable_total) * 100
+            : 0)
+    );
     const emoji = getScoreEmoji(percentage);
     const message = getScoreMessage(percentage);
     const circumference = 2 * Math.PI * 40;
@@ -38,7 +45,7 @@ export default function ResultsScreen() {
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
                     <p className="app-section-label">Assessment complete</p>
                     <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">
-                        Results summary
+                        {mode === "simulation" ? "Simulation summary" : meta.resultsSummaryLabel}
                     </h1>
                     <p className="mt-2 text-sm text-[#53627D]">
                         Review the score, pending items, and weak topics from the submitted attempt.
@@ -76,7 +83,7 @@ export default function ResultsScreen() {
 
                     <div className="mt-6 app-grid-2">
                         <ResultStat label="Gradable" value={attemptSummary?.gradable_total ?? 0} tone="tone-green" />
-                        <ResultStat label="Pending" value={attemptSummary?.pending_count ?? 0} tone="tone-gold" />
+                        <ResultStat label="Not graded" value={attemptSummary?.pending_count ?? 0} tone="tone-gold" />
                     </div>
                 </div>
 
@@ -118,9 +125,19 @@ export default function ResultsScreen() {
             </div>
 
             <div className="app-footer space-y-3">
-                <Button variant="primary" size="lg" fullWidth onClick={handleRetry}>
+                <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    style={{
+                        backgroundColor: "#18253D",
+                        color: "#FFFFFF",
+                        borderColor: "#18253D",
+                    }}
+                    onClick={handleRetry}
+                >
                     <RotateCcw size={16} />
-                    {mode === "simulation" ? "Try another simulation" : "Try another quiz"}
+                    {mode === "simulation" ? "Try again" : meta.resultsRetryLabel}
                 </Button>
                 <Button variant="ghost" size="md" fullWidth onClick={() => navigate("/home")}>
                     <ArrowLeft size={16} />

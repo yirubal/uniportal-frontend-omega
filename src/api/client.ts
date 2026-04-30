@@ -1,5 +1,38 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
+import { useNetworkStore } from "../store/networkStore";
+
+const SLOW_REQUEST_DELAY_MS = 700;
+let slowRequestTimer: ReturnType<typeof setTimeout> | null = null;
+
+function startNetworkTracking() {
+    const networkStore = useNetworkStore.getState();
+    networkStore.beginRequest();
+
+    if (networkStore.pendingRequests === 0 && !slowRequestTimer) {
+        slowRequestTimer = setTimeout(() => {
+            const { pendingRequests, setShowSlowLoader } = useNetworkStore.getState();
+            if (pendingRequests > 0) {
+                setShowSlowLoader(true);
+            }
+            slowRequestTimer = null;
+        }, SLOW_REQUEST_DELAY_MS);
+    }
+}
+
+function stopNetworkTracking() {
+    const networkStore = useNetworkStore.getState();
+    networkStore.endRequest();
+
+    const nextPendingRequests = Math.max(0, networkStore.pendingRequests - 1);
+    if (nextPendingRequests === 0) {
+        if (slowRequestTimer) {
+            clearTimeout(slowRequestTimer);
+            slowRequestTimer = null;
+        }
+        useNetworkStore.getState().setShowSlowLoader(false);
+    }
+}
 
 const client = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -11,19 +44,27 @@ const client = axios.create({
 // Request interceptor — attach JWT token to every request
 client.interceptors.request.use(
     (config) => {
+        startNetworkTracking();
         const token = useAuthStore.getState().token;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        stopNetworkTracking();
+        return Promise.reject(error);
+    }
 );
 
 // Response interceptor — handle global errors
 client.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        stopNetworkTracking();
+        return response;
+    },
     (error) => {
+        stopNetworkTracking();
         const status = error.response?.status;
 
         if (status === 401) {

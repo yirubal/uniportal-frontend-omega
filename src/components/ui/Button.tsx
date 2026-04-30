@@ -20,6 +20,7 @@ export default function Button({
                                    onClick,
                                ...props
                                }: ButtonProps) {
+    const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
     const base =
         "inline-flex min-h-11 items-center justify-center gap-2 font-semibold rounded-[18px] transition-all duration-200 active:scale-[0.985] disabled:opacity-50 disabled:cursor-not-allowed";
 
@@ -39,7 +40,7 @@ export default function Button({
     return (
         <button
             onClick={(event) => {
-                if (!disabled && !loading) {
+                if (!disabled && !loading && supportsHaptics) {
                     WebApp.HapticFeedback.impactOccurred(variant === "ghost" ? "light" : "medium");
                 }
                 onClick?.(event);

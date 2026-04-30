@@ -4,6 +4,7 @@ import {
     Routes,
     Route,
     Navigate,
+    useLocation,
 } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import { useAuth } from "./hooks/useAuth";
@@ -15,14 +16,17 @@ import HomeScreen from "./screens/HomeScreen";
 import ResourcesScreen from "./screens/ResourcesScreen";
 import ResourceViewerScreen from "./screens/ResourceViewerScreen";
 import QuizScreen from "./screens/QuizScreen";
+import PracticeSetupScreen from "./screens/PracticeSetupScreen";
 import QuizListScreen from "./screens/QuizListScreen";
 import QuizAttemptScreen from "./screens/QuizAttemptScreen";
 import ExitExamScreen from "./screens/ExitExamScreen";
+import ExitExamListScreen from "./screens/ExitExamListScreen";
 import SimulationScreen from "./screens/SimulationScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import PerformanceScreen from "./screens/PerformanceScreen";
 import SubscribeScreen from "./screens/SubscribeScreen";
 import BottomNav from "./components/BottomNav";
+import SlowRequestLoader from "./components/SlowRequestLoader";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isLoading } = useAuthStore();
@@ -33,11 +37,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
     const { isAuthenticated, isLoading, student } = useAuthStore();
+    const location = useLocation();
+
+    const hideBottomNav =
+        location.pathname === "/onboarding" ||
+        location.pathname.startsWith("/quiz/take/") ||
+        location.pathname.startsWith("/simulate/") ||
+        location.pathname === "/results";
 
     if (isLoading) return <SplashScreen />;
 
     return (
         <>
+            <SlowRequestLoader />
             <Routes>
                 {/* Public */}
                 <Route
@@ -94,6 +106,14 @@ function AppRoutes() {
                     }
                 />
                 <Route
+                    path="/quiz/setup"
+                    element={
+                        <ProtectedRoute>
+                            <PracticeSetupScreen />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
                     path="/quiz/list"
                     element={
                         <ProtectedRoute>
@@ -114,6 +134,14 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <ExitExamScreen />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/exit-exam/list/:category"
+                    element={
+                        <ProtectedRoute>
+                            <ExitExamListScreen />
                         </ProtectedRoute>
                     }
                 />
@@ -155,7 +183,7 @@ function AppRoutes() {
             </Routes>
 
             {/* Bottom nav only shows on main screens */}
-            {isAuthenticated && student?.onboarding_complete && <BottomNav />}
+            {isAuthenticated && student?.onboarding_complete && !hideBottomNav && <BottomNav />}
         </>
     );
 }

@@ -16,9 +16,17 @@ export default function TopBackButton({
     tone = "light",
     trailing,
 }: TopBackButtonProps) {
+    const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
+
     useEffect(() => {
+        if (!WebApp.isVersionAtLeast?.("6.1")) {
+            return;
+        }
+
         const handleBack = () => {
-            WebApp.HapticFeedback.impactOccurred("light");
+            if (supportsHaptics) {
+                WebApp.HapticFeedback.impactOccurred("light");
+            }
             onClick();
         };
 
@@ -56,7 +64,9 @@ export default function TopBackButton({
             <button
                 type="button"
                 onClick={() => {
-                    WebApp.HapticFeedback.impactOccurred("light");
+                    if (supportsHaptics) {
+                        WebApp.HapticFeedback.impactOccurred("light");
+                    }
                     onClick();
                 }}
                 style={buttonStyle}

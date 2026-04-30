@@ -7,8 +7,11 @@ import App from "./App.tsx";
 // Initialize Telegram WebApp
 WebApp.ready();
 WebApp.expand();
-WebApp.disableVerticalSwipes();
-WebApp.enableClosingConfirmation();
+const supportsModernChrome = WebApp.isVersionAtLeast?.("6.1") ?? false;
+if (supportsModernChrome) {
+    WebApp.disableVerticalSwipes();
+    WebApp.enableClosingConfirmation();
+}
 
 const rootElement = document.getElementById("root");
 

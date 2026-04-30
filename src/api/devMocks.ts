@@ -20,14 +20,19 @@ export const MOCK_DEPARTMENTS: Department[] = [
 ];
 
 export const MOCK_COURSES: Course[] = [
-    { id: 1, name: "Data Structures & Algorithms", code: "CS301", department: 1, year: 2, semester: 1 },
-    { id: 2, name: "Operating Systems", code: "CS402", department: 1, year: 3, semester: 1 },
-    { id: 3, name: "Database Systems", code: "CS305", department: 1, year: 2, semester: 2 },
-    { id: 4, name: "Computer Networks", code: "CS410", department: 1, year: 3, semester: 2 },
-    { id: 5, name: "Software Engineering", code: "CS450", department: 1, year: 4, semester: 1 },
-    { id: 6, name: "Artificial Intelligence", code: "CS460", department: 1, year: 4, semester: 2 },
-    { id: 7, name: "Digital Signal Processing", code: "ECE320", department: 2, year: 3, semester: 1 },
-    { id: 8, name: "Entrepreneurship", code: "BA220", department: 5, year: 2, semester: 1 },
+    { id: 1, name: "Data Structures & Algorithms", code: "CS301", department: 1, program: "regular", year: 2, period: 1 },
+    { id: 2, name: "Operating Systems", code: "CS402", department: 1, program: "regular", year: 3, period: 1 },
+    { id: 3, name: "Database Systems", code: "CS305", department: 1, program: "regular", year: 2, period: 2 },
+    { id: 4, name: "Computer Networks", code: "CS410", department: 1, program: "regular", year: 3, period: 2 },
+    { id: 5, name: "Software Engineering", code: "CS450", department: 1, program: "regular", year: 4, period: 1 },
+    { id: 6, name: "Artificial Intelligence", code: "CS460", department: 1, program: "regular", year: 4, period: 2 },
+    { id: 7, name: "Digital Signal Processing", code: "ECE320", department: 2, program: "regular", year: 3, period: 1 },
+    { id: 8, name: "Entrepreneurship", code: "BA220", department: 5, program: "regular", year: 2, period: 1 },
+    { id: 1, name: "Data Structures & Algorithms", code: "CS301", department: 1, program: "extension", year: 2, period: 1 },
+    { id: 3, name: "Database Systems", code: "CS305", department: 1, program: "extension", year: 2, period: 2 },
+    { id: 1, name: "Data Structures & Algorithms", code: "CS301", department: 1, program: "distance", year: 2, period: 1 },
+    { id: 3, name: "Database Systems", code: "CS305", department: 1, program: "distance", year: 2, period: 2 },
+    { id: 6, name: "Artificial Intelligence", code: "CS460", department: 1, program: "distance", year: 2, period: 3 },
 ];
 
 export const MOCK_RESOURCES: Resource[] = [
@@ -531,19 +536,32 @@ export const MOCK_EXAM_PAPERS: ExamPaper[] = [
         title: "Computer Science Exit Exam 2024",
         course: 6,
         exam_type: "exit",
+        exit_category: "model",
         year: 2024,
-        duration_minutes: 120,
-        total_questions: 6,
+        duration_minutes: 4,
+        total_questions: 4,
         access_level: "premium",
     },
     {
         id: 9002,
-        title: "Computer Science Exit Exam 2023",
+        title: "Computer Science Past Years Exit Exam 2023",
         course: 5,
         exam_type: "exit",
+        exit_category: "past_years",
         year: 2023,
-        duration_minutes: 110,
-        total_questions: 6,
+        duration_minutes: 3,
+        total_questions: 4,
+        access_level: "premium",
+    },
+    {
+        id: 9003,
+        title: "Computer Science Exit Exam Model Set A",
+        course: 6,
+        exam_type: "exit",
+        exit_category: "model",
+        year: 2026,
+        duration_minutes: 2,
+        total_questions: 4,
         access_level: "premium",
     },
     {
@@ -576,7 +594,327 @@ export const MOCK_EXAM_PAPERS: ExamPaper[] = [
         total_questions: 6,
         access_level: "free",
     },
+    {
+        id: 9201,
+        title: "DSA Past Exam 2025",
+        course: 1,
+        exam_type: "final",
+        year: 2025,
+        duration_minutes: 75,
+        total_questions: 5,
+        access_level: "premium",
+    },
+    {
+        id: 9202,
+        title: "Operating Systems Past Exam 2024",
+        course: 2,
+        exam_type: "final",
+        year: 2024,
+        duration_minutes: 90,
+        total_questions: 5,
+        access_level: "premium",
+    },
 ];
+
+const MOCK_EXAM_QUESTIONS: Record<number, Question[]> = {
+    9001: [
+        {
+            id: 900101,
+            text: "Which search strategy expands the node with the lowest estimated total cost first?",
+            question_type: "mcq",
+            option_a: "Depth-first search",
+            option_b: "A* search",
+            option_c: "Round Robin",
+            option_d: "Minimax",
+            correct_option: "b",
+            topic_tags: ["search", "heuristics"],
+            topic: "Search",
+            difficulty: "easy",
+        },
+        {
+            id: 900102,
+            text: "Which algorithm is commonly used for adversarial game search?",
+            question_type: "mcq",
+            option_a: "Minimax",
+            option_b: "Merge sort",
+            option_c: "FCFS",
+            option_d: "Bellman-Ford",
+            correct_option: "a",
+            topic_tags: ["games"],
+            topic: "Game Playing",
+            difficulty: "medium",
+        },
+        {
+            id: 900103,
+            text: "Which data structure follows Last In, First Out ordering?",
+            question_type: "mcq",
+            option_a: "Queue",
+            option_b: "Hash table",
+            option_c: "Stack",
+            option_d: "Graph",
+            correct_option: "c",
+            topic_tags: ["data structures"],
+            topic: "Core Structures",
+            difficulty: "medium",
+        },
+        {
+            id: 900104,
+            text: "Which traversal is best for shortest paths in an unweighted graph?",
+            question_type: "mcq",
+            option_a: "Depth-first search",
+            option_b: "Breadth-first search",
+            option_c: "Backtracking",
+            option_d: "Greedy search",
+            correct_option: "b",
+            topic_tags: ["graphs", "bfs"],
+            topic: "Graphs",
+            difficulty: "hard",
+        },
+    ],
+    9002: [
+        {
+            id: 900201,
+            text: "Which document is most directly used to capture functional and non-functional requirements?",
+            question_type: "mcq",
+            option_a: "SRS",
+            option_b: "Deployment script",
+            option_c: "Compiler manual",
+            option_d: "DNS record",
+            correct_option: "a",
+            topic_tags: ["requirements"],
+            topic: "Requirements",
+            difficulty: "easy",
+        },
+        {
+            id: 900202,
+            text: "Which testing activity checks that previously working behavior still works after a code change?",
+            question_type: "mcq",
+            option_a: "Load testing",
+            option_b: "Regression testing",
+            option_c: "Smoke testing",
+            option_d: "Usability testing",
+            correct_option: "b",
+            topic_tags: ["software engineering", "testing"],
+            topic: "Software Engineering",
+            difficulty: "medium",
+        },
+        {
+            id: 900203,
+            text: "Which development approach delivers work in short iterations called sprints?",
+            question_type: "mcq",
+            option_a: "Waterfall",
+            option_b: "Agile Scrum",
+            option_c: "Big Bang",
+            option_d: "Spiral-only documentation",
+            correct_option: "b",
+            topic_tags: ["software engineering"],
+            topic: "Process Models",
+            difficulty: "medium",
+        },
+        {
+            id: 900204,
+            text: "Which artifact describes how an actor interacts with a system to achieve a goal?",
+            question_type: "mcq",
+            option_a: "Use case",
+            option_b: "DNS record",
+            option_c: "Compiler pass",
+            option_d: "Build cache",
+            correct_option: "a",
+            topic_tags: ["requirements"],
+            topic: "Requirements",
+            difficulty: "medium",
+        },
+    ],
+    9003: [
+        {
+            id: 900301,
+            text: "Which page replacement algorithm is theoretical because it needs future knowledge?",
+            question_type: "mcq",
+            option_a: "FIFO",
+            option_b: "Clock",
+            option_c: "Optimal",
+            option_d: "LRU",
+            correct_option: "c",
+            topic_tags: ["paging"],
+            topic: "Paging",
+            difficulty: "easy",
+        },
+        {
+            id: 900302,
+            text: "Which algorithm is used for deadlock avoidance?",
+            question_type: "mcq",
+            option_a: "Banker's algorithm",
+            option_b: "Bellman-Ford",
+            option_c: "Round Robin",
+            option_d: "Prim's algorithm",
+            correct_option: "a",
+            topic_tags: ["deadlocks"],
+            topic: "Deadlocks",
+            difficulty: "medium",
+        },
+        {
+            id: 900303,
+            text: "Which scheduling approach gives each process a fixed time slice?",
+            question_type: "mcq",
+            option_a: "FCFS",
+            option_b: "Round Robin",
+            option_c: "SJF",
+            option_d: "Priority only",
+            correct_option: "b",
+            topic_tags: ["scheduling"],
+            topic: "Scheduling",
+            difficulty: "medium",
+        },
+        {
+            id: 900304,
+            text: "Which issue is most closely associated with thrashing?",
+            question_type: "mcq",
+            option_a: "Excessive page faults",
+            option_b: "Disk fragmentation",
+            option_c: "Authentication failure",
+            option_d: "Integer overflow",
+            correct_option: "a",
+            topic_tags: ["memory"],
+            topic: "Memory Management",
+            difficulty: "hard",
+        },
+    ],
+    9201: [
+        {
+            id: 920101,
+            text: "True or false: A queue follows first-in, first-out ordering.",
+            question_type: "true_false",
+            option_a: "True",
+            option_b: "False",
+            option_c: "",
+            option_d: "",
+            correct_option: "a",
+            topic_tags: ["queues", "basics"],
+            topic: "Queues",
+            difficulty: "easy",
+        },
+        {
+            id: 920102,
+            text: "Fill in the blank: A binary search tree traversal that returns keys in sorted order is ______ traversal.",
+            question_type: "fill_blank",
+            option_a: "",
+            option_b: "",
+            option_c: "",
+            option_d: "",
+            correct_option: "inorder",
+            topic_tags: ["trees", "traversal"],
+            topic: "Trees",
+            difficulty: "medium",
+            hint: "Think left, root, right.",
+        },
+        {
+            id: 920103,
+            text: "Match each term with the closest description.",
+            question_type: "matching",
+            option_a: "Stack -> Last in, first out",
+            option_b: "Queue -> First in, first out",
+            option_c: "Heap -> Parent-child priority ordering",
+            option_d: "Hash table -> Key-based average O(1) lookup",
+            correct_option: "",
+            topic_tags: ["basics", "matching"],
+            topic: "Core Structures",
+            difficulty: "medium",
+        },
+        {
+            id: 920104,
+            text: "Which graph traversal is best for shortest paths in an unweighted graph?",
+            question_type: "mcq",
+            option_a: "Depth-first search",
+            option_b: "Breadth-first search",
+            option_c: "Dijkstra only",
+            option_d: "Backtracking",
+            correct_option: "b",
+            topic_tags: ["graphs", "bfs"],
+            topic: "Graphs",
+            difficulty: "medium",
+        },
+        {
+            id: 920105,
+            text: "Briefly explain one reason dynamic programming can outperform plain recursion on overlapping subproblems.",
+            question_type: "essay",
+            option_a: "",
+            option_b: "",
+            option_c: "",
+            option_d: "",
+            correct_option: "",
+            topic_tags: ["dynamic programming"],
+            topic: "Dynamic Programming",
+            difficulty: "hard",
+        },
+    ],
+    9202: [
+        {
+            id: 920201,
+            text: "True or false: Thrashing is associated with a very high page fault rate.",
+            question_type: "true_false",
+            option_a: "True",
+            option_b: "False",
+            option_c: "",
+            option_d: "",
+            correct_option: "a",
+            topic_tags: ["paging", "memory"],
+            topic: "Memory Management",
+            difficulty: "easy",
+        },
+        {
+            id: 920202,
+            text: "Fill in the blank: The Banker's algorithm is used for deadlock ______.",
+            question_type: "fill_blank",
+            option_a: "",
+            option_b: "",
+            option_c: "",
+            option_d: "",
+            correct_option: "avoidance",
+            topic_tags: ["deadlocks"],
+            topic: "Deadlocks",
+            difficulty: "medium",
+        },
+        {
+            id: 920203,
+            text: "Match each scheduling idea with the most relevant note.",
+            question_type: "matching",
+            option_a: "FCFS -> Simple arrival-order scheduling",
+            option_b: "SJF -> Can starve longer jobs",
+            option_c: "Round Robin -> Time-slice based scheduling",
+            option_d: "Priority scheduling -> Important tasks can run sooner",
+            correct_option: "",
+            topic_tags: ["scheduling", "matching"],
+            topic: "Scheduling",
+            difficulty: "medium",
+        },
+        {
+            id: 920204,
+            text: "Which page replacement algorithm is theoretical because it needs future knowledge?",
+            question_type: "mcq",
+            option_a: "FIFO",
+            option_b: "Clock",
+            option_c: "Optimal",
+            option_d: "LRU",
+            correct_option: "c",
+            topic_tags: ["paging"],
+            topic: "Paging",
+            difficulty: "medium",
+        },
+        {
+            id: 920205,
+            text: "Describe one difference between paging and segmentation.",
+            question_type: "essay",
+            option_a: "",
+            option_b: "",
+            option_c: "",
+            option_d: "",
+            correct_option: "",
+            topic_tags: ["memory"],
+            topic: "Memory Management",
+            difficulty: "hard",
+        },
+    ],
+};
 
 export const MOCK_PLANS: Plan[] = [
     {
@@ -605,7 +943,21 @@ export const MOCK_PLANS: Plan[] = [
 export const MOCK_PAYMENT_INSTRUCTIONS: PaymentInstructions = {
     instructions: "Send payment to Telebirr 0912-000-000 and use your username as the reference.",
     reference: "UP-DEV-2026",
+    plan: "Monthly Pro",
+    amount: 99,
+    days: 30,
+    status: "pending",
     note: "This is demo content. Replace with backend-generated payment instructions later.",
+    payment_options: {
+        telebirr: {
+            number: "0912345678",
+            name: "Unity University",
+        },
+        cbe: {
+            account: "1000123456789",
+            name: "Unity University",
+        },
+    },
 };
 
 export const MOCK_STUDENT: Student = {
@@ -616,15 +968,17 @@ export const MOCK_STUDENT: Student = {
     last_name: "Student",
     username: "cheri_dev",
     preferred_department: 1,
+    preferred_program: "regular",
     preferred_year: 2,
-    preferred_semester: 1,
+    preferred_period: 1,
     onboarding_complete: true,
     is_premium: true,
     subscription_expiry: "2026-12-31T23:59:59Z",
     preferences: {
         department: 1,
+        program: "regular",
         year: 2,
-        semester: 1,
+        period: 1,
     },
 };
 
@@ -674,6 +1028,10 @@ export function getMockQuestions(
 }
 
 export function getMockExamQuestions(examPaperId: number): Question[] {
+    if (MOCK_EXAM_QUESTIONS[examPaperId]) {
+        return MOCK_EXAM_QUESTIONS[examPaperId];
+    }
+
     const exam = MOCK_EXAM_PAPERS.find((item) => item.id === examPaperId);
     if (!exam) return [];
     return getMockQuestions(exam.course, { limit: exam.total_questions });
@@ -712,8 +1070,10 @@ export function evaluateMockAttempt(
     const topicBreakdown = new Map<string, { correct: number; total: number }>();
 
     const correctCount = gradedQuestions.filter((question) => {
-        const selected = answerMap.get(question.id) ?? "a";
-        const isCorrect = selected === question.correct_option;
+        const selected = answerMap.get(question.id) ?? "";
+        const isCorrect = question.question_type === "fill_blank"
+            ? normalizeTextAnswer(selected) === normalizeTextAnswer(question.correct_option ?? "")
+            : selected === question.correct_option;
         const topics = question.topic_tags?.length ? question.topic_tags : [question.topic ?? "General"];
 
         topics.forEach((topic) => {
@@ -726,11 +1086,15 @@ export function evaluateMockAttempt(
         return isCorrect;
     }).length;
 
+    const percentage =
+        gradedQuestions.length === 0
+            ? 0
+            : Number(((correctCount / gradedQuestions.length) * 100).toFixed(1));
+
     return {
-        score:
-            gradedQuestions.length === 0
-                ? 0
-                : Number(((correctCount / gradedQuestions.length) * 100).toFixed(1)),
+        score: percentage,
+        total: questions.length,
+        percentage,
         gradable_total: gradedQuestions.length,
         pending_count: questions.length - gradedQuestions.length,
         topic_breakdown: Object.fromEntries(
@@ -743,6 +1107,21 @@ export function evaluateMockAttempt(
             .filter(([, stats]) => stats.total > 0 && (stats.correct / stats.total) * 100 < 60)
             .map(([topic]) => topic),
     };
+}
+
+export function getMockExitExamTopicQuestions(departmentId: number, topic: string): Question[] {
+    const topicKey = topic.trim().toLowerCase();
+    return Object.values(MOCK_QUESTIONS_BY_EXAM)
+        .flat()
+        .filter((question) => {
+            const questionTopic = (question.topic ?? question.topic_tags?.[0] ?? "").toLowerCase();
+            return questionTopic.includes(topicKey) || topicKey.includes(questionTopic);
+        })
+        .slice(0, departmentId ? 10 : 0);
+}
+
+function normalizeTextAnswer(value: string) {
+    return value.trim().toLowerCase();
 }
 
 export function mockResponse<T>(data: T, delayMs = 250): Promise<{ data: T }> {

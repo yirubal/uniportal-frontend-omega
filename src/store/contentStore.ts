@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { ProgramType } from "../utils/periods";
 
 export interface Department {
     id: number;
@@ -11,8 +12,9 @@ export interface Course {
     name: string;
     code: string;
     department: number;
+    program: ProgramType;
     year: number;
-    semester: number;
+    period: number;
 }
 
 export interface Resource {
@@ -38,8 +40,9 @@ type FilterType = "All" | "lecture_note" | "worksheet" | "past_exam" | "exit_exa
 interface ContentState {
     // Selection
     selectedDepartment: Department | null;
+    selectedProgram: ProgramType | null;
     selectedYear: number | null;
-    selectedSemester: number | null;
+    selectedPeriod: number | null;
     selectedCourse: Course | null;
 
     // Data
@@ -54,8 +57,9 @@ interface ContentState {
 
     // Actions
     setSelectedDepartment: (dept: Department | null) => void;
+    setSelectedProgram: (program: ProgramType | null) => void;
     setSelectedYear: (year: number | null) => void;
-    setSelectedSemester: (semester: number | null) => void;
+    setSelectedPeriod: (period: number | null) => void;
     setSelectedCourse: (course: Course | null) => void;
     setDepartments: (departments: Department[]) => void;
     setCourses: (courses: Course[]) => void;
@@ -68,8 +72,9 @@ interface ContentState {
 
 export const useContentStore = create<ContentState>((set) => ({
     selectedDepartment: null,
+    selectedProgram: null,
     selectedYear: null,
-    selectedSemester: null,
+    selectedPeriod: null,
     selectedCourse: null,
     departments: [],
     courses: [],
@@ -79,8 +84,9 @@ export const useContentStore = create<ContentState>((set) => ({
     isLoadingResources: false,
 
     setSelectedDepartment: (dept) => set({ selectedDepartment: dept }),
+    setSelectedProgram: (program) => set({ selectedProgram: program }),
     setSelectedYear: (year) => set({ selectedYear: year }),
-    setSelectedSemester: (semester) => set({ selectedSemester: semester }),
+    setSelectedPeriod: (period) => set({ selectedPeriod: period }),
     setSelectedCourse: (course) => set({ selectedCourse: course }),
     setDepartments: (departments) => set({ departments }),
     setCourses: (courses) => set({ courses }),
@@ -91,8 +97,9 @@ export const useContentStore = create<ContentState>((set) => ({
     resetSelection: () =>
         set({
             selectedDepartment: null,
+            selectedProgram: null,
             selectedYear: null,
-            selectedSemester: null,
+            selectedPeriod: null,
             selectedCourse: null,
             courses: [],
             resources: [],

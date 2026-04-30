@@ -1,5 +1,5 @@
 import { useAuthStore } from "../store/authStore";
-import { loginWithTelegram } from "../api/auth";
+import { getMyProfile, loginWithDevMode, loginWithTelegram } from "../api/auth";
 import { useTelegram } from "./useTelegram";
 
 export const useAuth = () => {
@@ -11,10 +11,17 @@ export const useAuth = () => {
             setLoading(true);
 
             if (!initData) {
-                console.warn("No Telegram initData — using dev-mode mock auth.");
                 if (import.meta.env.DEV) {
-                    const { MOCK_STUDENT } = await import("../api/devMocks");
-                    setAuth("dev-token", MOCK_STUDENT);
+                    if (import.meta.env.VITE_FORCE_DEV_MOCKS === "true") {
+                        console.warn("No Telegram initData - using local mock auth.");
+                        const student = await getMyProfile();
+                        setAuth("dev-token", student);
+                        return;
+                    }
+
+                    console.warn("No Telegram initData - using backend dev-mode auth.");
+                    const { token, student } = await loginWithDevMode();
+                    setAuth(token, student);
                     return;
                 }
                 throw new Error("Telegram initData is required outside development mode.");

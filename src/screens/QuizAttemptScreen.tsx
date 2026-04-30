@@ -1,24 +1,33 @@
-import { Brain } from "lucide-react";
+import { Brain, FileText } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getExamQuestions, submitAttempt } from "../api/quiz";
+import ConfirmDialog from "../components/ConfirmDialog";
 import QuestionCard from "../components/QuestionCard";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
 import { AttemptSummary, useQuizStore } from "../store/quizStore";
+import { getPracticeContentMeta } from "../utils/practice";
+import { buildSubmissionAnswers, isOptionQuestion, isQuestionAnswered } from "../utils/questions";
 
 export default function QuizAttemptScreen() {
     const navigate = useNavigate();
     const { quizId } = useParams();
     const quiz = useQuizStore();
+    const meta = getPracticeContentMeta(quiz.practiceContentType);
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [autoAdvancing, setAutoAdvancing] = useState(false);
+    const [showLeaveModal, setShowLeaveModal] = useState(false);
 
     const isQuizActive = quiz.questions.length > 0 && !quiz.isComplete;
+    const currentQuestion = quiz.questions[quiz.currentIndex];
+    const currentQuestionAnswered = currentQuestion
+        ? isQuestionAnswered(currentQuestion, quiz.answers)
+        : false;
 
     useEffect(() => {
         if (!quizId) {
@@ -35,10 +44,10 @@ export default function QuizAttemptScreen() {
         setLoading(true);
         setError(null);
 
-        getExamQuestions(Number(quizId))
+        getExamQuestions(Number(quizId), "practice")
             .then((questions) => {
                 if (questions.length === 0) {
-                    setError("This quiz has no questions yet.");
+                    setError(`This ${quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"} has no questions yet.`);
                     return;
                 }
 
@@ -49,7 +58,7 @@ export default function QuizAttemptScreen() {
                     Number(quizId)
                 );
             })
-            .catch(() => setError("Failed to load quiz questions."))
+            .catch(() => setError(`Failed to load ${quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"} questions.`))
             .finally(() => setLoading(false));
     }, [quiz, quizId]);
 
@@ -61,10 +70,12 @@ export default function QuizAttemptScreen() {
         setError(null);
 
         try {
+            const submissionAnswers = buildSubmissionAnswers(quiz.questions, quiz.answers);
+
             const result = await submitAttempt({
                 exam_paper: Number(quizId),
                 answers: Object.fromEntries(
-                    Object.entries(quiz.answers).map(([questionId, answer]) => [String(questionId), answer])
+                    Object.entries(submissionAnswers).map(([questionId, answer]) => [String(questionId), answer])
                 ),
                 mode: "practice",
             });
@@ -73,6 +84,7 @@ export default function QuizAttemptScreen() {
         } catch {
             const fallbackSummary: AttemptSummary = {
                 score: 0,
+                percentage: 0,
                 gradable_total: quiz.questions.length,
                 pending_count: quiz.questions.filter((question) =>
                     ["essay", "matching"].includes(question.question_type ?? "")
@@ -94,7 +106,14 @@ export default function QuizAttemptScreen() {
     }, [navigate, quiz.isComplete]);
 
     useEffect(() => {
-        if (!isQuizActive || !quiz.selectedAnswer || submitting) return;
+        if (
+            !isQuizActive ||
+            quiz.practiceContentType !== "quiz" ||
+            !currentQuestion ||
+            !currentQuestionAnswered ||
+            !isOptionQuestion(currentQuestion) ||
+            submitting
+        ) return;
 
         const isLast = quiz.currentIndex + 1 >= quiz.questions.length;
         setAutoAdvancing(true);
@@ -115,11 +134,13 @@ export default function QuizAttemptScreen() {
         };
     }, [
         handleSubmit,
+        currentQuestion,
+        currentQuestionAnswered,
         isQuizActive,
         quiz,
         quiz.currentIndex,
         quiz.questions.length,
-        quiz.selectedAnswer,
+        quiz.practiceContentType,
         submitting,
     ]);
 
@@ -137,10 +158,13 @@ export default function QuizAttemptScreen() {
             <div className="app-screen">
                 <div className="app-topbar">
                     <div className="relative z-10">
-                        <TopBackButton onClick={() => navigate("/quiz/list")} label="Quiz list" />
-                        <p className="app-section-label">Practice quiz</p>
+                        <TopBackButton
+                            onClick={() => navigate("/quiz/list")}
+                            label={quiz.practiceContentType === "past_exam" ? "Past exams" : "Quiz list"}
+                        />
+                        <p className="app-section-label">{meta.sectionLabel}</p>
                         <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#18253D]">
-                            Unable to start quiz
+                            Unable to start {quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}
                         </h1>
                     </div>
                 </div>
@@ -152,7 +176,6 @@ export default function QuizAttemptScreen() {
         );
     }
 
-    const currentQuestion = quiz.questions[quiz.currentIndex];
     const isLast = quiz.currentIndex + 1 >= quiz.questions.length;
 
     return (
@@ -160,10 +183,7 @@ export default function QuizAttemptScreen() {
             <div className="app-topbar">
                 <div className="relative z-10">
                     <TopBackButton
-                        onClick={() => {
-                            quiz.resetAttempt();
-                            navigate("/quiz/list");
-                        }}
+                        onClick={() => setShowLeaveModal(true)}
                         label="Leave"
                         trailing={(
                             <span className="rounded-full bg-[#18253D] px-3 py-2 text-xs font-bold text-white">
@@ -175,21 +195,23 @@ export default function QuizAttemptScreen() {
                     <div className="app-sheet p-4">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <p className="app-section-label">Practice quiz</p>
+                                <p className="app-section-label">{meta.attemptLabel}</p>
                                 <p className="mt-2 text-sm font-semibold text-[#18253D]">
-                                    {quiz.selectedQuizTitle ?? "Quiz attempt"}
+                                    {quiz.selectedQuizTitle ?? meta.attemptFallbackTitle}
                                 </p>
                                 <div className="mt-3 flex flex-wrap gap-2">
                                     <span className="rounded-full bg-[#EEF3FF] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#2D5BFF]">
-                                        {Object.keys(quiz.answers).length}/{quiz.questions.length} answered
+                                        {quiz.questions.filter((question) => isQuestionAnswered(question, quiz.answers)).length}/{quiz.questions.length} answered
                                     </span>
                                     <span className="rounded-full bg-[#F4F7FD] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
-                                        Tap once to continue
+                                        {quiz.practiceContentType === "past_exam"
+                                            ? "Mixed question styles supported"
+                                            : "Tap once to continue"}
                                     </span>
                                 </div>
                             </div>
-                            <div className="app-icon-chip bg-[#EEF3FF] text-[#2D5BFF]">
-                                <Brain size={18} />
+                            <div className={`app-icon-chip ${quiz.practiceContentType === "past_exam" ? "bg-[#FFF6DF] text-[#B27614]" : "bg-[#EEF3FF] text-[#2D5BFF]"}`}>
+                                {quiz.practiceContentType === "past_exam" ? <FileText size={18} /> : <Brain size={18} />}
                             </div>
                         </div>
                     </div>
@@ -211,8 +233,17 @@ export default function QuizAttemptScreen() {
                     variant="primary"
                     size="lg"
                     fullWidth
-                    disabled={!quiz.selectedAnswer || autoAdvancing}
+                    disabled={!currentQuestionAnswered || autoAdvancing}
+                    style={{
+                        backgroundColor: "#18253D",
+                        color: "#FFFFFF",
+                        borderColor: "#18253D",
+                    }}
                     onClick={() => {
+                        if (currentQuestion.question_type === "matching" && !Object.prototype.hasOwnProperty.call(quiz.answers, currentQuestion.id)) {
+                            quiz.setAnswer("");
+                        }
+
                         if (isLast) {
                             void handleSubmit();
                             return;
@@ -222,17 +253,31 @@ export default function QuizAttemptScreen() {
                     }}
                 >
                     {submitting
-                        ? "Submitting quiz"
+                        ? `Submitting ${quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}`
                         : autoAdvancing
                             ? (isLast ? "Submitting automatically..." : "Loading next question...")
                             : isLast
-                                ? "Submit quiz"
+                                ? `Submit ${quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}`
                                 : "Next question"}
                 </Button>
                 <Button variant="ghost" size="md" fullWidth loading={submitting} onClick={() => void handleSubmit()}>
                     Finish now
                 </Button>
             </div>
+
+            <ConfirmDialog
+                open={showLeaveModal}
+                title="Leave this session?"
+                description="Your current answers will be lost if you leave before submitting."
+                confirmLabel="Leave session"
+                cancelLabel="Stay here"
+                onConfirm={() => {
+                    setShowLeaveModal(false);
+                    quiz.resetAttempt();
+                    navigate("/quiz/list");
+                }}
+                onCancel={() => setShowLeaveModal(false)}
+            />
         </div>
     );
 }

@@ -99,12 +99,70 @@ This file is the durable handoff for future Codex sessions working in this repos
   - resource card spacing was iterated several times; current state uses stronger internal horizontal padding and extra vertical height in `src/components/ResourceCard.tsx`
   - the featured pack downloads badge on `src/screens/ResourcesScreen.tsx` was restyled into a centered stacked number/label chip aligned to the top-right
 
+### 2026-04-29
+
+- Reframed the old quiz-only area into a `Practice Hub` flow:
+  - `/quiz` is now a hub screen with two branches: `Take quiz` and `Take past exam`
+  - `/quiz/setup` now handles the department/year/semester/course selection that used to live directly on `/quiz`
+  - `/quiz/list` now loads either `exam_type=quiz` or `exam_type=final` from `/api/exams/` based on the selected practice path
+- The shared attempt renderer was kept and reused for mixed-format past exam questions:
+  - `QuestionCard` was already capable of handling `mcq`, `true_false`, `fill_blank`, `matching`, and `essay`
+  - past exam copy now makes it explicit that the practice flow is not limited to multiple choice
+- Development mocks were extended so the new flow can be tested immediately:
+  - added `final` exam papers in `src/api/devMocks.ts`
+  - added mixed-format mock past exam questions with true/false, fill-in, matching, essay, and choice items
+  - mock fill-in grading now compares normalized text answers instead of case-sensitive raw strings
+- Home and navigation copy now refer to the area as `Practice Hub` / `Practice` instead of only quiz.
+- Reframed the exit exam area into a timed exam-type hub:
+  - `/exit-exam` is now a hub screen with `Past years exit exam` and `Exit exam model`
+  - `/exit-exam/list/:category` now shows the actual papers for the selected timed exam type
+  - `/simulate/:examId` remains the timed attempt route, but its back navigation now returns to the selected exit exam type list instead of the generic hub
+- Exit exam categorization is prepared for backend variation:
+  - `ExamPaper` now supports optional `exit_category`
+  - if backend data does not yet send that field, the frontend falls back to title keyword matching for `past years` and `model`, otherwise defaults to the model bucket
+- Development mocks were extended so both visible timed exam types are present in dev immediately.
+- The timed simulation header now includes a countdown progress bar plus a low-time pulse state so the timer feels visibly active instead of only changing text.
+- The exit exam paper cards now lead into a rules-first pre-start screen, and the start CTA text is explicit per exam type (`Start timed past paper` / `Start timed model exam`).
+- Current dev exit exam mocks are intentionally short for workflow testing:
+  - exit exam mock durations were reduced to a few minutes
+  - dedicated fake question sets were added for the visible exit exam papers so the countdown timer and submission path can be tested quickly end to end
+- The timed exit exam attempt now follows a more standard exam-app pattern:
+  - keep one question visible at a time on mobile
+  - provide a question navigator grid for direct jumping
+  - support marking questions for review during the timed attempt
+  - prefer this over rendering a long multi-question page during timed exams
+- End-of-day state for tomorrow:
+  - Practice Hub is split into quiz and past exam flows and is already wired through setup, list, attempt, and results
+  - Exit Exams now only shows `Past years exit exam` and `Exit exam model`
+  - exit exam intro screen has a clearly visible dark start button both inline and in the footer
+  - timed exit exam mocks are short on purpose for quick workflow and timer testing in dev
+  - the latest thing to validate visually tomorrow is the timed exit exam UX on-device: start CTA visibility, timer countdown bar, navigator grid, jump behavior, and mark-for-review state
+
+### 2026-04-30
+
+- Completed the first pre-integration blocker pass before live backend connection:
+  - `.env.development` now targets local backend development with forced mocks disabled
+  - `.env.example` and `.env.production` document the required API/bot/mock variables
+  - auth dev fallback can call the backend dev-mode Telegram login payload when not forcing mocks
+  - exam questions now send the required `mode=practice|simulation` query param
+  - exit-exam topic questions API helper exists for `/api/exit-exams/topics/questions/`
+  - matching questions are submitted as an empty string when they are not user-answered
+  - premium quiz/past-exam papers now send free students to subscribe instead of opening the attempt
+  - resource locks now respect backend `is_locked` in addition to access level
+  - subscription requests now collect `payment_method` and `paid_from`, check pending request state, and render API-provided payment options
+  - results now compute fallback percentage from `score / gradable_total` and labels non-auto-graded items as `Not graded`
+- Deliberately deferred full pending-review UI for non-auto-graded questions per user instruction.
+- Verification after this pass: `npm run lint` and `npm run build` both passed.
+
 ## Next Work
 
 - Continue all new implementation on `dev`.
 - Keep this file updated when major work is completed.
 - First check tomorrow:
-  - open the quiz flow and verify `/quiz -> /quiz/list -> /quiz/take/:quizId -> /results` visually on mobile sizing
+  - open the practice flow and verify `/quiz -> /quiz/setup -> /quiz/list -> /quiz/take/:quizId -> /results` for both quiz and past exam paths on mobile sizing
+  - open the exit exam flow and verify `/exit-exam -> /exit-exam/list/:category -> /simulate/:examId` for both timed exam types and confirm the countdown bar/chip animate correctly
+  - while testing exit exams in dev mocks, expect intentionally short timers rather than realistic exam durations
+  - confirm the question navigator grid and mark-for-review states behave correctly while moving around the timed exit exam
   - confirm the resource library card spacing/alignment now feels stable on-device; this was the main iterative UI area at the end of the session
   - keep pushing toward Telegram Mini App-native feel rather than browser-style card/list patterns
-  - if further quiz work is requested, avoid collapsing setup and attempt back into one screen
+  - if further practice work is requested, keep the hub split and avoid collapsing setup and attempt back into one screen

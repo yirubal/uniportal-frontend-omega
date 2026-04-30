@@ -1,6 +1,6 @@
 import { Check, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getPlans, requestSubscription, type PaymentInstructions, type Plan } from "../api/quiz";
+import { getPlans, getSubscriptionRequest, requestSubscription, type PaymentInstructions, type Plan } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
@@ -11,29 +11,34 @@ export default function SubscribeScreen() {
     const navigate = useNavigate();
     const [plans, setPlans] = useState<Plan[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+    const [paymentMethod, setPaymentMethod] = useState<"telebirr" | "cbe">("telebirr");
+    const [paidFrom, setPaidFrom] = useState("");
     const [instructions, setInstructions] = useState<PaymentInstructions | null>(null);
     const [loading, setLoading] = useState(true);
     const [requesting, setRequesting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        getPlans()
-            .then((items) => {
+        Promise.all([getPlans(), getSubscriptionRequest()])
+            .then(([items, pendingRequest]) => {
                 setPlans(items);
                 setSelectedPlan(items[1]?.id ?? items[0]?.id ?? null);
+                if (pendingRequest?.status === "pending") {
+                    setInstructions(pendingRequest);
+                }
             })
             .catch(() => setError("Failed to load subscription plans."))
             .finally(() => setLoading(false));
     }, []);
 
     const handleRequest = async () => {
-        if (!selectedPlan) return;
+        if (!selectedPlan || !paidFrom.trim()) return;
 
         setRequesting(true);
         setError(null);
 
         try {
-            const response = await requestSubscription(selectedPlan);
+            const response = await requestSubscription(selectedPlan, paymentMethod, paidFrom.trim());
             setInstructions(response);
         } catch {
             setError("Failed to generate payment instructions.");
@@ -120,17 +125,70 @@ export default function SubscribeScreen() {
 
                 {instructions && (
                     <div className="app-sheet p-5">
-                        <p className="app-section-label">Payment instructions</p>
-                        <p className="mt-3 text-sm font-semibold leading-relaxed text-[#18253D]">
-                            {instructions.instructions}
+                        <p className="app-section-label">
+                            {instructions.status === "pending" ? "Pending request" : "Payment instructions"}
                         </p>
+                        {instructions.instructions && (
+                            <p className="mt-3 text-sm font-semibold leading-relaxed text-[#18253D]">
+                                {instructions.instructions}
+                            </p>
+                        )}
                         <div className="mt-4 rounded-[22px] bg-[#F4F7FD] p-4">
                             <p className="app-section-label">Reference</p>
                             <p className="mt-2 text-lg font-bold text-[#18253D]">{instructions.reference}</p>
+                            <p className="mt-1 text-sm font-semibold text-[#18253D]">
+                                {instructions.plan} · {formatETB(instructions.amount)} · {instructions.days} days
+                            </p>
                             <p className="mt-3 text-sm leading-relaxed text-[#53627D]">{instructions.note}</p>
+                        </div>
+
+                        <div className="mt-4 grid gap-3">
+                            {instructions.payment_options.telebirr && (
+                                <PaymentOption
+                                    label="Telebirr"
+                                    primary={instructions.payment_options.telebirr.number}
+                                    secondary={instructions.payment_options.telebirr.name}
+                                />
+                            )}
+                            {instructions.payment_options.cbe && (
+                                <PaymentOption
+                                    label="CBE"
+                                    primary={instructions.payment_options.cbe.account}
+                                    secondary={instructions.payment_options.cbe.name}
+                                />
+                            )}
                         </div>
                     </div>
                 )}
+
+                <div className="app-sheet p-5">
+                    <p className="app-section-label">Payment method</p>
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                        {(["telebirr", "cbe"] as const).map((method) => (
+                            <button
+                                key={method}
+                                type="button"
+                                onClick={() => setPaymentMethod(method)}
+                                className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${
+                                    paymentMethod === method
+                                        ? "border-[#18253D] bg-[#18253D] text-white"
+                                        : "border-[rgba(31,53,91,0.08)] bg-[#F4F7FD] text-[#18253D]"
+                                }`}
+                            >
+                                {method === "telebirr" ? "Telebirr" : "CBE"}
+                            </button>
+                        ))}
+                    </div>
+                    <label className="mt-4 block">
+                        <span className="app-section-label">Paid from</span>
+                        <input
+                            value={paidFrom}
+                            onChange={(event) => setPaidFrom(event.target.value)}
+                            placeholder={paymentMethod === "telebirr" ? "Phone number used for payment" : "Bank account used for payment"}
+                            className="app-input mt-3"
+                        />
+                    </label>
+                </div>
 
                 {error && plans.length > 0 && <ErrorState message={error} />}
             </div>
@@ -141,12 +199,22 @@ export default function SubscribeScreen() {
                     size="lg"
                     fullWidth
                     loading={requesting}
-                    disabled={!selectedPlan}
+                    disabled={!selectedPlan || !paidFrom.trim()}
                     onClick={() => void handleRequest()}
                 >
                     Continue with premium
                 </Button>
             </div>
+        </div>
+    );
+}
+
+function PaymentOption({ label, primary, secondary }: { label: string; primary: string; secondary: string }) {
+    return (
+        <div className="rounded-[20px] border border-[rgba(31,53,91,0.08)] bg-white/70 px-4 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7F8CA5]">{label}</p>
+            <p className="mt-1 text-sm font-bold text-[#18253D]">{primary}</p>
+            <p className="mt-1 text-xs font-semibold text-[#53627D]">{secondary}</p>
         </div>
     );
 }

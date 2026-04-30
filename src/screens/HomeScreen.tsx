@@ -1,8 +1,10 @@
-import { ArrowRight, Brain, ChartColumn, FolderOpen, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BookOpenText, Brain, ChartColumn, FolderOpen, Sparkles, Target } from "lucide-react";
+import Button from "../components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { useAccess } from "../hooks/useAccess";
 import { formatDaysRemaining } from "../utils/format";
+import { getPeriodLabel, getProgramLabel } from "../utils/periods";
 
 const QUICK_ACTIONS = [
     {
@@ -16,16 +18,16 @@ const QUICK_ACTIONS = [
     {
         path: "/quiz",
         icon: Brain,
-        label: "Practice Quiz",
-        desc: "Run short question sets from your current courses.",
-        meta: "Daily practice",
+        label: "Practice Hub",
+        desc: "Choose quick quizzes or past exam papers from your current courses.",
+        meta: "Quiz + past exam",
         tint: "bg-[#FFF6DF] text-[#B27614]",
     },
     {
         path: "/exit-exam",
         icon: Target,
         label: "Exit Exams",
-        desc: "Start timed exam simulations and topic-focused prep.",
+        desc: "Choose timed exit exams, past years papers, or model exam practice.",
         meta: "Timed mode",
         tint: "bg-[#EAF8F1] text-[#2E9E73]",
     },
@@ -44,6 +46,11 @@ export default function HomeScreen() {
     const { student } = useAuthStore();
     const { isPremium, daysRemaining } = useAccess();
     const greeting = "Selam";
+    const profileBadges = [
+        getProgramLabel(student?.preferred_program),
+        `Year ${student?.preferred_year ?? "?"}`,
+        getPeriodLabel(student?.preferred_period, student?.preferred_program),
+    ];
 
     return (
         <div className="app-screen">
@@ -70,29 +77,47 @@ export default function HomeScreen() {
             <div className="app-scroll app-scroll-compact">
                 <div className="app-sheet p-4">
                     <div className="flex items-start justify-between gap-3">
-                        <div>
+                        <div className="min-w-0 flex-1">
                             <p className="app-section-label">Current profile</p>
-                            <p className="mt-2 text-base font-semibold text-[#18253D]">
-                                Year {student?.preferred_year ?? "?"} · Semester {student?.preferred_semester ?? "?"}
-                            </p>
                             <p className="mt-1 text-sm text-[#53627D]">
                                 Department-based content and exam prep
                             </p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {profileBadges.map((badge) => (
+                                    <span
+                                        key={badge}
+                                        className="inline-flex items-center justify-center rounded-full bg-[#F4F7FD] px-3 py-2 text-xs font-semibold text-[#18253D]"
+                                    >
+                                        {badge}
+                                    </span>
+                                ))}
+                            </div>
                         </div>
-                        <div className="rounded-full bg-[#F4F7FD] px-3 py-2 text-xs font-semibold text-[#53627D]">
+                        <div className="shrink-0 rounded-full bg-[#F4F7FD] px-3 py-2 text-xs font-semibold text-[#53627D]">
                             {isPremium ? formatDaysRemaining(daysRemaining) : "Upgrade available"}
                         </div>
                     </div>
 
-                    {!isPremium && (
-                        <button
-                            onClick={() => navigate("/subscribe")}
-                            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#18253D] px-4 py-2.5 text-sm font-semibold text-white"
+                    <div className="mt-4 flex flex-wrap gap-3">
+                        {!isPremium && (
+                            <button
+                                onClick={() => navigate("/subscribe")}
+                                className="inline-flex items-center gap-2 rounded-full bg-[#18253D] px-4 py-2.5 text-sm font-semibold text-white"
+                            >
+                                <Sparkles size={14} />
+                                Unlock premium tools
+                            </button>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="md"
+                            onClick={() => navigate("/onboarding")}
+                            className="rounded-full"
                         >
-                            <Sparkles size={14} />
-                            Unlock premium tools
-                        </button>
-                    )}
+                            <BookOpenText size={16} />
+                            Update setup
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="mt-5">
@@ -118,11 +143,11 @@ export default function HomeScreen() {
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-2">
                                             <p className="truncate text-sm font-semibold text-[#18253D]">
                                                 {action.label}
                                             </p>
-                                            <span className="rounded-full bg-[#F4F7FD] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#7F8CA5]">
+                                            <span className="inline-flex items-center justify-center rounded-full bg-[#F4F7FD] px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#7F8CA5]">
                                                 {action.meta}
                                             </span>
                                         </div>
@@ -131,7 +156,7 @@ export default function HomeScreen() {
                                         </p>
                                     </div>
 
-                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F4F7FD] text-[#18253D]">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F4F7FD] text-[#18253D]">
                                         <ArrowRight size={16} />
                                     </div>
                                 </button>
@@ -148,7 +173,7 @@ export default function HomeScreen() {
                                 Keep resource browsing course-first
                             </p>
                             <p className="mt-1 text-sm text-[#53627D]">
-                                Library and quizzes work best after department, year, and semester are selected.
+                                Library and quizzes work best after department, program, year, and period are selected.
                             </p>
                         </div>
                         <div className="rounded-[20px] bg-[#F6F8FD] px-4 py-3">

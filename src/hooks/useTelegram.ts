@@ -2,6 +2,17 @@ import WebApp from "@twa-dev/sdk";
 
 export const useTelegram = () => {
     const user = WebApp.initDataUnsafe?.user;
+    const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
+
+    const safeImpact = (style: "light" | "medium" | "heavy") => {
+        if (!supportsHaptics) return;
+        WebApp.HapticFeedback.impactOccurred(style);
+    };
+
+    const safeNotify = (type: "success" | "error" | "warning") => {
+        if (!supportsHaptics) return;
+        WebApp.HapticFeedback.notificationOccurred(type);
+    };
 
     return {
         webApp: WebApp,
@@ -24,27 +35,29 @@ export const useTelegram = () => {
             ),
 
         haptic: {
-            light: () =>
-                WebApp.HapticFeedback.impactOccurred("light"),
-            medium: () =>
-                WebApp.HapticFeedback.impactOccurred("medium"),
-            heavy: () =>
-                WebApp.HapticFeedback.impactOccurred("heavy"),
-            success: () =>
-                WebApp.HapticFeedback.notificationOccurred("success"),
-            error: () =>
-                WebApp.HapticFeedback.notificationOccurred("error"),
-            warning: () =>
-                WebApp.HapticFeedback.notificationOccurred("warning"),
+            light: () => safeImpact("light"),
+            medium: () => safeImpact("medium"),
+            heavy: () => safeImpact("heavy"),
+            success: () => safeNotify("success"),
+            error: () => safeNotify("error"),
+            warning: () => safeNotify("warning"),
         },
 
         backButton: {
             show: (callback: () => void) => {
+                if (!WebApp.isVersionAtLeast?.("6.1")) {
+                    return () => {};
+                }
+
                 WebApp.BackButton.show();
                 WebApp.BackButton.onClick(callback);
                 return () => WebApp.BackButton.offClick(callback);
             },
             hide: () => {
+                if (!WebApp.isVersionAtLeast?.("6.1")) {
+                    return;
+                }
+
                 WebApp.BackButton.hide();
             },
         },

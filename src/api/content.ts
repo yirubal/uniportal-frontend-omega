@@ -1,5 +1,6 @@
 import client from "./client";
 import { Department, Course, Resource } from "../store/contentStore";
+import type { ProgramType } from "../utils/periods";
 
 const isDev = import.meta.env.DEV;
 const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
@@ -38,8 +39,9 @@ export const getDepartments = async (): Promise<Department[]> => {
 
 export const getCourses = async (
     departmentId: number,
+    program: ProgramType,
     year: number,
-    semester: number
+    period: number
 ): Promise<Course[]> => {
     if (forceDevMocks) {
         const mocks = await getMocks();
@@ -48,18 +50,38 @@ export const getCourses = async (
             return mocks.MOCK_COURSES.filter(
                 (c) =>
                     c.department === departmentId &&
+                    c.program === program &&
                     c.year === year &&
-                    c.semester === semester
+                    c.period === period
             );
         }
     }
 
     try {
-        const response = await client.get<Course[]>(
+        const response = await client.get<Array<{
+            id: number;
+            course: {
+                id: number;
+                name: string;
+                code: string;
+                description?: string;
+            };
+            year: number;
+            period: number;
+            program: ProgramType;
+        }>>(
             `/api/departments/${departmentId}/courses/`,
-            { params: { year, semester } }
+            { params: { program, year, period } }
         );
-        return response.data;
+        return response.data.map((item) => ({
+            id: item.course.id,
+            name: item.course.name,
+            code: item.course.code,
+            department: departmentId,
+            program: item.program,
+            year: item.year,
+            period: item.period,
+        }));
     } catch (err) {
         const mocks = await getMocks();
         if (mocks) {
@@ -67,8 +89,9 @@ export const getCourses = async (
             return mocks.MOCK_COURSES.filter(
                 (c) =>
                     c.department === departmentId &&
+                    c.program === program &&
                     c.year === year &&
-                    c.semester === semester
+                    c.period === period
             );
         }
         throw err;
@@ -156,29 +179,32 @@ export interface DownloadResponse {
     url: string;
     filename: string;
     expires_in: number;
+    watermark?: string;
 }
 
 export const requestDownload = async (
-    resourceId: number
+    resourceId: number,
+    watermark?: string
 ): Promise<DownloadResponse> => {
     if (forceDevMocks) {
         const mocks = await getMocks();
         if (mocks) {
             console.info("[dev] Force mock download response");
-            return { url: "#", filename: `resource_${resourceId}.pdf`, expires_in: 300 };
+            return { url: "#", filename: `resource_${resourceId}.pdf`, expires_in: 300, watermark };
         }
     }
 
     try {
         const response = await client.post<DownloadResponse>(
-            `/api/resources/${resourceId}/download/`
+            `/api/resources/${resourceId}/download/`,
+            watermark ? { watermark } : undefined
         );
         return response.data;
     } catch (err) {
         const mocks = await getMocks();
         if (mocks) {
             console.info("[dev] Mock download response");
-            return { url: "#", filename: `resource_${resourceId}.pdf`, expires_in: 300 };
+            return { url: "#", filename: `resource_${resourceId}.pdf`, expires_in: 300, watermark };
         }
         throw err;
     }

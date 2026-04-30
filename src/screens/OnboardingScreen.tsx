@@ -1,20 +1,25 @@
-import { Building2, GraduationCap, Layers3 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Building2, CheckCircle2, GraduationCap, Layers3, Rows3, Wifi } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDepartments } from "../api/content";
-import { getMyProfile, updateMyProfile } from "../api/auth";
+import { updateMyProfile } from "../api/auth";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
-import { useAuthStore } from "../store/authStore";
+import { Student, useAuthStore } from "../store/authStore";
 import type { Department } from "../store/contentStore";
-
-const YEARS = [1, 2, 3, 4];
-const SEMESTERS = [1, 2];
+import {
+    getPeriodLabel,
+    getPeriodOptions,
+    PROGRAM_OPTIONS,
+    type ProgramType,
+    YEAR_OPTIONS,
+} from "../utils/periods";
 
 const STEP_LABELS = [
     { title: "Department", hint: "Pick the academic lane the app should prioritize.", icon: Building2 },
+    { title: "Program", hint: "Program controls whether the app shows semesters or terms.", icon: Wifi },
     { title: "Year", hint: "Your year keeps quizzes and resources relevant.", icon: GraduationCap },
-    { title: "Semester", hint: "Semester keeps the library small and easier to browse.", icon: Layers3 },
+    { title: "Period", hint: "The label changes by program, but the backend still stores a numeric period.", icon: Layers3 },
 ];
 
 export default function OnboardingScreen() {
@@ -25,10 +30,13 @@ export default function OnboardingScreen() {
     const [departments, setDepartments] = useState<Department[]>([]);
     const [loadingDepts, setLoadingDepts] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [completedProfile, setCompletedProfile] = useState<Student | null>(null);
     const [selectedDept, setSelectedDept] = useState<Department | null>(null);
+    const [selectedProgram, setSelectedProgram] = useState<ProgramType | null>(null);
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
-    const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
+    const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
 
     useEffect(() => {
         getDepartments()
@@ -37,28 +45,42 @@ export default function OnboardingScreen() {
             .finally(() => setLoadingDepts(false));
     }, []);
 
+    useEffect(() => {
+        const validPeriods = getPeriodOptions(selectedProgram).map((item) => item.value);
+        if (selectedPeriod && !validPeriods.includes(selectedPeriod)) {
+            setSelectedPeriod(null);
+        }
+    }, [selectedPeriod, selectedProgram]);
+
+    const periodOptions = useMemo(() => getPeriodOptions(selectedProgram), [selectedProgram]);
+
     const canAdvance =
         (step === 0 && selectedDept !== null) ||
-        (step === 1 && selectedYear !== null) ||
-        (step === 2 && selectedSemester !== null);
+        (step === 1 && selectedProgram !== null) ||
+        (step === 2 && selectedYear !== null) ||
+        (step === 3 && selectedPeriod !== null);
+
+    const goToNextStep = () => {
+        setStep((current) => Math.min(current + 1, STEP_LABELS.length - 1));
+    };
 
     const handleFinish = async () => {
-        if (!selectedDept || !selectedYear || !selectedSemester) return;
+        if (!selectedDept || !selectedProgram || !selectedYear || !selectedPeriod) return;
 
         setSaving(true);
         setError(null);
 
         try {
-            await updateMyProfile({
+            const updatedProfile = await updateMyProfile({
                 preferred_department: selectedDept.id,
+                preferred_program: selectedProgram,
                 preferred_year: selectedYear,
-                preferred_semester: selectedSemester,
+                preferred_period: selectedPeriod,
                 onboarding_complete: true,
             });
-
-            const updated = await getMyProfile();
-            setAuth(token!, updated);
-            navigate("/home", { replace: true });
+            setSaving(false);
+            setCompletedProfile(updatedProfile);
+            setShowSuccess(true);
         } catch {
             setError("Something went wrong. Please try again.");
             setSaving(false);
@@ -67,6 +89,46 @@ export default function OnboardingScreen() {
 
     const activeStep = STEP_LABELS[step];
     const StepIcon = activeStep.icon;
+    const primaryActionStyle = {
+        backgroundColor: "var(--tg-button-color)",
+        color: "var(--tg-button-text-color)",
+        borderColor: "color-mix(in srgb, var(--tg-button-color) 78%, white 22%)",
+    } as const;
+
+    if (showSuccess) {
+        return (
+            <div className="app-screen items-center justify-center px-5">
+                <div className="absolute inset-0 bg-[rgba(8,18,34,0.62)] backdrop-blur-sm" />
+                <div className="relative z-10 w-full max-w-sm rounded-[32px] border border-[rgba(31,53,91,0.08)] bg-[#FFFFFF] px-6 py-8 text-center shadow-[0_28px_70px_rgba(10,22,40,0.28)] animate-scale-in">
+                    <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-[#EAF8F1] text-[#2E9E73] shadow-[0_10px_28px_rgba(46,158,115,0.16)]">
+                        <CheckCircle2 size={34} />
+                    </div>
+                    <p className="app-section-label mt-5 text-[#4E5F7C]">Setup complete</p>
+                    <h1 className="mt-2 text-[1.7rem] font-bold text-[#18253D]">
+                        Your study path is ready
+                    </h1>
+                    <p className="mt-3 text-sm leading-relaxed text-[#53627D]">
+                        Department, program, year, and period were saved successfully. The app can now load the right courses for you.
+                    </p>
+                    <Button
+                        variant="primary"
+                        size="lg"
+                        fullWidth
+                        className="mt-6"
+                        style={primaryActionStyle}
+                        onClick={() => {
+                            if (token && completedProfile) {
+                                setAuth(token, completedProfile);
+                            }
+                            navigate("/home", { replace: true });
+                        }}
+                    >
+                        Continue to home
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="app-screen">
@@ -87,7 +149,7 @@ export default function OnboardingScreen() {
                         Personalize your study path
                     </h1>
                     <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#53627D]">
-                        Three quick choices so the mini app stays focused on the right courses.
+                        Four quick choices so the mini app stays focused on the right courses.
                     </p>
                 </div>
             </div>
@@ -99,7 +161,7 @@ export default function OnboardingScreen() {
                             <StepIcon size={20} />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="app-section-label">Step {step + 1} of 3</p>
+                            <p className="app-section-label">Step {step + 1} of 4</p>
                             <p className="mt-2 text-base font-semibold text-[#18253D]">
                                 {activeStep.title}
                             </p>
@@ -117,7 +179,7 @@ export default function OnboardingScreen() {
                     </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-4 pb-2">
                     {step === 0 && (
                         <div className="space-y-3">
                             {loadingDepts ? (
@@ -128,7 +190,11 @@ export default function OnboardingScreen() {
                                 departments.map((dept) => (
                                     <button
                                         key={dept.id}
-                                        onClick={() => setSelectedDept(dept)}
+                                        onClick={() => {
+                                            setError(null);
+                                            setSelectedDept(dept);
+                                            goToNextStep();
+                                        }}
                                         className={`app-list-item ${selectedDept?.id === dept.id ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
                                     >
                                         <div className="app-icon-chip">
@@ -148,16 +214,26 @@ export default function OnboardingScreen() {
                     )}
 
                     {step === 1 && (
-                        <div className="app-grid-2">
-                            {YEARS.map((year) => (
+                        <div className="space-y-3">
+                            {PROGRAM_OPTIONS.map((program) => (
                                 <button
-                                    key={year}
-                                    onClick={() => setSelectedYear(year)}
-                                    className={`app-sheet min-h-[134px] p-5 text-left ${selectedYear === year ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    key={program.value}
+                                    onClick={() => {
+                                        setError(null);
+                                        setSelectedProgram(program.value);
+                                        goToNextStep();
+                                    }}
+                                    className={`app-list-item items-center ${selectedProgram === program.value ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
                                 >
-                                    <p className="app-section-label">Academic year</p>
-                                    <p className="app-title mt-5 text-[2rem] font-bold text-[#18253D]">{year}</p>
-                                    <p className="mt-2 text-sm text-[#53627D]">Year {year}</p>
+                                    <div className="app-icon-chip bg-[#EEF3FF] text-[#2D5BFF]">
+                                        <Rows3 size={18} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold text-[#18253D]">{program.label}</p>
+                                    </div>
+                                    <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedProgram === program.value ? "tone-blue" : "bg-[#EFF3F8] text-[#7F8CA5]"}`}>
+                                        {selectedProgram === program.value ? "Selected" : "Choose"}
+                                    </div>
                                 </button>
                             ))}
                         </div>
@@ -165,15 +241,48 @@ export default function OnboardingScreen() {
 
                     {step === 2 && (
                         <div className="app-grid-2">
-                            {SEMESTERS.map((semester) => (
+                            {YEAR_OPTIONS.map((year) => (
                                 <button
-                                    key={semester}
-                                    onClick={() => setSelectedSemester(semester)}
-                                    className={`app-sheet min-h-[134px] p-5 text-left ${selectedSemester === semester ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    key={year}
+                                    type="button"
+                                    onClick={() => {
+                                        setError(null);
+                                        setSelectedYear(year);
+                                        goToNextStep();
+                                    }}
+                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedYear === year ? "bg-[#F8FBFF] ring-2 ring-[#2D5BFF]/20 shadow-[0_18px_36px_rgba(45,91,255,0.10)]" : ""}`}
                                 >
-                                    <p className="app-section-label">Current term</p>
-                                    <p className="app-title mt-5 text-[2rem] font-bold text-[#18253D]">{semester}</p>
-                                    <p className="mt-2 text-sm text-[#53627D]">Semester {semester}</p>
+                                    <div className="app-icon-chip bg-[#EEF3FF] text-[#2D5BFF]">
+                                        <GraduationCap size={18} />
+                                    </div>
+                                    <p className="app-section-label pt-1">Academic year</p>
+                                    <p className="app-title text-[2rem] font-bold text-[#18253D]">{year}</p>
+                                    <p className="text-sm text-[#53627D]">Year {year}</p>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="app-grid-2">
+                            {periodOptions.map((period) => (
+                                <button
+                                    key={period.value}
+                                    type="button"
+                                    onClick={() => {
+                                        setError(null);
+                                        setSelectedPeriod(period.value);
+                                    }}
+                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedPeriod === period.value ? "bg-[#F8FBFF] ring-2 ring-[#2D5BFF]/20 shadow-[0_18px_36px_rgba(45,91,255,0.10)]" : ""}`}
+                                >
+                                    <div className="app-icon-chip bg-[#EEF3FF] text-[#2D5BFF]">
+                                        <Layers3 size={18} />
+                                    </div>
+                                    <p className="app-section-label pt-1">Current period</p>
+                                    <p className="app-title text-[1.6rem] font-bold text-[#18253D]">{period.label}</p>
+                                    <p className="text-sm text-[#53627D]">
+                                        {selectedProgram ? getPeriodLabel(period.value, selectedProgram) : period.label}
+                                    </p>
                                 </button>
                             ))}
                         </div>
@@ -192,8 +301,9 @@ export default function OnboardingScreen() {
                     fullWidth
                     disabled={!canAdvance}
                     loading={saving}
+                    style={primaryActionStyle}
                     onClick={() => {
-                        if (step < 2) {
+                        if (step < 3) {
                             setStep((current) => current + 1);
                             return;
                         }
@@ -201,9 +311,10 @@ export default function OnboardingScreen() {
                         void handleFinish();
                     }}
                 >
-                    {step < 2 ? "Continue" : "Finish setup"}
+                    {step < 3 ? "Continue" : "Finish setup"}
                 </Button>
             </div>
+
         </div>
     );
 }

@@ -2,6 +2,7 @@ import { Download, Lock, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getResourceDetail, requestDownload } from "../api/content";
+import { getWatermarkText } from "../api/auth";
 import Button from "../components/ui/Button";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import TopBackButton from "../components/TopBackButton";
@@ -45,7 +46,7 @@ export default function ResourceViewerScreen() {
         return resources.filter((item) => item.course === resource.course && item.id !== resource.id).slice(0, 3);
     }, [resource, resources]);
 
-    const isLocked = resource ? !canAccessResource(resource.access_level) : false;
+    const isLocked = resource ? resource.is_locked || !canAccessResource(resource.access_level) : false;
 
     const handleDownload = async () => {
         if (!resource || isLocked) {
@@ -57,7 +58,8 @@ export default function ResourceViewerScreen() {
         setDownloadMessage(null);
 
         try {
-            const response = await requestDownload(resource.id);
+            const watermark = await getWatermarkText().catch(() => undefined);
+            const response = await requestDownload(resource.id, watermark);
             if (response.url.startsWith("http")) {
                 try {
                     downloadFile(response.url, response.filename);
@@ -66,7 +68,11 @@ export default function ResourceViewerScreen() {
                 }
             }
             setDownloadMessage(`Download ready: ${response.filename}`);
-        } catch {
+        } catch (error) {
+            if (typeof error === "object" && error !== null && "status" in error && error.status === 403) {
+                navigate("/subscribe");
+                return;
+            }
             setDownloadMessage("Unable to prepare the download right now.");
         } finally {
             setDownloading(false);

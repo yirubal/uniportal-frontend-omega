@@ -1,6 +1,7 @@
 import { Download, LoaderCircle, Lock } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getWatermarkText } from "../api/auth";
 import { requestDownload } from "../api/content";
 import { useTelegram } from "../hooks/useTelegram";
 import type { Resource } from "../store/contentStore";
@@ -37,13 +38,18 @@ export default function ResourceCard({
 
         setDownloading(true);
         try {
-            const response = await requestDownload(resource.id);
+            const watermark = await getWatermarkText().catch(() => undefined);
+            const response = await requestDownload(resource.id, watermark);
             if (response.url.startsWith("http")) {
                 try {
                     downloadFile(response.url, response.filename);
                 } catch {
                     window.open(response.url, "_blank", "noopener,noreferrer");
                 }
+            }
+        } catch (error) {
+            if (typeof error === "object" && error !== null && "status" in error && error.status === 403) {
+                navigate("/subscribe");
             }
         } finally {
             setDownloading(false);

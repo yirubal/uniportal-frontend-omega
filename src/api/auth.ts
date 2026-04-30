@@ -1,5 +1,11 @@
 import client from "./client";
 import { Student, StudentPreferences } from "../store/authStore";
+import type { ProgramType } from "../utils/periods";
+
+const isDev = import.meta.env.DEV;
+const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
+const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
+const DEV_STUDENT_STORAGE_KEY = "uniportal-dev-student";
 
 interface BackendStudent {
     id?: number;
@@ -11,10 +17,12 @@ interface BackendStudent {
     is_premium?: boolean;
     subscription_status?: "free" | "premium";
     subscription_expiry?: string | null;
+    onboarding_complete?: boolean;
     preferences?: Record<string, unknown> | null;
     preferred_department?: number | null;
+    preferred_program?: ProgramType | null;
     preferred_year?: number | null;
-    preferred_semester?: number | null;
+    preferred_period?: number | null;
 }
 
 interface LoginResponse {
@@ -22,14 +30,41 @@ interface LoginResponse {
     student: Student;
 }
 
+async function getMockStudent(): Promise<Student | null> {
+    if (!isDev || (!forceDevMocks && !isLocalDevHost)) return null;
+
+    const storedStudent = window.localStorage.getItem(DEV_STUDENT_STORAGE_KEY);
+    if (storedStudent) {
+        try {
+            return JSON.parse(storedStudent) as Student;
+        } catch {
+            window.localStorage.removeItem(DEV_STUDENT_STORAGE_KEY);
+        }
+    }
+
+    const { MOCK_STUDENT } = await import("./devMocks");
+    window.localStorage.setItem(DEV_STUDENT_STORAGE_KEY, JSON.stringify(MOCK_STUDENT));
+    return MOCK_STUDENT;
+}
+
+function saveMockStudent(student: Student) {
+    if (!isDev || (!forceDevMocks && !isLocalDevHost)) return;
+    window.localStorage.setItem(DEV_STUDENT_STORAGE_KEY, JSON.stringify(student));
+}
+
 function readPreference(
     preferences: Record<string, unknown> | null | undefined,
-    key: "department" | "year" | "semester"
+    key: "department" | "program" | "year" | "period"
 ): number | null {
+    if (key === "program") {
+        return null;
+    }
+
     const aliases: Record<typeof key, string[]> = {
         department: ["department", "preferred_department"],
+        program: ["program", "preferred_program"],
         year: ["year", "preferred_year"],
-        semester: ["semester", "preferred_semester"],
+        period: ["period", "preferred_period", "semester", "preferred_semester"],
     };
 
     for (const alias of aliases[key]) {
@@ -41,19 +76,42 @@ function readPreference(
     return null;
 }
 
+function readProgramPreference(
+    preferences: Record<string, unknown> | null | undefined,
+    fallback: ProgramType | null | undefined
+): ProgramType | null {
+    const aliases = ["program", "preferred_program"];
+
+    for (const alias of aliases) {
+        const raw = preferences?.[alias];
+        if (raw === "regular" || raw === "extension" || raw === "distance") {
+            return raw;
+        }
+    }
+
+    if (fallback === "regular" || fallback === "extension" || fallback === "distance") {
+        return fallback;
+    }
+
+    return null;
+}
+
 function buildPreferences(student: BackendStudent): StudentPreferences {
     return {
         department:
             readPreference(student.preferences, "department") ??
             student.preferred_department ??
             null,
+        program:
+            readProgramPreference(student.preferences, student.preferred_program) ??
+            null,
         year:
             readPreference(student.preferences, "year") ??
             student.preferred_year ??
             null,
-        semester:
-            readPreference(student.preferences, "semester") ??
-            student.preferred_semester ??
+        period:
+            readPreference(student.preferences, "period") ??
+            student.preferred_period ??
             null,
     };
 }
@@ -75,10 +133,11 @@ export function normalizeStudent(student: BackendStudent): Student {
         last_name: lastName,
         username: student.username ?? "",
         preferred_department: preferences.department,
+        preferred_program: preferences.program,
         preferred_year: preferences.year,
-        preferred_semester: preferences.semester,
-        onboarding_complete: Boolean(
-            preferences.department && preferences.year && preferences.semester
+        preferred_period: preferences.period,
+        onboarding_complete: student.onboarding_complete ?? Boolean(
+            preferences.department && preferences.program && preferences.year && preferences.period
         ),
         is_premium: student.is_premium ?? student.subscription_status === "premium",
         subscription_expiry: student.subscription_expiry ?? null,
@@ -98,29 +157,97 @@ export const loginWithTelegram = async (
     };
 };
 
+export const loginWithDevMode = async (): Promise<LoginResponse> => {
+    const response = await client.post<{ token: string; student: BackendStudent }>("/api/auth/telegram/", {
+        dev_mode: true,
+        telegram_id: 999999,
+        first_name: "Test",
+        username: "testuser",
+    });
+    return {
+        token: response.data.token,
+        student: normalizeStudent(response.data.student),
+    };
+};
+
 export const getMyProfile = async (): Promise<Student> => {
+    const mockStudent = await getMockStudent();
+    if (mockStudent) {
+        console.info("[dev] Using mock student profile");
+        return mockStudent;
+    }
+
     const response = await client.get<BackendStudent>("/api/students/me/");
     return normalizeStudent(response.data);
 };
 
 export const updateMyProfile = async (data: {
     preferred_department?: number;
+    preferred_program?: ProgramType;
     preferred_year?: number;
-    preferred_semester?: number;
+    preferred_period?: number;
     onboarding_complete?: boolean;
 }): Promise<Student> => {
+    const mockStudent = await getMockStudent();
+    if (mockStudent) {
+        const updatedStudent: Student = {
+            ...mockStudent,
+            preferred_department:
+                typeof data.preferred_department === "number"
+                    ? data.preferred_department
+                    : mockStudent.preferred_department,
+            preferred_program:
+                data.preferred_program ?? mockStudent.preferred_program,
+            preferred_year:
+                typeof data.preferred_year === "number"
+                    ? data.preferred_year
+                    : mockStudent.preferred_year,
+            preferred_period:
+                typeof data.preferred_period === "number"
+                    ? data.preferred_period
+                    : mockStudent.preferred_period,
+            onboarding_complete:
+                typeof data.onboarding_complete === "boolean"
+                    ? data.onboarding_complete
+                    : mockStudent.onboarding_complete,
+            preferences: {
+                department:
+                    typeof data.preferred_department === "number"
+                        ? data.preferred_department
+                        : mockStudent.preferences.department,
+                program:
+                    data.preferred_program ?? mockStudent.preferences.program,
+                year:
+                    typeof data.preferred_year === "number"
+                        ? data.preferred_year
+                        : mockStudent.preferences.year,
+                period:
+                    typeof data.preferred_period === "number"
+                        ? data.preferred_period
+                        : mockStudent.preferences.period,
+            },
+        };
+        saveMockStudent(updatedStudent);
+        console.info("[dev] Updated mock student profile");
+        return updatedStudent;
+    }
+
     const response = await client.patch<BackendStudent>("/api/students/me/", {
-        preferences: {
-            ...(typeof data.preferred_department === "number"
-                ? { department: data.preferred_department }
-                : {}),
-            ...(typeof data.preferred_year === "number"
-                ? { year: data.preferred_year }
-                : {}),
-            ...(typeof data.preferred_semester === "number"
-                ? { semester: data.preferred_semester }
-                : {}),
-        },
+        ...(typeof data.preferred_department === "number"
+            ? { preferred_department: data.preferred_department }
+            : {}),
+        ...(data.preferred_program
+            ? { preferred_program: data.preferred_program }
+            : {}),
+        ...(typeof data.preferred_year === "number"
+            ? { preferred_year: data.preferred_year }
+            : {}),
+        ...(typeof data.preferred_period === "number"
+            ? { preferred_period: data.preferred_period }
+            : {}),
+        ...(typeof data.onboarding_complete === "boolean"
+            ? { onboarding_complete: data.onboarding_complete }
+            : {}),
     });
     return normalizeStudent(response.data);
 };

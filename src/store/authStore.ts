@@ -1,9 +1,11 @@
 import { create } from "zustand";
+import type { ProgramType } from "../utils/periods";
 
 export interface StudentPreferences {
     department: number | null;
+    program: ProgramType | null;
     year: number | null;
-    semester: number | null;
+    period: number | null;
 }
 
 export interface Student {
@@ -14,8 +16,9 @@ export interface Student {
     last_name: string;
     username: string;
     preferred_department: number | null;
+    preferred_program: ProgramType | null;
     preferred_year: number | null;
-    preferred_semester: number | null;
+    preferred_period: number | null;
     onboarding_complete: boolean;
     is_premium: boolean;
     subscription_expiry: string | null;

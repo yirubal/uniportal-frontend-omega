@@ -27,6 +27,8 @@ function setTelegramViewportVars() {
 
 export function useTelegramChrome() {
     useEffect(() => {
+        const supportsModernChrome = WebApp.isVersionAtLeast?.("6.1") ?? false;
+
         document.documentElement.classList.add("tg-miniapp");
         setTelegramThemeVars();
         setTelegramViewportVars();
@@ -34,12 +36,14 @@ export function useTelegramChrome() {
         const handleThemeChange = () => setTelegramThemeVars();
         const handleViewportChange = () => setTelegramViewportVars();
 
-        WebApp.setBackgroundColor(
-            WebApp.themeParams.bg_color || "#F4F6FB"
-        );
-        WebApp.setHeaderColor(
-            WebApp.themeParams.header_bg_color || "#18253D"
-        );
+        if (supportsModernChrome) {
+            WebApp.setBackgroundColor(
+                WebApp.themeParams.bg_color || "#F4F6FB"
+            );
+            WebApp.setHeaderColor(
+                WebApp.themeParams.header_bg_color || "#18253D"
+            );
+        }
 
         WebApp.onEvent("themeChanged", handleThemeChange);
         WebApp.onEvent("viewportChanged", handleViewportChange);

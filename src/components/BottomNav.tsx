@@ -5,13 +5,14 @@ import WebApp from "@twa-dev/sdk";
 const tabs = [
     { path: "/home", icon: Home, label: "Home" },
     { path: "/resources", icon: Library, label: "Library" },
-    { path: "/quiz", icon: Brain, label: "Quiz" },
+    { path: "/quiz", icon: Brain, label: "Practice" },
     { path: "/exit-exam", icon: Trophy, label: "Exams" },
 ];
 
 export default function BottomNav() {
     const location = useLocation();
     const navigate = useNavigate();
+    const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
 
     const isActive = (path: string) =>
         location.pathname === path ||
@@ -30,7 +31,9 @@ export default function BottomNav() {
                             type="button"
                             key={tab.path}
                             onClick={() => {
-                                WebApp.HapticFeedback.selectionChanged();
+                                if (supportsHaptics) {
+                                    WebApp.HapticFeedback.selectionChanged();
+                                }
                                 navigate(tab.path);
                             }}
                             className={`
