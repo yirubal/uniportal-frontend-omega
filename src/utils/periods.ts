@@ -2,21 +2,18 @@ export type ProgramType = "regular" | "extension" | "distance";
 
 export const YEAR_OPTIONS = [1, 2, 3, 4, 5];
 
-export const PROGRAM_OPTIONS: Array<{ value: ProgramType; label: string; description: string }> = [
+export const PROGRAM_OPTIONS: Array<{ value: ProgramType; label: string }> = [
     {
         value: "regular",
         label: "Regular",
-        description: "Two semesters per academic year.",
     },
     {
         value: "extension",
         label: "Extension",
-        description: "Two semesters with extension scheduling.",
     },
     {
         value: "distance",
         label: "Distance",
-        description: "Three terms per academic year.",
     },
 ];
 

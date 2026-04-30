@@ -194,10 +194,9 @@ export default function ResourcesScreen() {
                                 <button
                                     key={program.value}
                                     onClick={() => setSelProgram(program.value)}
-                                    className={`app-sheet flex min-h-[5rem] flex-1 flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selProgram === program.value ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
+                                    className={`app-sheet flex min-h-[5rem] flex-1 items-center justify-center rounded-[20px] px-4 py-3 text-center ${selProgram === program.value ? "ring-2 ring-[#2D5BFF]/20" : ""}`}
                                 >
                                     <p className="text-sm font-bold text-[#18253D]">{program.label}</p>
-                                    <p className="mt-1 text-xs text-[#53627D]">{program.description}</p>
                                 </button>
                             ))}
                         </div>
