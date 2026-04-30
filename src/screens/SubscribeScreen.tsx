@@ -178,43 +178,7 @@ export default function SubscribeScreen() {
                     )}
                 </div>
 
-                {instructions && (
-                    <div className="app-sheet p-5">
-                        <p className="app-section-label">
-                            {instructions.status === "pending" ? "Pending request" : "Payment instructions"}
-                        </p>
-                        {instructions.instructions && (
-                            <p className="mt-3 text-sm font-semibold leading-relaxed text-[#172B2F]">
-                                {instructions.instructions}
-                            </p>
-                        )}
-                        <div className="mt-4 rounded-[22px] border border-[#CFE2DE] bg-[#EAF4F1] p-4">
-                            <p className="app-section-label">Reference</p>
-                            <p className="mt-2 break-words text-lg font-bold text-[#172B2F]">{instructions.reference}</p>
-                            <p className="mt-1 text-sm font-semibold text-[#172B2F]">
-                                {instructions.plan} · {formatETB(instructions.amount)} · {instructions.days} days
-                            </p>
-                            <p className="mt-3 text-sm leading-relaxed text-[#526B70]">{instructions.note}</p>
-                        </div>
-
-                        <div className="mt-4 grid gap-3">
-                            {instructions.payment_options.telebirr && (
-                                <PaymentOption
-                                    label="Telebirr"
-                                    primary={instructions.payment_options.telebirr.number}
-                                    secondary={instructions.payment_options.telebirr.name}
-                                />
-                            )}
-                            {instructions.payment_options.cbe && (
-                                <PaymentOption
-                                    label="CBE"
-                                    primary={instructions.payment_options.cbe.account}
-                                    secondary={instructions.payment_options.cbe.name}
-                                />
-                            )}
-                        </div>
-                    </div>
-                )}
+                {instructions && <SubscriptionInstructionsCard instructions={instructions} />}
 
                 <div className="app-sheet p-5">
                     <p className="app-section-label">Payment method</p>
@@ -305,6 +269,63 @@ function PaymentOption({ label, primary, secondary }: { label: string; primary: 
     );
 }
 
+function SubscriptionInstructionsCard({ instructions }: { instructions: PaymentInstructions }) {
+    const paymentOptions = instructions.payment_options ?? {};
+    const summary = getPaymentInstructionSummary(instructions);
+    const hasReferenceDetails = Boolean(instructions.reference || summary || instructions.note);
+    const hasPaymentOptions = Boolean(paymentOptions.telebirr || paymentOptions.cbe);
+
+    return (
+        <div className="app-sheet p-5">
+            <p className="app-section-label">
+                {instructions.status === "pending" ? "Pending request" : "Payment instructions"}
+            </p>
+            {instructions.instructions && (
+                <p className="mt-3 text-sm font-semibold leading-relaxed text-[#172B2F]">
+                    {instructions.instructions}
+                </p>
+            )}
+            {hasReferenceDetails && (
+                <div className="mt-4 rounded-[22px] border border-[#CFE2DE] bg-[#EAF4F1] p-4">
+                    {instructions.reference && (
+                        <>
+                            <p className="app-section-label">Reference</p>
+                            <p className="mt-2 break-words text-lg font-bold text-[#172B2F]">{instructions.reference}</p>
+                        </>
+                    )}
+                    {summary && (
+                        <p className="mt-1 text-sm font-semibold text-[#172B2F]">
+                            {summary}
+                        </p>
+                    )}
+                    {instructions.note && (
+                        <p className="mt-3 text-sm leading-relaxed text-[#526B70]">{instructions.note}</p>
+                    )}
+                </div>
+            )}
+
+            {hasPaymentOptions && (
+                <div className="mt-4 grid gap-3">
+                    {paymentOptions.telebirr && (
+                        <PaymentOption
+                            label="Telebirr"
+                            primary={paymentOptions.telebirr.number}
+                            secondary={paymentOptions.telebirr.name}
+                        />
+                    )}
+                    {paymentOptions.cbe && (
+                        <PaymentOption
+                            label="CBE"
+                            primary={paymentOptions.cbe.account}
+                            secondary={paymentOptions.cbe.name}
+                        />
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
 function SubscriptionStatusModal({
     open,
     requesting,
@@ -321,6 +342,8 @@ function SubscriptionStatusModal({
     const status = requesting ? "submitting" : instructions?.status ?? "pending";
     const config = getSubscriptionStatusConfig(status);
     const Icon = config.icon;
+    const summary = instructions ? getPaymentInstructionSummary(instructions) : "";
+    const hasInstructionDetails = Boolean(instructions?.reference || summary);
 
     return (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgba(10,22,40,0.46)] p-4 sm:items-center">
@@ -336,13 +359,17 @@ function SubscriptionStatusModal({
                 <p className="mt-3 text-center text-sm leading-relaxed text-[#526B70]">
                     {config.description}
                 </p>
-                {instructions && !requesting && (
+                {hasInstructionDetails && !requesting && instructions && (
                     <div className="mt-5 rounded-[20px] border border-[#CFE2DE] bg-[#EAF4F1] px-4 py-3">
-                        <p className="app-section-label">Reference</p>
-                        <p className="mt-1 break-words text-base font-bold text-[#172B2F]">{instructions.reference}</p>
-                        <p className="mt-1 text-sm font-semibold text-[#354F55]">
-                            {instructions.plan} · {formatETB(instructions.amount)}
-                        </p>
+                        {instructions.reference && (
+                            <>
+                                <p className="app-section-label">Reference</p>
+                                <p className="mt-1 break-words text-base font-bold text-[#172B2F]">{instructions.reference}</p>
+                            </>
+                        )}
+                        {summary && (
+                            <p className="mt-1 text-sm font-semibold text-[#354F55]">{summary}</p>
+                        )}
                     </div>
                 )}
                 <Button
@@ -407,4 +434,14 @@ function getSubscriptionStatusConfig(status: PaymentInstructions["status"] | "su
         iconBg: "#EAF4F1",
         iconColor: "#3F6F6A",
     };
+}
+
+function getPaymentInstructionSummary(instructions: PaymentInstructions) {
+    const parts = [
+        instructions.plan,
+        typeof instructions.amount === "number" ? formatETB(instructions.amount) : null,
+        typeof instructions.days === "number" ? `${instructions.days} days` : null,
+    ].filter(Boolean);
+
+    return parts.join(" · ");
 }

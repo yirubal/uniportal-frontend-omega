@@ -187,6 +187,7 @@ This file is the durable handoff for future Codex sessions working in this repos
   - `SubscribeScreen` now has an inline `Request subscription` button directly after the payment reference field, while the sticky footer CTA uses the same request action
   - submitting opens a status modal that shows request submission, pending payment processing, approved payment confirmation, or rejected payment messaging from `PaymentInstructions.status`
   - primary request buttons use explicit inline brand fill colors so the global button reset cannot hide their backgrounds
+  - subscription request details are rendered defensively because existing backend request/status responses may omit `payment_options`, `reference`, `amount`, or `days`; do not assume those fields are always present on page load
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work

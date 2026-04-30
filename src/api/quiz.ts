@@ -299,14 +299,14 @@ export interface Plan {
 }
 
 export interface PaymentInstructions {
-    reference: string;
-    plan: string;
-    amount: number;
-    days: number;
+    reference?: string;
+    plan?: string;
+    amount?: number;
+    days?: number;
     status: "pending" | "approved" | "rejected";
-    note: string;
+    note?: string;
     instructions?: string;
-    payment_options: {
+    payment_options?: {
         telebirr?: {
             number: string;
             name: string;
