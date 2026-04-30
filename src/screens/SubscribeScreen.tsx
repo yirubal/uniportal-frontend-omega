@@ -146,7 +146,7 @@ export default function SubscribeScreen() {
                                                     {plan.description}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3 py-2">
+                                            <div className="flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3 py-2 px-1">
                                                 <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${isSelected
                                                     ? "bg-[#3F6F6A] text-white"
                                                     : "bg-[#F4F8F5] text-[#526B70]"
