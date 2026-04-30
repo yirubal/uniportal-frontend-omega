@@ -146,14 +146,14 @@ export default function SubscribeScreen() {
                                                     {plan.description}
                                                 </p>
                                             </div>
-                                            <div className=" border-2 border-blue-400 flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3 py-2 px-1">
+                                            <div className="flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3 py-2 px-1">
                                                 <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${isSelected
                                                     ? "bg-[#3F6F6A] text-white"
                                                     : "bg-[#F4F8F5] text-[#526B70]"
                                                     }`}>
                                                     {isSelected ? "Selected" : `${plan.days} days`}
                                                 </span>
-                                                <div className="shrink-0 text-right px-6 border-2 border-red-400">
+                                                <div className="shrink-0 text-right px-6">
                                                     <p className="text-lg font-black leading-tight text-[#172B2F]">
                                                         {formatETB(plan.price)}
                                                     </p>
@@ -220,7 +220,7 @@ export default function SubscribeScreen() {
                                 onClick={() => setPaymentMethod(method)}
                                 className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${paymentMethod === method
                                     ? "border-[#3F6F6A] bg-[#DCEBE7] text-[#172B2F] shadow-[0_8px_18px_rgba(63,111,106,0.12)]"
-                                    : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F]"
+                                    : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F] border-2 border-red-400"
                                     }`}
                             >
                                 {method === "telebirr" ? "Telebirr" : "CBE"}
