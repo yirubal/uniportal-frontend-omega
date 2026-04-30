@@ -133,7 +133,7 @@ export default function SubscribeScreen() {
                                         aria-pressed={isSelected}
                                         onClick={() => setSelectedPlan(plan.id)}
                                         className={`w-full rounded-[22px] border p-4 text-left transition-colors ${isSelected
-                                            ? "border-[#3F6F6A] bg-[#EAF4F1] shadow-[0_10px_22px_rgba(63,111,106,0.10)]"
+                                            ? "border-[#3F6F6A] bg-[#EAF4F1]"
                                             : "border-[rgba(23,43,47,0.10)] bg-white/85"
                                             }`}
                                     >
@@ -146,14 +146,14 @@ export default function SubscribeScreen() {
                                                     {plan.description}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3 py-2 px-1">
+                                            <div className=" border-2 border-blue-400 flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3 py-2 px-1">
                                                 <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${isSelected
                                                     ? "bg-[#3F6F6A] text-white"
                                                     : "bg-[#F4F8F5] text-[#526B70]"
                                                     }`}>
                                                     {isSelected ? "Selected" : `${plan.days} days`}
                                                 </span>
-                                                <div className="shrink-0 text-right px-6">
+                                                <div className="shrink-0 text-right px-6 border-2 border-red-400">
                                                     <p className="text-lg font-black leading-tight text-[#172B2F]">
                                                         {formatETB(plan.price)}
                                                     </p>
