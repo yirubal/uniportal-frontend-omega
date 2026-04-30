@@ -172,6 +172,11 @@ This file is the durable handoff for future Codex sessions working in this repos
   - `PracticeSetupScreen` now opens on the saved-profile course shelf for both quiz and past-exam paths before loading `/quiz/list`
   - `ExitExamScreen` and `ExitExamListScreen` now show saved-profile context in their copy while continuing to load exit exams from the student department
   - verification after this pass: `npm run lint` and `npm run build` both passed
+- Refined the subscription page back into the app's normal visual system:
+  - removed the dark premium/pricing blocks that felt off-brand and caused white-on-light contrast confusion
+  - plan cards now use neutral surfaces, green-slate selected state, dark readable text, and stacked price/duration rows to avoid cramped mobile alignment
+  - payment instructions and payment method controls now use the same green-slate brand treatment as other selected states
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

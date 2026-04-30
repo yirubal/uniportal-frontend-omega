@@ -61,20 +61,18 @@ export default function SubscribeScreen() {
             </div>
 
             <div className="app-scroll app-scroll-compact space-y-4">
-                <div className="rounded-[24px] border border-[#172B2F] bg-[#172B2F] p-5 shadow-[0_18px_36px_rgba(23,43,47,0.14)]">
+                <div className="app-sheet p-5">
                     <div className="flex items-center gap-3">
-                        <div className="app-icon-chip bg-[#FFF6DF] text-[#8B5C10]">
+                        <div className="app-icon-chip bg-[#FFF6DF] text-[#B27614]">
                             <Sparkles size={18} />
                         </div>
                         <div>
-                            <p className="text-[0.7rem] font-bold uppercase tracking-[0.16em] text-[#BFE0D8]">
-                                Premium includes
-                            </p>
-                            <p className="mt-1 text-base font-semibold text-white">Focused exam-prep tools</p>
+                            <p className="app-section-label">Premium includes</p>
+                            <p className="mt-1 text-base font-semibold text-[#172B2F]">Focused exam-prep tools</p>
                         </div>
                     </div>
 
-                    <div className="mt-5 space-y-3">
+                    <div className="mt-5 grid gap-3">
                         {[
                             "Unlimited downloads across all courses",
                             "Exit exam simulations and archives",
@@ -83,19 +81,26 @@ export default function SubscribeScreen() {
                         ].map((benefit) => (
                             <div
                                 key={benefit}
-                                className="flex items-center gap-3 rounded-[18px] border border-white/10 bg-white/[0.07] px-4 py-3"
+                                className="flex items-center gap-3 rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-[#F6FAF7] px-4 py-3"
                             >
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EAF8F1] text-[#206F52]">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EAF8F1] text-[#2E9E73]">
                                     <Check size={14} />
                                 </div>
-                                <p className="text-sm font-medium leading-snug text-[#F4FAF7]">{benefit}</p>
+                                <p className="text-sm font-medium leading-snug text-[#172B2F]">{benefit}</p>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 <div className="app-sheet p-5">
-                    <p className="app-section-label">Plans</p>
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <p className="app-section-label">Plans</p>
+                            <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
+                                Pick the access window that fits your study schedule.
+                            </p>
+                        </div>
+                    </div>
 
                     {loading ? (
                         <div className="mt-4 space-y-3">
@@ -117,33 +122,37 @@ export default function SubscribeScreen() {
                                         onClick={() => setSelectedPlan(plan.id)}
                                         className={`w-full rounded-[22px] border p-4 text-left transition-colors ${
                                             isSelected
-                                                ? "border-[#172B2F] bg-[#172B2F] shadow-[0_12px_28px_rgba(23,43,47,0.12)]"
-                                                : "border-[rgba(23,43,47,0.10)] bg-white/80"
+                                                ? "border-[#3F6F6A] bg-[#EAF4F1] shadow-[0_10px_22px_rgba(63,111,106,0.10)]"
+                                                : "border-[rgba(23,43,47,0.10)] bg-white/85"
                                         }`}
                                     >
-                                        <div className="flex items-start justify-between gap-4">
+                                        <div className="flex min-w-0 flex-col gap-3">
                                             <div className="min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <p className={`text-sm font-semibold ${isSelected ? "text-white" : "text-[#172B2F]"}`}>
-                                                        {plan.name}
-                                                    </p>
-                                                    {isSelected && (
-                                                        <span className="rounded-full bg-[#EAF4F1] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#234C48]">
-                                                            Selected
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className={`mt-1 text-sm leading-relaxed ${isSelected ? "text-[#D8EAE5]" : "text-[#3F5A60]"}`}>
+                                                <p className="break-words text-sm font-semibold leading-snug text-[#172B2F]">
+                                                    {plan.name}
+                                                </p>
+                                                <p className="mt-1 break-words text-sm leading-relaxed text-[#3F5A60]">
                                                     {plan.description}
                                                 </p>
                                             </div>
-                                            <div className="shrink-0 text-right">
-                                                <p className={`text-lg font-black ${isSelected ? "text-white" : "text-[#172B2F]"}`}>
-                                                    {formatETB(plan.price)}
-                                                </p>
-                                                <p className={`mt-1 text-xs font-semibold ${isSelected ? "text-[#BFE0D8]" : "text-[#526B70]"}`}>
-                                                    {plan.days} days
-                                                </p>
+                                            <div className="flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3">
+                                                <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                                                    isSelected
+                                                        ? "bg-[#3F6F6A] text-white"
+                                                        : "bg-[#F4F8F5] text-[#526B70]"
+                                                }`}>
+                                                    {isSelected ? "Selected" : `${plan.days} days`}
+                                                </span>
+                                                <div className="shrink-0 text-right">
+                                                    <p className="text-lg font-black leading-tight text-[#172B2F]">
+                                                        {formatETB(plan.price)}
+                                                    </p>
+                                                    {isSelected && (
+                                                        <p className="mt-0.5 text-xs font-semibold text-[#526B70]">
+                                                            {plan.days} days
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </button>
@@ -163,15 +172,13 @@ export default function SubscribeScreen() {
                                 {instructions.instructions}
                             </p>
                         )}
-                        <div className="mt-4 rounded-[22px] border border-[#172B2F] bg-[#172B2F] p-4">
-                            <p className="text-[0.7rem] font-bold uppercase tracking-[0.16em] text-[#BFE0D8]">
-                                Reference
-                            </p>
-                            <p className="mt-2 text-lg font-bold text-white">{instructions.reference}</p>
-                            <p className="mt-1 text-sm font-semibold text-[#F4FAF7]">
+                        <div className="mt-4 rounded-[22px] border border-[#CFE2DE] bg-[#EAF4F1] p-4">
+                            <p className="app-section-label">Reference</p>
+                            <p className="mt-2 break-words text-lg font-bold text-[#172B2F]">{instructions.reference}</p>
+                            <p className="mt-1 text-sm font-semibold text-[#172B2F]">
                                 {instructions.plan} · {formatETB(instructions.amount)} · {instructions.days} days
                             </p>
-                            <p className="mt-3 text-sm leading-relaxed text-[#D8EAE5]">{instructions.note}</p>
+                            <p className="mt-3 text-sm leading-relaxed text-[#526B70]">{instructions.note}</p>
                         </div>
 
                         <div className="mt-4 grid gap-3">
@@ -203,7 +210,7 @@ export default function SubscribeScreen() {
                                 onClick={() => setPaymentMethod(method)}
                                 className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${
                                     paymentMethod === method
-                                        ? "border-[#172B2F] bg-[#172B2F] text-white shadow-[0_10px_20px_rgba(23,43,47,0.10)]"
+                                        ? "border-[#3F6F6A] bg-[#EAF4F1] text-[#234C48] shadow-[0_8px_18px_rgba(63,111,106,0.10)]"
                                         : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F]"
                                 }`}
                             >
