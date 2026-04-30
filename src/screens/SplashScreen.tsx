@@ -1,4 +1,3 @@
-import { GraduationCap } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAuthStore } from "../store/authStore";
 
@@ -12,7 +11,11 @@ export default function SplashScreen() {
 
             <div className="relative z-10 w-full max-w-sm app-panel rounded-[36px] px-8 py-10">
                 <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[30px] bg-[linear-gradient(160deg,#172B2F_0%,#3F6F6A_100%)] text-white shadow-[0_20px_50px_rgba(63,111,106,0.22)]">
-                    <GraduationCap size={42} />
+                    <img
+                        src="/IMG_20260430_200017_724.jpg"
+                        alt="Unity University"
+                        className="h-full w-full rounded-[30px] object-cover"
+                    />
                 </div>
 
                 <p className="app-section-label mt-6">Unity University</p>
