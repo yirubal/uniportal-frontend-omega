@@ -146,7 +146,7 @@ export default function HomeScreen() {
                         {!displayIsPremium && (
                             <button
                                 onClick={() => navigate("/subscribe")}
-                                className="inline-flex items-center gap-2 rounded-full bg-[#172B2F] px-4 py-2.5 text-sm font-semibold text-white"
+                                className="inline-flex items-center gap-2 rounded-full bg-[#172B2F] px-8 py-2.5 text-sm font-semibold text-white"
                                 style={{ backgroundColor: "#172B2F", color: "#FFFFFF" }}
                             >
                                 <Sparkles size={14} />
