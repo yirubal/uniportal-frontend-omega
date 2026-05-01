@@ -52,14 +52,8 @@ export default function HomeScreen() {
     const greeting = "Selam";
     const currentRequestStatus = subscriptionRequestState?.current_request?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true;
-    const statusBadgeLabel = currentRequestStatus === "approved"
-        ? "Payment confirmed"
-        : currentRequestStatus === "rejected"
-            ? "Payment not confirmed"
-            : hasPendingSubscriptionRequest
-                ? "Under review"
-                : isPremium ? "Premium" : "Free";
-    const statusBadgeClass = currentRequestStatus === "approved" ? "tone-green" : hasPendingSubscriptionRequest || currentRequestStatus === "rejected" ? "tone-gold" : isPremium ? "tone-green" : "tone-gold";
+    const statusBadgeLabel = isPremium ? "Premium" : "Free";
+    const statusBadgeClass = isPremium ? "tone-green" : "tone-gold";
     const profileBadges = [
         getProgramLabel(student?.preferred_program),
         `Year ${student?.preferred_year ?? "?"}`,
