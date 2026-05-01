@@ -7,7 +7,7 @@ import { formatDaysRemaining } from "../utils/format";
 import { getPeriodLabel, getProgramLabel } from "../utils/periods";
 import { useEffect, useState } from "react";
 import { getMyProfile } from "../api/auth";
-import { getSubscriptionRequest, type PaymentInstructions } from "../api/quiz";
+import { getSubscriptionRequest, type SubscriptionRequestState } from "../api/quiz";
 
 const QUICK_ACTIONS = [
     {
@@ -48,11 +48,18 @@ export default function HomeScreen() {
     const navigate = useNavigate();
     const { student, token, setAuth } = useAuthStore();
     const { isPremium, daysRemaining } = useAccess();
-    const [subscriptionRequest, setSubscriptionRequest] = useState<PaymentInstructions | null>(null);
+    const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
     const greeting = "Selam";
-    const hasPendingSubscriptionRequest = subscriptionRequest?.status === "pending";
-    const statusBadgeLabel = hasPendingSubscriptionRequest ? "Under review" : isPremium ? "Premium" : "Free";
-    const statusBadgeClass = hasPendingSubscriptionRequest ? "tone-gold" : isPremium ? "tone-green" : "tone-gold";
+    const currentRequestStatus = subscriptionRequestState?.current_request?.status;
+    const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true;
+    const statusBadgeLabel = currentRequestStatus === "approved"
+        ? "Payment confirmed"
+        : currentRequestStatus === "rejected"
+            ? "Payment not confirmed"
+            : hasPendingSubscriptionRequest
+                ? "Under review"
+                : isPremium ? "Premium" : "Free";
+    const statusBadgeClass = currentRequestStatus === "approved" ? "tone-green" : hasPendingSubscriptionRequest || currentRequestStatus === "rejected" ? "tone-gold" : isPremium ? "tone-green" : "tone-gold";
     const profileBadges = [
         getProgramLabel(student?.preferred_program),
         `Year ${student?.preferred_year ?? "?"}`,
@@ -62,20 +69,35 @@ export default function HomeScreen() {
     useEffect(() => {
         let active = true;
 
-        Promise.allSettled([getMyProfile(), getSubscriptionRequest()]).then(([profileResult, requestResult]) => {
+        const refreshHomeState = () => {
+            Promise.allSettled([getMyProfile(), getSubscriptionRequest()]).then(([profileResult, requestResult]) => {
+                if (!active) return;
+
+                if (profileResult.status === "fulfilled" && token) {
+                    setAuth(token, profileResult.value);
+                }
+
+                if (requestResult.status === "fulfilled") {
+                    setSubscriptionRequestState(requestResult.value);
+                }
+            });
+        };
+
+        const handleResume = () => {
             if (!active) return;
-
-            if (profileResult.status === "fulfilled" && token) {
-                setAuth(token, profileResult.value);
+            if (document.visibilityState === "visible") {
+                refreshHomeState();
             }
+        };
 
-            if (requestResult.status === "fulfilled") {
-                setSubscriptionRequest(requestResult.value);
-            }
-        });
+        refreshHomeState();
+        window.addEventListener("focus", refreshHomeState);
+        document.addEventListener("visibilitychange", handleResume);
 
         return () => {
             active = false;
+            window.removeEventListener("focus", refreshHomeState);
+            document.removeEventListener("visibilitychange", handleResume);
         };
     }, [setAuth, token]);
 
@@ -121,7 +143,7 @@ export default function HomeScreen() {
                             </div>
                         </div>
                         <div className="shrink-0 rounded-full bg-[#F4F8F5] px-3 py-2 text-xs font-semibold text-[#526B70]">
-                            {hasPendingSubscriptionRequest ? "Payment request under review" : isPremium ? formatDaysRemaining(daysRemaining) : "Upgrade available"}
+                            {hasPendingSubscriptionRequest ? "Payment request under review" : currentRequestStatus === "rejected" ? "Payment not confirmed" : isPremium ? formatDaysRemaining(daysRemaining) : "Upgrade available"}
                         </div>
                     </div>
 

@@ -318,6 +318,47 @@ export interface PaymentInstructions {
     };
 }
 
+export interface SubscriptionRequestState {
+    current_request: PaymentInstructions | null;
+    has_pending_request: boolean;
+    pending_request: PaymentInstructions | null;
+}
+
+interface SubscriptionRequestResponse {
+    current_request?: PaymentInstructions | null;
+    has_pending_request?: boolean;
+    pending_request?: PaymentInstructions | null;
+}
+
+function normalizeSubscriptionRequestState(
+    data: PaymentInstructions | SubscriptionRequestResponse | null
+): SubscriptionRequestState {
+    if (!data) {
+        return {
+            current_request: null,
+            has_pending_request: false,
+            pending_request: null,
+        };
+    }
+
+    if ("current_request" in data || "has_pending_request" in data || "pending_request" in data) {
+        const currentRequest = data.current_request ?? data.pending_request ?? null;
+        const pendingRequest = data.pending_request ?? (currentRequest?.status === "pending" ? currentRequest : null);
+
+        return {
+            current_request: currentRequest,
+            has_pending_request: data.has_pending_request ?? pendingRequest?.status === "pending",
+            pending_request: pendingRequest,
+        };
+    }
+
+    return {
+        current_request: data,
+        has_pending_request: data.status === "pending",
+        pending_request: data.status === "pending" ? data : null,
+    };
+}
+
 export const getPlans = async (): Promise<Plan[]> => {
     try {
         const response = await client.get<Plan[]>("/api/subscription/plans/");
@@ -360,19 +401,19 @@ export const requestSubscription = async (
     }
 };
 
-export const getSubscriptionRequest = async (): Promise<PaymentInstructions | null> => {
+export const getSubscriptionRequest = async (): Promise<SubscriptionRequestState> => {
     try {
-        const response = await client.get<PaymentInstructions>("/api/subscription/request/");
-        return response.data;
+        const response = await client.get<PaymentInstructions | SubscriptionRequestResponse>("/api/subscription/request/");
+        return normalizeSubscriptionRequestState(response.data);
     } catch (err) {
         if (typeof err === "object" && err !== null && "status" in err && err.status === 404) {
-            return null;
+            return normalizeSubscriptionRequestState(null);
         }
 
         const mocks = await getMocks();
         if (mocks) {
             console.info("[dev] Using mock pending subscription request");
-            return null;
+            return normalizeSubscriptionRequestState(null);
         }
         throw err;
     }

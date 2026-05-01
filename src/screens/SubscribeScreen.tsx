@@ -1,29 +1,36 @@
 import { Check, CheckCircle2, Clock3, Sparkles, X, XCircle } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getPlans, getSubscriptionRequest, requestSubscription, type PaymentInstructions, type Plan } from "../api/quiz";
+import { useCallback, useEffect, useState } from "react";
+import { getPlans, getSubscriptionRequest, requestSubscription, type PaymentInstructions, type Plan, type SubscriptionRequestState } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
 import { formatETB } from "../utils/format";
 import { useNavigate } from "react-router-dom";
+import { getMyProfile } from "../api/auth";
+import { useAuthStore } from "../store/authStore";
 
 export default function SubscribeScreen() {
     const navigate = useNavigate();
+    const { token, setAuth } = useAuthStore();
     const [plans, setPlans] = useState<Plan[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<"telebirr" | "cbe">("telebirr");
     const [paidFrom, setPaidFrom] = useState("");
     const [instructions, setInstructions] = useState<PaymentInstructions | null>(null);
+    const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
     const [loading, setLoading] = useState(true);
     const [requesting, setRequesting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
-    const hasOpenSubscriptionRequest = instructions?.status === "pending" || instructions?.status === "approved";
-    const requestDisabled = !selectedPlan || !paidFrom.trim() || hasOpenSubscriptionRequest;
+    const currentRequestStatus = subscriptionRequestState?.current_request?.status ?? instructions?.status;
+    const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
+    const requestDisabled = !selectedPlan || !paidFrom.trim() || hasPendingSubscriptionRequest || currentRequestStatus === "approved";
     const requestButtonLabel =
-        instructions?.status === "approved"
-            ? "Subscription already active"
-            : instructions?.status === "pending"
+        currentRequestStatus === "approved"
+            ? "Payment confirmed"
+            : currentRequestStatus === "rejected"
+                ? "Payment not confirmed"
+                : hasPendingSubscriptionRequest
                 ? "Request already under review"
                 : "Request subscription";
     const paymentReferenceCopy =
@@ -39,37 +46,85 @@ export default function SubscribeScreen() {
                 helper: "CBE does not show the full sender account. Use the transaction/reference number from the receipt.",
             };
 
+    const applySubscriptionRequestState = useCallback((state: SubscriptionRequestState, openModal = false) => {
+        setSubscriptionRequestState(state);
+        setInstructions(state.current_request);
+
+        if (openModal && state.current_request) {
+            setStatusModalOpen(true);
+        }
+    }, []);
+
+    const refreshSubscriptionState = useCallback(async (openModal = false) => {
+        const [profileResult, requestResult] = await Promise.allSettled([getMyProfile(), getSubscriptionRequest()]);
+
+        if (profileResult.status === "fulfilled" && token) {
+            setAuth(token, profileResult.value);
+        }
+
+        if (requestResult.status === "fulfilled") {
+            applySubscriptionRequestState(requestResult.value, openModal);
+        }
+    }, [applySubscriptionRequestState, setAuth, token]);
+
     useEffect(() => {
-        Promise.all([getPlans(), getSubscriptionRequest()])
-            .then(([items, pendingRequest]) => {
-                setPlans(items);
-                setSelectedPlan(items[1]?.id ?? items[0]?.id ?? null);
-                if (pendingRequest) {
-                    setInstructions(pendingRequest);
-                    if (pendingRequest.status === "approved") {
-                        setStatusModalOpen(true);
-                    }
+        Promise.allSettled([getPlans(), getSubscriptionRequest(), getMyProfile()])
+            .then(([plansResult, requestResult, profileResult]) => {
+                if (plansResult.status === "fulfilled") {
+                    setPlans(plansResult.value);
+                    setSelectedPlan(plansResult.value[1]?.id ?? plansResult.value[0]?.id ?? null);
+                } else {
+                    setError("Failed to load subscription plans.");
+                }
+
+                if (requestResult.status === "fulfilled") {
+                    applySubscriptionRequestState(requestResult.value, Boolean(requestResult.value.current_request));
+                }
+
+                if (profileResult.status === "fulfilled" && token) {
+                    setAuth(token, profileResult.value);
                 }
             })
-            .catch(() => setError("Failed to load subscription plans."))
             .finally(() => setLoading(false));
-    }, []);
+    }, [applySubscriptionRequestState, setAuth, token]);
+
+    useEffect(() => {
+        const handleFocus = () => {
+            void refreshSubscriptionState();
+        };
+
+        const handleResume = () => {
+            if (document.visibilityState === "visible") {
+                void refreshSubscriptionState();
+            }
+        };
+
+        window.addEventListener("focus", handleFocus);
+        document.addEventListener("visibilitychange", handleResume);
+
+        return () => {
+            window.removeEventListener("focus", handleFocus);
+            document.removeEventListener("visibilitychange", handleResume);
+        };
+    }, [refreshSubscriptionState]);
 
     const handleRequest = async () => {
         if (requestDisabled) {
-            if (hasOpenSubscriptionRequest) {
+            if (subscriptionRequestState?.current_request) {
                 setStatusModalOpen(true);
             }
             return;
         }
+
+        if (!selectedPlan) return;
 
         setRequesting(true);
         setError(null);
         setStatusModalOpen(true);
 
         try {
-            const response = await requestSubscription(selectedPlan, paymentMethod, paidFrom.trim());
-            setInstructions(response);
+            await requestSubscription(selectedPlan, paymentMethod, paidFrom.trim());
+            await refreshSubscriptionState(true);
         } catch {
             setStatusModalOpen(false);
             setError("Failed to generate payment instructions.");
@@ -266,7 +321,10 @@ export default function SubscribeScreen() {
                 open={statusModalOpen}
                 requesting={requesting}
                 instructions={instructions}
-                onClose={() => setStatusModalOpen(false)}
+                onClose={() => {
+                    setStatusModalOpen(false);
+                    void refreshSubscriptionState();
+                }}
             />
         </div>
     );

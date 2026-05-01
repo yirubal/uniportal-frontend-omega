@@ -193,6 +193,8 @@ This file is the durable handoff for future Codex sessions working in this repos
   - subscription modal/page copy now tells pending users the payment request is under review and that the bot will notify them after confirmation; the actual Telegram bot notification must be sent by the backend
   - `HomeScreen` refreshes `/api/students/me/` on mount so Premium/Free labels do not stay stale after backend status changes, and it reads `/api/subscription/request/` to show an `Under review` label on the profile card for pending payment requests
   - `normalizeStudent()` treats backend `subscription_status` as authoritative over `is_premium`, so `subscription_status: "free"` immediately downgrades stale premium labels/access on profile refresh
+  - `/api/subscription/request/` is normalized around backend `current_request`, `has_pending_request`, and `pending_request`; `current_request.status` drives payment request labels (`pending`, `approved`, `rejected`), while `/api/students/me/` remains the premium/free source of truth
+  - Home and Subscribe refetch both `/api/subscription/request/` and `/api/students/me/` on initial open/resume; Subscribe also refetches both after payment submit and when closing payment status
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
