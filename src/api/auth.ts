@@ -149,6 +149,10 @@ export function normalizeStudent(student: BackendStudent): Student {
     const nameParts = fullName.split(/\s+/).filter(Boolean);
     const firstName = student.first_name?.trim() || nameParts[0] || "Student";
     const lastName = student.last_name?.trim() || nameParts.slice(1).join(" ");
+    const isPremium =
+        student.subscription_status !== undefined
+            ? student.subscription_status === "premium"
+            : Boolean(student.is_premium);
 
     return {
         id: student.id,
@@ -164,7 +168,7 @@ export function normalizeStudent(student: BackendStudent): Student {
         onboarding_complete: student.onboarding_complete ?? Boolean(
             preferences.department && preferences.program && preferences.year && preferences.period
         ),
-        is_premium: student.is_premium ?? student.subscription_status === "premium",
+        is_premium: isPremium,
         subscription_expiry: student.subscription_expiry ?? null,
         preferences,
     };
