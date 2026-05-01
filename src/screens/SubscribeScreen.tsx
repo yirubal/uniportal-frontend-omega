@@ -1,4 +1,4 @@
-import { Check, CheckCircle2, Clock3, Sparkles, XCircle } from "lucide-react";
+import { Check, CheckCircle2, Clock3, Sparkles, X, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getPlans, getSubscriptionRequest, requestSubscription, type PaymentInstructions, type Plan } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
@@ -18,6 +18,14 @@ export default function SubscribeScreen() {
     const [requesting, setRequesting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
+    const hasOpenSubscriptionRequest = instructions?.status === "pending" || instructions?.status === "approved";
+    const requestDisabled = !selectedPlan || !paidFrom.trim() || hasOpenSubscriptionRequest;
+    const requestButtonLabel =
+        instructions?.status === "approved"
+            ? "Subscription already active"
+            : instructions?.status === "pending"
+                ? "Request already under review"
+                : "Request subscription";
     const paymentReferenceCopy =
         paymentMethod === "telebirr"
             ? {
@@ -48,7 +56,12 @@ export default function SubscribeScreen() {
     }, []);
 
     const handleRequest = async () => {
-        if (!selectedPlan || !paidFrom.trim()) return;
+        if (requestDisabled) {
+            if (hasOpenSubscriptionRequest) {
+                setStatusModalOpen(true);
+            }
+            return;
+        }
 
         setRequesting(true);
         setError(null);
@@ -215,16 +228,16 @@ export default function SubscribeScreen() {
                         size="lg"
                         fullWidth
                         loading={requesting}
-                        disabled={!selectedPlan || !paidFrom.trim()}
+                        disabled={requestDisabled}
                         onClick={() => void handleRequest()}
                         style={{
-                            backgroundColor: !selectedPlan || !paidFrom.trim() ? "#D5E1DD" : "#172B2F",
-                            borderColor: !selectedPlan || !paidFrom.trim() ? "#D5E1DD" : "#172B2F",
-                            color: !selectedPlan || !paidFrom.trim() ? "#344E53" : "#FFFFFF",
+                            backgroundColor: requestDisabled ? "#D5E1DD" : "#172B2F",
+                            borderColor: requestDisabled ? "#D5E1DD" : "#172B2F",
+                            color: requestDisabled ? "#344E53" : "#FFFFFF",
                         }}
                         className="mt-5"
                     >
-                        Request subscription
+                        {requestButtonLabel}
                     </Button>
                 </div>
 
@@ -237,15 +250,15 @@ export default function SubscribeScreen() {
                     size="lg"
                     fullWidth
                     loading={requesting}
-                    disabled={!selectedPlan || !paidFrom.trim()}
+                    disabled={requestDisabled}
                     onClick={() => void handleRequest()}
                     style={{
-                        backgroundColor: !selectedPlan || !paidFrom.trim() ? "#D5E1DD" : "#172B2F",
-                        borderColor: !selectedPlan || !paidFrom.trim() ? "#D5E1DD" : "#172B2F",
-                        color: !selectedPlan || !paidFrom.trim() ? "#344E53" : "#FFFFFF",
+                        backgroundColor: requestDisabled ? "#D5E1DD" : "#172B2F",
+                        borderColor: requestDisabled ? "#D5E1DD" : "#172B2F",
+                        color: requestDisabled ? "#344E53" : "#FFFFFF",
                     }}
                 >
-                    Request subscription
+                    {requestButtonLabel}
                 </Button>
             </div>
 
@@ -346,47 +359,70 @@ function SubscriptionStatusModal({
     const hasInstructionDetails = Boolean(instructions?.reference || summary);
 
     return (
-        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgba(10,22,40,0.46)] p-4 sm:items-center">
-            <div className="w-full max-w-md rounded-[28px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-5 shadow-[0_24px_60px_rgba(10,22,40,0.22)] backdrop-blur-xl">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(10,22,40,0.46)] px-5 py-8">
+            <div className="relative w-full max-w-[20rem] rounded-[24px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-4 shadow-[0_18px_44px_rgba(10,22,40,0.20)] backdrop-blur-xl">
+                <button
+                    type="button"
+                    aria-label="Close"
+                    onClick={onClose}
+                    className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#F4F8F5] text-[#526B70]"
+                    style={{ backgroundColor: "#F4F8F5", color: "#526B70" }}
+                >
+                    <X size={16} />
+                </button>
                 <div
-                    className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
+                    className="mx-auto flex h-12 w-12 items-center justify-center rounded-full"
                     style={{ backgroundColor: config.iconBg, color: config.iconColor }}
                 >
-                    <Icon size={26} className={requesting ? "animate-spin" : ""} />
+                    <Icon size={22} className={requesting ? "animate-spin" : ""} />
                 </div>
-                <p className="app-section-label mt-5 text-center">{config.label}</p>
-                <h2 className="mt-2 text-center text-xl font-bold text-[#172B2F]">{config.title}</h2>
-                <p className="mt-3 text-center text-sm leading-relaxed text-[#526B70]">
+                <p className="app-section-label mt-4 text-center">{config.label}</p>
+                <h2 className="mt-2 text-center text-lg font-bold text-[#172B2F]">{config.title}</h2>
+                <p className="mt-2 text-center text-xs font-medium leading-relaxed text-[#526B70]">
                     {config.description}
                 </p>
                 {hasInstructionDetails && !requesting && instructions && (
-                    <div className="mt-5 rounded-[20px] border border-[#CFE2DE] bg-[#EAF4F1] px-4 py-3">
+                    <div className="mt-4 rounded-[18px] border border-[#CFE2DE] bg-[#EAF4F1] px-3.5 py-3">
                         {instructions.reference && (
                             <>
                                 <p className="app-section-label">Reference</p>
-                                <p className="mt-1 break-words text-base font-bold text-[#172B2F]">{instructions.reference}</p>
+                                <p className="mt-1 break-words text-sm font-bold text-[#172B2F]">{instructions.reference}</p>
                             </>
                         )}
                         {summary && (
-                            <p className="mt-1 text-sm font-semibold text-[#354F55]">{summary}</p>
+                            <p className="mt-1 text-xs font-semibold text-[#354F55]">{summary}</p>
                         )}
                     </div>
                 )}
-                <Button
-                    variant="primary"
-                    size="lg"
-                    fullWidth
-                    disabled={requesting}
-                    onClick={onClose}
-                    style={{
-                        backgroundColor: requesting ? "#D5E1DD" : "#172B2F",
-                        borderColor: requesting ? "#D5E1DD" : "#172B2F",
-                        color: requesting ? "#344E53" : "#FFFFFF",
-                    }}
-                    className="mt-5"
-                >
-                    {requesting ? "Submitting..." : "Done"}
-                </Button>
+                <div className="mt-4 grid gap-2">
+                    <Button
+                        variant="primary"
+                        size="md"
+                        fullWidth
+                        disabled={requesting}
+                        onClick={onClose}
+                        style={{
+                            backgroundColor: requesting ? "#D5E1DD" : "#172B2F",
+                            borderColor: requesting ? "#D5E1DD" : "#172B2F",
+                            color: requesting ? "#344E53" : "#FFFFFF",
+                        }}
+                    >
+                        {requesting ? "Submitting..." : "Done"}
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        fullWidth
+                        onClick={onClose}
+                        style={{
+                            backgroundColor: "#F4F8F5",
+                            borderColor: "rgba(23,43,47,0.08)",
+                            color: "#172B2F",
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                </div>
             </div>
         </div>
     );

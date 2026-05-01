@@ -188,6 +188,8 @@ This file is the durable handoff for future Codex sessions working in this repos
   - submitting opens a status modal that shows request submission, pending payment processing, approved payment confirmation, or rejected payment messaging from `PaymentInstructions.status`
   - primary request buttons use explicit inline brand fill colors so the global button reset cannot hide their backgrounds
   - subscription request details are rendered defensively because existing backend request/status responses may omit `payment_options`, `reference`, `amount`, or `days`; do not assume those fields are always present on page load
+  - status modal is now compact and centered, includes X/cancel close controls, and no longer sits on the bottom navigation area
+  - frontend blocks repeat subscription submissions while an existing request is `pending` or `approved`; backend still needs idempotency/uniqueness to prevent dashboard duplicates from other clients or repeated network calls
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
