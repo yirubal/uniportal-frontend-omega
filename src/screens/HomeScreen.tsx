@@ -52,8 +52,9 @@ export default function HomeScreen() {
     const greeting = "Selam";
     const currentRequestStatus = subscriptionRequestState?.current_request?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true;
-    const statusBadgeLabel = isPremium ? "Premium" : "Free";
-    const statusBadgeClass = isPremium ? "tone-green" : "tone-gold";
+    const displayIsPremium = currentRequestStatus === "rejected" ? false : isPremium;
+    const statusBadgeLabel = displayIsPremium ? "Premium" : "Free";
+    const statusBadgeClass = displayIsPremium ? "tone-green" : "tone-gold";
     const profileBadges = [
         getProgramLabel(student?.preferred_program),
         `Year ${student?.preferred_year ?? "?"}`,
@@ -137,12 +138,12 @@ export default function HomeScreen() {
                             </div>
                         </div>
                         <div className="shrink-0 rounded-full bg-[#F4F8F5] px-3 py-2 text-xs font-semibold text-[#526B70]">
-                            {hasPendingSubscriptionRequest ? "Payment request under review" : currentRequestStatus === "rejected" ? "Payment not confirmed" : isPremium ? formatDaysRemaining(daysRemaining) : "Upgrade available"}
+                            {hasPendingSubscriptionRequest ? "Payment request under review" : currentRequestStatus === "rejected" ? "Payment not confirmed" : displayIsPremium ? formatDaysRemaining(daysRemaining) : "Upgrade available"}
                         </div>
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-3">
-                        {!isPremium && (
+                        {!displayIsPremium && (
                             <button
                                 onClick={() => navigate("/subscribe")}
                                 className="inline-flex items-center gap-2 rounded-full bg-[#172B2F] px-4 py-2.5 text-sm font-semibold text-white"
