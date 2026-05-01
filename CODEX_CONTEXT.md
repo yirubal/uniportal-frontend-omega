@@ -195,6 +195,7 @@ This file is the durable handoff for future Codex sessions working in this repos
   - `normalizeStudent()` treats backend `subscription_status` as authoritative over `is_premium`, so `subscription_status: "free"` immediately downgrades stale premium labels/access on profile refresh
   - `/api/subscription/request/` is normalized around backend `current_request`, `has_pending_request`, and `pending_request`; `current_request.status` drives payment request labels (`pending`, `approved`, `rejected`), while `/api/students/me/` remains the premium/free source of truth
   - Home and Subscribe refetch both `/api/subscription/request/` and `/api/students/me/` on initial open/resume; Subscribe also refetches both after payment submit and when closing payment status
+  - local auth mocks now run only when `VITE_FORCE_DEV_MOCKS=true`; `.env.development.local` was set back to `VITE_FORCE_DEV_MOCKS=false` so `/api/students/me/` can update Premium/Free from the backend instead of stale `uniportal-dev-student` localStorage data
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work

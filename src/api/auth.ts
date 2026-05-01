@@ -4,7 +4,6 @@ import type { ProgramType } from "../utils/periods";
 
 const isDev = import.meta.env.DEV;
 const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
-const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 const DEV_STUDENT_STORAGE_KEY = "uniportal-dev-student";
 
 type TelegramWindow = Window & {
@@ -56,7 +55,7 @@ function getTelegramWebApp() {
 }
 
 async function getMockStudent(): Promise<Student | null> {
-    if (!isDev || (!forceDevMocks && !isLocalDevHost)) return null;
+    if (!isDev || !forceDevMocks) return null;
 
     const storedStudent = window.localStorage.getItem(DEV_STUDENT_STORAGE_KEY);
     if (storedStudent) {
