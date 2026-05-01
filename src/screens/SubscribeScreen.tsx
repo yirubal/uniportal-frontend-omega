@@ -287,15 +287,19 @@ function SubscriptionInstructionsCard({ instructions }: { instructions: PaymentI
     const summary = getPaymentInstructionSummary(instructions);
     const hasReferenceDetails = Boolean(instructions.reference || summary || instructions.note);
     const hasPaymentOptions = Boolean(paymentOptions.telebirr || paymentOptions.cbe);
+    const fallbackMessage =
+        instructions.status === "pending"
+            ? "Your payment request is under review. Please be patient; we will notify you by the bot once your payment is confirmed."
+            : "";
 
     return (
         <div className="app-sheet p-5">
             <p className="app-section-label">
                 {instructions.status === "pending" ? "Pending request" : "Payment instructions"}
             </p>
-            {instructions.instructions && (
+            {(instructions.instructions || fallbackMessage) && (
                 <p className="mt-3 text-sm font-semibold leading-relaxed text-[#172B2F]">
-                    {instructions.instructions}
+                    {instructions.instructions ?? fallbackMessage}
                 </p>
             )}
             {hasReferenceDetails && (
@@ -359,7 +363,7 @@ function SubscriptionStatusModal({
     const hasInstructionDetails = Boolean(instructions?.reference || summary);
 
     return (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(10,22,40,0.46)] px-5 py-8">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(10,22,40,0.46)] px-5 pb-[calc(env(safe-area-inset-bottom)+4.5rem)] pt-8">
             <div className="relative w-full max-w-[20rem] rounded-[24px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-4 shadow-[0_18px_44px_rgba(10,22,40,0.20)] backdrop-blur-xl">
                 <button
                     type="button"
@@ -455,7 +459,7 @@ function getSubscriptionStatusConfig(status: PaymentInstructions["status"] | "su
         return {
             label: "Requesting subscription",
             title: "Sending your request",
-            description: "Please wait while we submit your payment reference for review.",
+            description: "Please wait while we submit your payment reference for review. We will notify you by the bot after it is checked.",
             icon: Clock3,
             iconBg: "#EAF4F1",
             iconColor: "#3F6F6A",
@@ -465,7 +469,7 @@ function getSubscriptionStatusConfig(status: PaymentInstructions["status"] | "su
     return {
         label: "Payment processing",
         title: "Your request is under review",
-        description: "Your payment reference has been sent. Once the payment is confirmed, this screen will show that your subscription is active.",
+        description: "Your payment request is under review. Please be patient; we will notify you by the bot once your payment is confirmed.",
         icon: Clock3,
         iconBg: "#EAF4F1",
         iconColor: "#3F6F6A",

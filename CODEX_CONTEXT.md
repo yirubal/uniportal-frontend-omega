@@ -190,6 +190,8 @@ This file is the durable handoff for future Codex sessions working in this repos
   - subscription request details are rendered defensively because existing backend request/status responses may omit `payment_options`, `reference`, `amount`, or `days`; do not assume those fields are always present on page load
   - status modal is now compact and centered, includes X/cancel close controls, and no longer sits on the bottom navigation area
   - frontend blocks repeat subscription submissions while an existing request is `pending` or `approved`; backend still needs idempotency/uniqueness to prevent dashboard duplicates from other clients or repeated network calls
+  - subscription modal/page copy now tells pending users the payment request is under review and that the bot will notify them after confirmation; the actual Telegram bot notification must be sent by the backend
+  - `HomeScreen` refreshes `/api/students/me/` on mount so Premium/Free labels do not stay stale after backend status changes, and it reads `/api/subscription/request/` to show an `Under review` label on the profile card for pending payment requests
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work

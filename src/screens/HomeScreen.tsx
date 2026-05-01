@@ -5,6 +5,9 @@ import { useAuthStore } from "../store/authStore";
 import { useAccess } from "../hooks/useAccess";
 import { formatDaysRemaining } from "../utils/format";
 import { getPeriodLabel, getProgramLabel } from "../utils/periods";
+import { useEffect, useState } from "react";
+import { getMyProfile } from "../api/auth";
+import { getSubscriptionRequest, type PaymentInstructions } from "../api/quiz";
 
 const QUICK_ACTIONS = [
     {
@@ -43,14 +46,38 @@ const QUICK_ACTIONS = [
 
 export default function HomeScreen() {
     const navigate = useNavigate();
-    const { student } = useAuthStore();
+    const { student, token, setAuth } = useAuthStore();
     const { isPremium, daysRemaining } = useAccess();
+    const [subscriptionRequest, setSubscriptionRequest] = useState<PaymentInstructions | null>(null);
     const greeting = "Selam";
+    const hasPendingSubscriptionRequest = subscriptionRequest?.status === "pending";
+    const statusBadgeLabel = hasPendingSubscriptionRequest ? "Under review" : isPremium ? "Premium" : "Free";
+    const statusBadgeClass = hasPendingSubscriptionRequest ? "tone-gold" : isPremium ? "tone-green" : "tone-gold";
     const profileBadges = [
         getProgramLabel(student?.preferred_program),
         `Year ${student?.preferred_year ?? "?"}`,
         getPeriodLabel(student?.preferred_period, student?.preferred_program),
     ];
+
+    useEffect(() => {
+        let active = true;
+
+        Promise.allSettled([getMyProfile(), getSubscriptionRequest()]).then(([profileResult, requestResult]) => {
+            if (!active) return;
+
+            if (profileResult.status === "fulfilled" && token) {
+                setAuth(token, profileResult.value);
+            }
+
+            if (requestResult.status === "fulfilled") {
+                setSubscriptionRequest(requestResult.value);
+            }
+        });
+
+        return () => {
+            active = false;
+        };
+    }, [setAuth, token]);
 
     return (
         <div className="app-screen">
@@ -68,8 +95,8 @@ export default function HomeScreen() {
                         </p>
                     </div>
 
-                    <div className={`rounded-full px-3 py-2 text-xs font-bold ${isPremium ? "tone-green" : "tone-gold"}`}>
-                        {isPremium ? "Premium" : "Free"}
+                    <div className={`rounded-full px-3 py-2 text-xs font-bold ${statusBadgeClass}`}>
+                        {statusBadgeLabel}
                     </div>
                 </div>
             </div>
@@ -94,7 +121,7 @@ export default function HomeScreen() {
                             </div>
                         </div>
                         <div className="shrink-0 rounded-full bg-[#F4F8F5] px-3 py-2 text-xs font-semibold text-[#526B70]">
-                            {isPremium ? formatDaysRemaining(daysRemaining) : "Upgrade available"}
+                            {hasPendingSubscriptionRequest ? "Payment request under review" : isPremium ? formatDaysRemaining(daysRemaining) : "Upgrade available"}
                         </div>
                     </div>
 
@@ -103,9 +130,10 @@ export default function HomeScreen() {
                             <button
                                 onClick={() => navigate("/subscribe")}
                                 className="inline-flex items-center gap-2 rounded-full bg-[#172B2F] px-4 py-2.5 text-sm font-semibold text-white"
+                                style={{ backgroundColor: "#172B2F", color: "#FFFFFF" }}
                             >
                                 <Sparkles size={14} />
-                                Unlock premium tools
+                                {hasPendingSubscriptionRequest ? "View request status" : "Unlock premium tools"}
                             </button>
                         )}
                         <Button
