@@ -51,8 +51,8 @@ export default function HomeScreen() {
     const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
     const greeting = "Selam";
     const currentRequestStatus = subscriptionRequestState?.current_request?.status;
-    const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true;
-    const displayIsPremium = currentRequestStatus === "rejected" ? false : isPremium;
+    const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
+    const displayIsPremium = hasPendingSubscriptionRequest || currentRequestStatus === "rejected" ? false : isPremium;
     const statusBadgeLabel = displayIsPremium ? "Premium" : "Free";
     const statusBadgeClass = displayIsPremium ? "tone-green" : "tone-gold";
     const profileBadges = [
