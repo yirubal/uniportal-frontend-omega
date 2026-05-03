@@ -392,8 +392,8 @@ export default function ResourcesScreen() {
                     <div className="mt-4 app-sheet p-5">
                         <p className="app-section-label">Featured pack</p>
                         <div className="mt-3 flex items-start justify-between gap-3">
-                            <div>
-                                <p className="text-base font-semibold text-[#172B2F]">{featuredResource.title}</p>
+                            <div className="min-w-0 flex-1">
+                                <p className="break-words text-base font-semibold text-[#172B2F]">{featuredResource.title}</p>
                                 <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
                                     {featuredResource.description}
                                 </p>
