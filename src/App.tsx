@@ -25,6 +25,7 @@ import SimulationScreen from "./screens/SimulationScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import PerformanceScreen from "./screens/PerformanceScreen";
 import SubscribeScreen from "./screens/SubscribeScreen";
+import ChannelGateScreen from "./screens/ChannelGateScreen";
 import BottomNav from "./components/BottomNav";
 import SlowRequestLoader from "./components/SlowRequestLoader";
 
@@ -36,7 +37,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-    const { isAuthenticated, isLoading, student } = useAuthStore();
+    const { isAuthenticated, isLoading, student, channelRequired } = useAuthStore();
     const location = useLocation();
 
     const hideBottomNav =
@@ -46,6 +47,9 @@ function AppRoutes() {
         location.pathname === "/results";
 
     if (isLoading) return <SplashScreen />;
+
+    // Channel membership gate — blocks all content until user joins
+    if (channelRequired) return <ChannelGateScreen />;
 
     return (
         <>

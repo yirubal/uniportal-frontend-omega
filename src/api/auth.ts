@@ -49,6 +49,19 @@ export function isMissingTelegramInitDataError(error: unknown) {
     return error instanceof MissingTelegramInitDataError;
 }
 
+export class ChannelRequiredError extends Error {
+    channelUrl: string;
+    constructor(channelUrl: string) {
+        super("You must join the official channel before using this app.");
+        this.name = "ChannelRequiredError";
+        this.channelUrl = channelUrl;
+    }
+}
+
+export function isChannelRequiredError(error: unknown): error is ChannelRequiredError {
+    return error instanceof ChannelRequiredError;
+}
+
 function getTelegramWebApp() {
     if (typeof window === "undefined") return undefined;
     return (window as TelegramWindow).Telegram?.WebApp;
@@ -196,6 +209,16 @@ export const loginWithTelegram = async (): Promise<LoginResponse> => {
     });
 
     if (!response.ok) {
+        if (response.status === 403) {
+            try {
+                const errBody = await response.json() as { error?: string; channel_url?: string };
+                if (errBody.error === "CHANNEL_REQUIRED" && errBody.channel_url) {
+                    throw new ChannelRequiredError(errBody.channel_url);
+                }
+            } catch (e) {
+                if (e instanceof ChannelRequiredError) throw e;
+            }
+        }
         throw {
             status: response.status,
             message: "Authentication failed. Please try again.",

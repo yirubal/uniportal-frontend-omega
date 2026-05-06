@@ -31,10 +31,13 @@ interface AuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
+    channelRequired: boolean;
+    channelUrl: string | null;
 
     setAuth: (token: string, student: Student) => void;
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
+    setChannelRequired: (channelUrl: string) => void;
     clearAuth: () => void;
 }
 
@@ -44,9 +47,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     isAuthenticated: false,
     isLoading: true,
     error: null,
+    channelRequired: false,
+    channelUrl: null,
 
     setAuth: (token, student) =>
-        set({ token, student, isAuthenticated: true, isLoading: false, error: null }),
+        set({ token, student, isAuthenticated: true, isLoading: false, error: null, channelRequired: false, channelUrl: null }),
 
     setLoading: (loading) =>
         set({ isLoading: loading }),
@@ -54,6 +59,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     setError: (error) =>
         set({ error, isLoading: false }),
 
+    setChannelRequired: (channelUrl) =>
+        set({ channelRequired: true, channelUrl, isLoading: false, error: null }),
+
     clearAuth: () =>
-        set({ token: null, student: null, isAuthenticated: false, isLoading: false, error: null }),
+        set({ token: null, student: null, isAuthenticated: false, isLoading: false, error: null, channelRequired: false, channelUrl: null }),
 }));

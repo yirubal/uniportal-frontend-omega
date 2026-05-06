@@ -1,13 +1,14 @@
 import { useAuthStore } from "../store/authStore";
 import {
     getMyProfile,
+    isChannelRequiredError,
     isMissingTelegramInitDataError,
     loginWithDevMode,
     loginWithTelegram,
 } from "../api/auth";
 
 export const useAuth = () => {
-    const { setAuth, setLoading, setError, clearAuth } = useAuthStore();
+    const { setAuth, setLoading, setError, setChannelRequired, clearAuth } = useAuthStore();
 
     const initAuth = async () => {
         try {
@@ -18,6 +19,12 @@ export const useAuth = () => {
                 setAuth(token, student);
                 return;
             } catch (error) {
+                // 1. Channel gate: user hasn't joined the required channel yet
+                if (isChannelRequiredError(error)) {
+                    setChannelRequired(error.channelUrl);
+                    return;
+                }
+
                 if (!isMissingTelegramInitDataError(error)) {
                     throw error;
                 }
