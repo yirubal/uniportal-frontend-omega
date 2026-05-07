@@ -951,11 +951,11 @@ export const MOCK_PAYMENT_INSTRUCTIONS: PaymentInstructions = {
     payment_options: {
         telebirr: {
             number: "0912345678",
-            name: "Unity University",
+            name: "Mock Telebirr Holder",
         },
         cbe: {
             account: "1000123456789",
-            name: "Unity University",
+            name: "Mock CBE Holder",
         },
     },
 };

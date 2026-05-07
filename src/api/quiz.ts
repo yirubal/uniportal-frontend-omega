@@ -301,11 +301,11 @@ export interface Plan {
 export interface PaymentOptions {
     telebirr?: {
         number: string;
-        name: string;
+        name?: string;
     };
     cbe?: {
         account: string;
-        name: string;
+        name?: string;
     };
 }
 

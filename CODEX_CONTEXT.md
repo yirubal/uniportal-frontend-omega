@@ -209,6 +209,12 @@ This file is the durable handoff for future Codex sessions working in this repos
   - `/api/subscription/request/` normalization preserves top-level `payment_options` so the payment destination can render before any pending request exists
   - added `/subscription` as the student-facing plan/status page; it shows Free/Premium state, renders the same backend/mock plans as `/subscribe`, and has a branded request button that opens `/subscribe`
   - forced the local mock test student to Free by default, including previously cached `uniportal-dev-student` data
+  - payment destination cards display both the backend-provided account/number and backend-provided account holder name; do not hardcode `Unity University` in the frontend
+  - verification after this pass: `npm run lint` and `npm run build` both passed
+- Added an onboarding escape path for students who do not want to complete setup immediately:
+  - `OnboardingScreen` now shows a secondary `Cancel setup` action in the sticky footer
+  - cancel opens the shared confirmation dialog, then closes the Telegram Mini App via WebApp close when running inside Telegram
+  - browser preview fallback attempts `window.close()`, which may be blocked by normal browser tab rules
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work

@@ -359,12 +359,26 @@ export default function SubscribeScreen() {
     );
 }
 
-function PaymentOption({ label, primary, secondary }: { label: string; primary: string; secondary: string }) {
+function PaymentOption({
+    label,
+    accountLabel,
+    accountValue,
+    holderName,
+}: {
+    label: string;
+    accountLabel: string;
+    accountValue: string;
+    holderName?: string;
+}) {
     return (
         <div className="rounded-[20px] border border-[rgba(23,43,47,0.10)] bg-white/85 px-4 py-3">
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#526B70]">{label}</p>
-            <p className="mt-1 text-sm font-bold text-[#172B2F]">{primary}</p>
-            <p className="mt-1 text-xs font-semibold text-[#354F55]">{secondary}</p>
+            <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">{accountLabel}</p>
+            <p className="mt-1 break-words text-sm font-bold text-[#172B2F]">{accountValue}</p>
+            <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">Account holder</p>
+            <p className="mt-1 break-words text-xs font-semibold text-[#354F55]">
+                {holderName ?? "Account holder name not loaded"}
+            </p>
         </div>
     );
 }
@@ -381,12 +395,12 @@ function PaymentDestinationCard({
             ? {
                 label: "Send Telebirr to",
                 primary: paymentOptions.telebirr?.number ?? "Telebirr number not loaded",
-                secondary: paymentOptions.telebirr?.name ?? "Refresh the page if this does not appear.",
+                holderName: paymentOptions.telebirr?.name,
             }
             : {
                 label: "Send CBE transfer to",
                 primary: paymentOptions.cbe?.account ?? "CBE is not available right now",
-                secondary: paymentOptions.cbe?.name ?? "Choose Telebirr or check again later.",
+                holderName: paymentOptions.cbe?.name,
             };
 
     return (
@@ -395,9 +409,12 @@ function PaymentDestinationCard({
             <p className="mt-2 break-words text-lg font-black leading-tight text-[#172B2F]">
                 {destination.primary}
             </p>
-            <p className="mt-1 text-sm font-semibold leading-relaxed text-[#354F55]">
-                {destination.secondary}
-            </p>
+            <div className="mt-3 rounded-[16px] bg-white/65 px-3 py-2">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">Account holder</p>
+                <p className="mt-1 break-words text-sm font-semibold leading-relaxed text-[#354F55]">
+                    {destination.holderName ?? "Account holder name not loaded"}
+                </p>
+            </div>
         </div>
     );
 }
@@ -446,15 +463,17 @@ function SubscriptionInstructionsCard({ instructions }: { instructions: PaymentI
                     {paymentOptions.telebirr && (
                         <PaymentOption
                             label="Telebirr"
-                            primary={paymentOptions.telebirr.number}
-                            secondary={paymentOptions.telebirr.name}
+                            accountLabel="Number"
+                            accountValue={paymentOptions.telebirr.number}
+                            holderName={paymentOptions.telebirr.name}
                         />
                     )}
                     {paymentOptions.cbe && (
                         <PaymentOption
                             label="CBE"
-                            primary={paymentOptions.cbe.account}
-                            secondary={paymentOptions.cbe.name}
+                            accountLabel="Account number"
+                            accountValue={paymentOptions.cbe.account}
+                            holderName={paymentOptions.cbe.name}
                         />
                     )}
                 </div>

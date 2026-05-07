@@ -3,8 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDepartments } from "../api/content";
 import { updateMyProfile } from "../api/auth";
+import ConfirmDialog from "../components/ConfirmDialog";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
+import { useTelegram } from "../hooks/useTelegram";
 import { Student, useAuthStore } from "../store/authStore";
 import type { Department } from "../store/contentStore";
 import {
@@ -22,8 +24,17 @@ const STEP_LABELS = [
     { title: "Period", hint: "The label changes by program, but the backend still stores a numeric period.", icon: Layers3 },
 ];
 
+type TelegramWindow = Window & {
+    Telegram?: {
+        WebApp?: {
+            initData?: string;
+        };
+    };
+};
+
 export default function OnboardingScreen() {
     const navigate = useNavigate();
+    const { close } = useTelegram();
     const { token, setAuth } = useAuthStore();
 
     const [step, setStep] = useState(0);
@@ -31,6 +42,7 @@ export default function OnboardingScreen() {
     const [loadingDepts, setLoadingDepts] = useState(true);
     const [saving, setSaving] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [completedProfile, setCompletedProfile] = useState<Student | null>(null);
     const [selectedDept, setSelectedDept] = useState<Department | null>(null);
@@ -85,6 +97,18 @@ export default function OnboardingScreen() {
             setError("Something went wrong. Please try again.");
             setSaving(false);
         }
+    };
+
+    const handleLeaveApp = () => {
+        setShowCancelConfirm(false);
+
+        const telegramWebApp = (window as TelegramWindow).Telegram?.WebApp;
+        if (telegramWebApp?.initData) {
+            close();
+            return;
+        }
+
+        window.close();
     };
 
     const activeStep = STEP_LABELS[step];
@@ -294,7 +318,7 @@ export default function OnboardingScreen() {
                 )}
             </div>
 
-            <div className="app-footer">
+            <div className="app-footer space-y-3">
                 <Button
                     variant="primary"
                     size="lg"
@@ -313,7 +337,26 @@ export default function OnboardingScreen() {
                 >
                     {step < 3 ? "Continue" : "Finish setup"}
                 </Button>
+                <Button
+                    variant="ghost"
+                    size="md"
+                    fullWidth
+                    disabled={saving}
+                    onClick={() => setShowCancelConfirm(true)}
+                >
+                    Cancel setup
+                </Button>
             </div>
+
+            <ConfirmDialog
+                open={showCancelConfirm}
+                title="Leave setup?"
+                description="You can skip these setup steps for now and leave the mini app. Your study path will not be saved until you finish setup."
+                confirmLabel="Leave app"
+                cancelLabel="Stay in setup"
+                onConfirm={handleLeaveApp}
+                onCancel={() => setShowCancelConfirm(false)}
+            />
 
         </div>
     );
