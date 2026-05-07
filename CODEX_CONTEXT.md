@@ -216,6 +216,12 @@ This file is the durable handoff for future Codex sessions working in this repos
   - cancel opens the shared confirmation dialog, then closes the Telegram Mini App via WebApp close when running inside Telegram
   - browser preview fallback attempts `window.close()`, which may be blocked by normal browser tab rules
   - verification after this pass: `npm run lint` and `npm run build` both passed
+- Tightened premium/free frontend handling after production appeared to show all students as Premium:
+  - production env has `VITE_FORCE_DEV_MOCKS=false`, and the built `dist` did not contain the mock student
+  - local dev mock student is Free by default, so the current frontend mock is not the source of production Premium labels
+  - `normalizeStudent()` and `useAccess()` now require a valid future `subscription_expiry` before treating a student as premium
+  - this matches the backend `Student.is_premium` model rule: `subscription_status === premium` plus non-null, unexpired `subscription_expiry`
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

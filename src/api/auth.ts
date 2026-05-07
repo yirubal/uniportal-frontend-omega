@@ -164,6 +164,13 @@ function buildPreferences(student: BackendStudent): StudentPreferences {
     };
 }
 
+function hasActiveSubscriptionExpiry(subscriptionExpiry: string | null | undefined): boolean {
+    if (!subscriptionExpiry) return false;
+
+    const expiryTime = new Date(subscriptionExpiry).getTime();
+    return Number.isFinite(expiryTime) && expiryTime > Date.now();
+}
+
 export function normalizeStudent(student: BackendStudent): Student {
     const preferences = buildPreferences(student);
     const fullName = student.name?.trim() ||
@@ -172,10 +179,11 @@ export function normalizeStudent(student: BackendStudent): Student {
     const nameParts = fullName.split(/\s+/).filter(Boolean);
     const firstName = student.first_name?.trim() || nameParts[0] || "Student";
     const lastName = student.last_name?.trim() || nameParts.slice(1).join(" ");
+    const hasActiveExpiry = hasActiveSubscriptionExpiry(student.subscription_expiry);
     const isPremium =
         student.subscription_status !== undefined
-            ? student.subscription_status === "premium"
-            : Boolean(student.is_premium);
+            ? student.subscription_status === "premium" && hasActiveExpiry
+            : Boolean(student.is_premium && hasActiveExpiry);
 
     return {
         id: student.id,

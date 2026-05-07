@@ -3,9 +3,11 @@ import { useAuthStore } from "../store/authStore";
 export const useAccess = () => {
     const { student } = useAuthStore();
 
+    const expiryTime = student?.subscription_expiry
+        ? new Date(student.subscription_expiry).getTime()
+        : Number.NaN;
     const hasActiveExpiry =
-        !student?.subscription_expiry ||
-        new Date(student.subscription_expiry) > new Date();
+        Number.isFinite(expiryTime) && expiryTime > Date.now();
     const isPremium = Boolean(student?.is_premium && hasActiveExpiry);
 
     const daysRemaining = (() => {
