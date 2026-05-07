@@ -298,36 +298,52 @@ export interface Plan {
     description: string;
 }
 
+export interface PaymentOptions {
+    telebirr?: {
+        number: string;
+        name: string;
+    };
+    cbe?: {
+        account: string;
+        name: string;
+    };
+}
+
+export interface PaymentDestination {
+    method: "telebirr" | "cbe";
+    label: string;
+    value: string;
+    name: string;
+}
+
 export interface PaymentInstructions {
     reference?: string;
     plan?: string;
     amount?: number;
     days?: number;
     status: "pending" | "approved" | "rejected";
+    payment_method?: "telebirr" | "cbe";
+    payment_reference?: string;
+    payment_destination?: PaymentDestination | null;
     note?: string;
     instructions?: string;
-    payment_options?: {
-        telebirr?: {
-            number: string;
-            name: string;
-        };
-        cbe?: {
-            account: string;
-            name: string;
-        };
-    };
+    payment_options?: PaymentOptions;
 }
 
 export interface SubscriptionRequestState {
     current_request: PaymentInstructions | null;
     has_pending_request: boolean;
     pending_request: PaymentInstructions | null;
+    payment_options?: PaymentOptions;
+    additional_instructions?: string;
 }
 
 interface SubscriptionRequestResponse {
     current_request?: PaymentInstructions | null;
     has_pending_request?: boolean;
     pending_request?: PaymentInstructions | null;
+    payment_options?: PaymentOptions;
+    additional_instructions?: string;
 }
 
 function normalizeSubscriptionRequestState(
@@ -338,6 +354,8 @@ function normalizeSubscriptionRequestState(
             current_request: null,
             has_pending_request: false,
             pending_request: null,
+            payment_options: undefined,
+            additional_instructions: undefined,
         };
     }
 
@@ -349,6 +367,8 @@ function normalizeSubscriptionRequestState(
             current_request: currentRequest,
             has_pending_request: data.has_pending_request ?? pendingRequest?.status === "pending",
             pending_request: pendingRequest,
+            payment_options: data.payment_options ?? currentRequest?.payment_options,
+            additional_instructions: data.additional_instructions,
         };
     }
 
@@ -356,6 +376,8 @@ function normalizeSubscriptionRequestState(
         current_request: data,
         has_pending_request: data.status === "pending",
         pending_request: data.status === "pending" ? data : null,
+        payment_options: data.payment_options,
+        additional_instructions: data.instructions,
     };
 }
 
@@ -376,7 +398,7 @@ export const getPlans = async (): Promise<Plan[]> => {
 export const requestSubscription = async (
     planId: string,
     paymentMethod: "telebirr" | "cbe",
-    paidFrom: string
+    paymentReference: string
 ): Promise<PaymentInstructions> => {
     try {
         const response = await client.post<PaymentInstructions>(
@@ -384,7 +406,7 @@ export const requestSubscription = async (
             {
                 plan: planId,
                 payment_method: paymentMethod,
-                paid_from: paidFrom,
+                payment_reference: paymentReference,
             }
         );
         return response.data;
@@ -402,6 +424,17 @@ export const requestSubscription = async (
 };
 
 export const getSubscriptionRequest = async (): Promise<SubscriptionRequestState> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock subscription request state");
+            return {
+                ...normalizeSubscriptionRequestState(null),
+                payment_options: mocks.MOCK_PAYMENT_INSTRUCTIONS.payment_options,
+            };
+        }
+    }
+
     try {
         const response = await client.get<PaymentInstructions | SubscriptionRequestResponse>("/api/subscription/request/");
         return normalizeSubscriptionRequestState(response.data);
@@ -413,7 +446,10 @@ export const getSubscriptionRequest = async (): Promise<SubscriptionRequestState
         const mocks = await getMocks();
         if (mocks) {
             console.info("[dev] Using mock pending subscription request");
-            return normalizeSubscriptionRequestState(null);
+            return {
+                ...normalizeSubscriptionRequestState(null),
+                payment_options: mocks.MOCK_PAYMENT_INSTRUCTIONS.payment_options,
+            };
         }
         throw err;
     }

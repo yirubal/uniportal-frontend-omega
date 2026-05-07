@@ -941,13 +941,13 @@ export const MOCK_PLANS: Plan[] = [
 ];
 
 export const MOCK_PAYMENT_INSTRUCTIONS: PaymentInstructions = {
-    instructions: "Send payment to Telebirr 0912-000-000 and use your username as the reference.",
+    instructions: "Send payment to the displayed Telebirr or CBE account, then submit the transaction number from your receipt.",
     reference: "UP-DEV-2026",
     plan: "Monthly Pro",
     amount: 99,
     days: 30,
     status: "pending",
-    note: "This is demo content. Replace with backend-generated payment instructions later.",
+    note: "This is demo content. Use a 10-12 character transaction reference such as DCE4R6BZA0 or FT261187472K.",
     payment_options: {
         telebirr: {
             number: "0912345678",
@@ -972,8 +972,8 @@ export const MOCK_STUDENT: Student = {
     preferred_year: 2,
     preferred_period: 1,
     onboarding_complete: true,
-    is_premium: true,
-    subscription_expiry: "2026-12-31T23:59:59Z",
+    is_premium: false,
+    subscription_expiry: null,
     preferences: {
         department: 1,
         program: "regular",

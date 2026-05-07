@@ -1,6 +1,6 @@
 import { Check, CheckCircle2, Clock3, Sparkles, X, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { getPlans, getSubscriptionRequest, requestSubscription, type PaymentInstructions, type Plan, type SubscriptionRequestState } from "../api/quiz";
+import { getPlans, getSubscriptionRequest, requestSubscription, type PaymentInstructions, type PaymentOptions, type Plan, type SubscriptionRequestState } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
@@ -9,13 +9,15 @@ import { useNavigate } from "react-router-dom";
 import { getMyProfile } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
 
+const PAYMENT_REFERENCE_PATTERN = /^[A-Z0-9]{10,12}$/;
+
 export default function SubscribeScreen() {
     const navigate = useNavigate();
     const { token, setAuth } = useAuthStore();
     const [plans, setPlans] = useState<Plan[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<"telebirr" | "cbe">("telebirr");
-    const [paidFrom, setPaidFrom] = useState("");
+    const [paymentReference, setPaymentReference] = useState("");
     const [instructions, setInstructions] = useState<PaymentInstructions | null>(null);
     const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
     const [loading, setLoading] = useState(true);
@@ -24,7 +26,16 @@ export default function SubscribeScreen() {
     const [statusModalOpen, setStatusModalOpen] = useState(false);
     const currentRequestStatus = subscriptionRequestState?.current_request?.status ?? instructions?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
-    const requestDisabled = !selectedPlan || !paidFrom.trim() || hasPendingSubscriptionRequest || currentRequestStatus === "approved";
+    const paymentOptions = instructions?.payment_options ?? subscriptionRequestState?.payment_options ?? {};
+    const canUsePaymentMethod = paymentMethod === "telebirr" || Boolean(paymentOptions.cbe);
+    const normalizedPaymentReference = paymentReference.trim().toUpperCase();
+    const paymentReferenceValid = PAYMENT_REFERENCE_PATTERN.test(normalizedPaymentReference);
+    const requestDisabled =
+        !selectedPlan ||
+        !paymentReferenceValid ||
+        !canUsePaymentMethod ||
+        hasPendingSubscriptionRequest ||
+        currentRequestStatus === "approved";
     const requestButtonLabel =
         currentRequestStatus === "approved"
             ? "Payment confirmed"
@@ -36,15 +47,19 @@ export default function SubscribeScreen() {
     const paymentReferenceCopy =
         paymentMethod === "telebirr"
             ? {
-                label: "Payment reference",
-                placeholder: "Phone number or Telebirr transaction ID",
-                helper: "Use the phone number or transaction ID shown on your Telebirr receipt.",
+                label: "Telebirr transaction number",
+                placeholder: "DCE4R6BZA0",
+                helper: "Enter the 10-12 character transaction number from your Telebirr receipt.",
             }
             : {
-                label: "Payment reference",
-                placeholder: "CBE transaction or receipt reference",
-                helper: "CBE does not show the full sender account. Use the transaction/reference number from the receipt.",
+                label: "CBE transaction ID",
+                placeholder: "FT261187472K",
+                helper: "Enter the 10-12 character transaction ID from your CBE receipt.",
             };
+    const paymentReferenceError =
+        paymentReference.length > 0 && !paymentReferenceValid
+            ? "Use the 10-12 character transaction number or ID from your receipt."
+            : "";
 
     const applySubscriptionRequestState = useCallback((state: SubscriptionRequestState, openModal = false) => {
         setSubscriptionRequestState(state);
@@ -123,7 +138,7 @@ export default function SubscribeScreen() {
         setStatusModalOpen(true);
 
         try {
-            await requestSubscription(selectedPlan, paymentMethod, paidFrom.trim());
+            await requestSubscription(selectedPlan, paymentMethod, normalizedPaymentReference);
             await refreshSubscriptionState(true);
         } catch {
             setStatusModalOpen(false);
@@ -255,9 +270,10 @@ export default function SubscribeScreen() {
                             <button
                                 key={method}
                                 type="button"
+                                disabled={method === "cbe" && !paymentOptions.cbe}
                                 onClick={() => setPaymentMethod(method)}
                                 style={paymentMethod === method ? { backgroundColor: "#3F6F6A", border: "1px solid #3F6F6A", color: "#FFFFFF" } : undefined}
-                                className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors ${paymentMethod === method
+                                className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:border-[#D5E1DD] disabled:bg-[#EEF4F1] disabled:text-[#809398] ${paymentMethod === method
                                     ? "border-[#3F6F6A] bg-[#3F6F6A] text-white"
                                     : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F]"
                                     }`}
@@ -266,17 +282,30 @@ export default function SubscribeScreen() {
                             </button>
                         ))}
                     </div>
+                    <PaymentDestinationCard paymentMethod={paymentMethod} paymentOptions={paymentOptions} />
                     <label className="mt-4 block">
                         <span className="app-section-label">{paymentReferenceCopy.label}</span>
                         <input
-                            value={paidFrom}
-                            onChange={(event) => setPaidFrom(event.target.value)}
+                            value={paymentReference}
+                            onChange={(event) => {
+                                setPaymentReference(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
+                            }}
                             placeholder={paymentReferenceCopy.placeholder}
                             className="app-input mt-3"
+                            autoCapitalize="characters"
+                            autoCorrect="off"
+                            inputMode="text"
+                            maxLength={12}
+                            pattern="[A-Z0-9]*"
                         />
                         <span className="mt-2 block text-xs font-medium leading-relaxed text-[#526B70]">
                             {paymentReferenceCopy.helper}
                         </span>
+                        {paymentReferenceError && (
+                            <span className="mt-2 block text-xs font-bold leading-relaxed text-[#B4473F]">
+                                {paymentReferenceError}
+                            </span>
+                        )}
                     </label>
                     <Button
                         variant="primary"
@@ -336,6 +365,39 @@ function PaymentOption({ label, primary, secondary }: { label: string; primary: 
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#526B70]">{label}</p>
             <p className="mt-1 text-sm font-bold text-[#172B2F]">{primary}</p>
             <p className="mt-1 text-xs font-semibold text-[#354F55]">{secondary}</p>
+        </div>
+    );
+}
+
+function PaymentDestinationCard({
+    paymentMethod,
+    paymentOptions,
+}: {
+    paymentMethod: "telebirr" | "cbe";
+    paymentOptions: PaymentOptions;
+}) {
+    const destination =
+        paymentMethod === "telebirr"
+            ? {
+                label: "Send Telebirr to",
+                primary: paymentOptions.telebirr?.number ?? "Telebirr number not loaded",
+                secondary: paymentOptions.telebirr?.name ?? "Refresh the page if this does not appear.",
+            }
+            : {
+                label: "Send CBE transfer to",
+                primary: paymentOptions.cbe?.account ?? "CBE is not available right now",
+                secondary: paymentOptions.cbe?.name ?? "Choose Telebirr or check again later.",
+            };
+
+    return (
+        <div className="mt-4 rounded-[22px] border border-[#CFE2DE] bg-[#EAF4F1] p-4">
+            <p className="app-section-label">{destination.label}</p>
+            <p className="mt-2 break-words text-lg font-black leading-tight text-[#172B2F]">
+                {destination.primary}
+            </p>
+            <p className="mt-1 text-sm font-semibold leading-relaxed text-[#354F55]">
+                {destination.secondary}
+            </p>
         </div>
     );
 }

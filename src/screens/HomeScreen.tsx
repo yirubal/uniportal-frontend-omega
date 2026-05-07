@@ -156,6 +156,15 @@ export default function HomeScreen() {
                         <Button
                             variant="ghost"
                             size="md"
+                            onClick={() => navigate("/subscription")}
+                            className="rounded-full"
+                        >
+                            <Sparkles size={16} />
+                            Subscription
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="md"
                             onClick={() => navigate("/onboarding")}
                             className="rounded-full"
                         >

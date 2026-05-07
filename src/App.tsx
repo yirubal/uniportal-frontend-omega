@@ -24,6 +24,7 @@ import ExitExamListScreen from "./screens/ExitExamListScreen";
 import SimulationScreen from "./screens/SimulationScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import PerformanceScreen from "./screens/PerformanceScreen";
+import SubscriptionScreen from "./screens/SubscriptionScreen";
 import SubscribeScreen from "./screens/SubscribeScreen";
 import ChannelGateScreen from "./screens/ChannelGateScreen";
 import BottomNav from "./components/BottomNav";
@@ -170,6 +171,14 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <PerformanceScreen />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/subscription"
+                    element={
+                        <ProtectedRoute>
+                            <SubscriptionScreen />
                         </ProtectedRoute>
                     }
                 />

@@ -149,7 +149,7 @@ This file is the durable handoff for future Codex sessions working in this repos
   - matching questions are submitted as an empty string when they are not user-answered
   - premium quiz/past-exam papers now send free students to subscribe instead of opening the attempt
   - resource locks now respect backend `is_locked` in addition to access level
-  - subscription requests now collect `payment_method` and `paid_from`, check pending request state, and render API-provided payment options
+  - subscription requests now collect `payment_method` and `payment_reference`, check pending request state, and render API-provided payment options
   - results now compute fallback percentage from `score / gradable_total` and labels non-auto-graded items as `Not graded`
 - Deliberately deferred full pending-review UI for non-auto-graded questions per user instruction.
 - Verification after this pass: `npm run lint` and `npm run build` both passed.
@@ -197,6 +197,18 @@ This file is the durable handoff for future Codex sessions working in this repos
   - Home and Subscribe refetch both `/api/subscription/request/` and `/api/students/me/` on initial open/resume; Subscribe also refetches both after payment submit and when closing payment status
   - local auth mocks now run only when `VITE_FORCE_DEV_MOCKS=true`; `.env.development.local` was set back to `VITE_FORCE_DEV_MOCKS=false` so `/api/students/me/` can update Premium/Free from the backend instead of stale `uniportal-dev-student` localStorage data
   - Home top-right Premium/Free tag now forces Free when `current_request.status === "rejected"` so rejected payment state cannot keep showing Premium from stale auth cache
+  - verification after this pass: `npm run lint` and `npm run build` both passed
+
+### 2026-05-07
+
+- Updated subscription payment proof flow to match the backend payment-review process:
+  - students now see the selected Telebirr number or CBE account number before submitting a subscription request
+  - the payment proof input is now method-specific: `Telebirr transaction number` or `CBE transaction ID`
+  - frontend input filters to uppercase letters/numbers and requires a 10-12 character transaction number/ID before enabling submit; examples are Telebirr `DCE4R6BZA0` and CBE `FT261187472K`
+  - `requestSubscription()` now sends `payment_reference` instead of sender account/phone-style `paid_from`
+  - `/api/subscription/request/` normalization preserves top-level `payment_options` so the payment destination can render before any pending request exists
+  - added `/subscription` as the student-facing plan/status page; it shows Free/Premium state, renders the same backend/mock plans as `/subscribe`, and has a branded request button that opens `/subscribe`
+  - forced the local mock test student to Free by default, including previously cached `uniportal-dev-student` data
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work

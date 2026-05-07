@@ -73,20 +73,31 @@ async function getMockStudent(): Promise<Student | null> {
     const storedStudent = window.localStorage.getItem(DEV_STUDENT_STORAGE_KEY);
     if (storedStudent) {
         try {
-            return JSON.parse(storedStudent) as Student;
+            const student = makeFreeDevStudent(JSON.parse(storedStudent) as Student);
+            window.localStorage.setItem(DEV_STUDENT_STORAGE_KEY, JSON.stringify(student));
+            return student;
         } catch {
             window.localStorage.removeItem(DEV_STUDENT_STORAGE_KEY);
         }
     }
 
     const { MOCK_STUDENT } = await import("./devMocks");
-    window.localStorage.setItem(DEV_STUDENT_STORAGE_KEY, JSON.stringify(MOCK_STUDENT));
-    return MOCK_STUDENT;
+    const student = makeFreeDevStudent(MOCK_STUDENT);
+    window.localStorage.setItem(DEV_STUDENT_STORAGE_KEY, JSON.stringify(student));
+    return student;
+}
+
+function makeFreeDevStudent(student: Student): Student {
+    return {
+        ...student,
+        is_premium: false,
+        subscription_expiry: null,
+    };
 }
 
 function saveMockStudent(student: Student) {
     if (!isDev || (!forceDevMocks && !isLocalDevHost)) return;
-    window.localStorage.setItem(DEV_STUDENT_STORAGE_KEY, JSON.stringify(student));
+    window.localStorage.setItem(DEV_STUDENT_STORAGE_KEY, JSON.stringify(makeFreeDevStudent(student)));
 }
 
 function readPreference(
