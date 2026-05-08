@@ -1,7 +1,7 @@
 import { Bookmark, ChevronDown, ChevronUp, LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getExamPapers, getExamQuestions, submitAttempt, type ExamPaper } from "../api/quiz";
+import { getExitExams, getExamQuestions, submitAttempt, type ExamPaper } from "../api/quiz";
 import ConfirmDialog from "../components/ConfirmDialog";
 import QuestionCard from "../components/QuestionCard";
 import TopBackButton from "../components/TopBackButton";
@@ -35,7 +35,7 @@ export default function SimulationScreen() {
             return;
         }
 
-        getExamPapers({ type: "exit" })
+        getExitExams()
             .then((papers) => {
                 const selected = papers.find((paper) => paper.id === Number(examId)) ?? null;
                 setExam(selected);

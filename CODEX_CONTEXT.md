@@ -245,6 +245,12 @@ This file is the durable handoff for future Codex sessions working in this repos
   - related resources in the detail screen now match by overlapping `course_codes`
   - `module` is accepted/formatted as a resource file type because the backend can now return it
   - verification after this pass: `npm run lint` and `npm run build` both passed
+- Fixed exit exam model/past-year loading against the live backend contract:
+  - backend `ExamPaper.exam_type` uses `exit_real` for official/past-year exit papers and `exit_model` for model papers, not the old frontend `type=exit` filter
+  - `getExitExams()` now fetches both backend exit types for the selected department, dedupes results, and keeps a legacy `exit` fallback for old mocks/data
+  - exit exam categorization now reads `exam_type` directly before falling back to older `exit_category`/title matching
+  - simulation detail loading now uses the same exit exam loader so `/simulate/:examId` can find both `exit_real` and `exit_model` papers
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

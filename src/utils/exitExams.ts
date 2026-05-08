@@ -2,6 +2,7 @@ export type ExitExamCategory = "past_years" | "model";
 
 export type ExitExamLike = {
     title?: string | null;
+    exam_type?: string | null;
     exit_category?: string | null;
 };
 
@@ -49,6 +50,13 @@ export function isExitExamCategory(value?: string | null): value is ExitExamCate
 export function getExitExamCategory(exam?: ExitExamLike | null): ExitExamCategory {
     if (exam?.exit_category && isExitExamCategory(exam.exit_category)) {
         return exam.exit_category;
+    }
+
+    if (exam?.exam_type === "exit_real") {
+        return "past_years";
+    }
+    if (exam?.exam_type === "exit_model") {
+        return "model";
     }
 
     const title = exam?.title?.toLowerCase() ?? "";

@@ -49,7 +49,7 @@ export interface ExamPaper {
     id: number;
     title: string;
     course: number;
-    exam_type: "quiz" | "final" | "exit";
+    exam_type: "quiz" | "final" | "exit" | "exit_real" | "exit_model";
     exit_category?: ExitExamCategory | null;
     year: number;
     duration_minutes: number;
@@ -58,9 +58,13 @@ export interface ExamPaper {
 }
 
 export interface ExamPapersParams {
-    type?: "quiz" | "final" | "exit";
+    type?: ExamPaper["exam_type"];
     department?: number;
     course?: number;
+}
+
+function dedupeExamPapers(exams: ExamPaper[]) {
+    return Array.from(new Map(exams.map((exam) => [exam.id, exam])).values());
 }
 
 export const getExamPapers = async (
@@ -120,9 +124,18 @@ export const getCoursePracticePapers = async (
 };
 
 export const getExitExams = async (
-    departmentId: number
+    departmentId?: number
 ): Promise<ExamPaper[]> => {
-    return getExamPapers({ type: "exit", department: departmentId });
+    const params = departmentId ? { department: departmentId } : undefined;
+    const [officialExams, modelExams] = await Promise.all([
+        getExamPapers({ ...params, type: "exit_real" }),
+        getExamPapers({ ...params, type: "exit_model" }),
+    ]);
+    const exitExams = dedupeExamPapers([...officialExams, ...modelExams]);
+
+    if (exitExams.length > 0) return exitExams;
+
+    return getExamPapers({ ...params, type: "exit" });
 };
 
 export const getExitExamTopics = async (
