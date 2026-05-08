@@ -23,12 +23,13 @@ export interface Resource {
     id: number;
     title: string;
     description?: string;
-    file_type: "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
+    file_type: "lecture_note" | "worksheet" | "past_exam" | "exit_exam" | "module";
     source?: ResourceSource | null;
     source_display?: string | null;
     access_level: "free" | "premium";
     status: "pending" | "published" | "rejected";
-    course: number;
+    course_codes?: string[];
+    course_names?: string[];
     downloads_count: number;
     created_at: string;
     is_locked: boolean;

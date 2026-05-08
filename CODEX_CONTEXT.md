@@ -238,6 +238,13 @@ This file is the durable handoff for future Codex sessions working in this repos
   - the title uses CSS two-line clamping without pre-truncating the text, and metadata now reads as `date · downloads`
   - the download action and locked/premium behavior were not changed
   - verification after this pass: `npm run lint` and `npm run build` both passed
+- Aligned resource course metadata with the backend many-to-many response:
+  - `Resource` now uses optional `course_codes` and `course_names` arrays instead of the old single `course` id
+  - `ResourceCard` supports `showCourseContext`; course pages pass `false`, while future global/search lists can pass `true` to show joined course codes
+  - mock resource filtering now maps the selected course id to a course code and filters by `resource.course_codes`
+  - related resources in the detail screen now match by overlapping `course_codes`
+  - `module` is accepted/formatted as a resource file type because the backend can now return it
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

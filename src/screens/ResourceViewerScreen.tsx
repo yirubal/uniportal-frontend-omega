@@ -44,7 +44,15 @@ export default function ResourceViewerScreen() {
 
     const relatedResources = useMemo(() => {
         if (!resource) return [];
-        return resources.filter((item) => item.course === resource.course && item.id !== resource.id).slice(0, 3);
+        const courseCodes = resource.course_codes ?? [];
+
+        return resources
+            .filter((item) => {
+                if (item.id === resource.id) return false;
+                const itemCourseCodes = item.course_codes ?? [];
+                return courseCodes.some((code) => itemCourseCodes.includes(code));
+            })
+            .slice(0, 3);
     }, [resource, resources]);
 
     const isLocked = resource ? resource.is_locked || !canAccessResource(resource.access_level) : false;

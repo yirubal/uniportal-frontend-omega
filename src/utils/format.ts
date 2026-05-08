@@ -2,6 +2,7 @@ export const formatFileType = (type: string): string => {
     const map: Record<string, string> = {
         lecture_note: "Lecture Notes",
         worksheet: "Worksheet",
+        module: "Module",
         past_exam: "Past Exam",
         exit_exam: "Exit Exam",
     };
@@ -81,6 +82,11 @@ export const getFileTypeColor = (
             text: "#E65100",
             dot: "#FF9800",
         },
+        module: {
+            bg: "#EAF4F1",
+            text: "#3F6F6A",
+            dot: "#3F6F6A",
+        },
         past_exam: {
             bg: "#F3E5F5",
             text: "#6A1B9A",
@@ -99,6 +105,7 @@ export const getFileTypeIcon = (type: string): string => {
     const icons: Record<string, string> = {
         lecture_note: "📄",
         worksheet: "📝",
+        module: "📘",
         past_exam: "📋",
         exit_exam: "🎯",
     };

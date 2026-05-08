@@ -16,11 +16,13 @@ import {
 interface ResourceCardProps {
     resource: Resource;
     isLocked?: boolean;
+    showCourseContext?: boolean;
 }
 
 export default function ResourceCard({
     resource,
     isLocked = false,
+    showCourseContext = false,
 }: ResourceCardProps) {
     const navigate = useNavigate();
     const { downloadFile } = useTelegram();
@@ -30,6 +32,7 @@ export default function ResourceCard({
     const source = resource.source ?? "other";
     const sourceDisplay = resource.source_display ?? "Other Resource";
     const isPremium = resource.access_level === "premium";
+    const courseCodes = resource.course_codes ?? [];
 
     const handleDownload = async () => {
         if (isLocked) {
@@ -96,6 +99,11 @@ export default function ResourceCard({
                     <p className="mt-1.5 text-xs font-medium text-[#9AA6B8]">
                         {formatDate(resource.created_at)} · {resource.downloads_count} downloads
                     </p>
+                    {showCourseContext && courseCodes.length > 0 && (
+                        <p className="mt-0.5 text-xs font-medium text-[#9AA6B8]">
+                            {courseCodes.join(" · ")}
+                        </p>
+                    )}
                 </div>
             </div>
 

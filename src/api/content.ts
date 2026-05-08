@@ -113,7 +113,8 @@ export const getResources = async (
         const mocks = await getMocks();
         if (mocks) {
             console.info("[dev] Force using mock resources");
-            let resources = mocks.MOCK_RESOURCES.filter((r) => r.course === courseId);
+            const courseCode = mocks.MOCK_COURSES.find((course) => course.id === courseId)?.code;
+            let resources = mocks.MOCK_RESOURCES.filter((r) => courseCode && (r.course_codes ?? []).includes(courseCode));
             if (params?.type && params.type !== "All") {
                 resources = resources.filter((r) => r.file_type === params.type);
             }
@@ -135,7 +136,8 @@ export const getResources = async (
         const mocks = await getMocks();
         if (mocks) {
             console.info("[dev] Using mock resources");
-            let resources = mocks.MOCK_RESOURCES.filter((r) => r.course === courseId);
+            const courseCode = mocks.MOCK_COURSES.find((course) => course.id === courseId)?.code;
+            let resources = mocks.MOCK_RESOURCES.filter((r) => courseCode && (r.course_codes ?? []).includes(courseCode));
             if (params?.type && params.type !== "All") {
                 resources = resources.filter((r) => r.file_type === params.type);
             }

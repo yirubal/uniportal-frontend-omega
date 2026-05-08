@@ -510,6 +510,7 @@ export default function ResourcesScreen() {
                                     <ResourceCard
                                         resource={resource}
                                         isLocked={resource.is_locked || !canAccessResource(resource.access_level)}
+                                        showCourseContext={false}
                                     />
                                     {!!resource.tags?.length && (
                                         <div className="ml-2 mt-2 flex flex-wrap gap-2">
