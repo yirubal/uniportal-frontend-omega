@@ -1,4 +1,4 @@
-import { Bookmark, ChevronDown, ChevronUp, LayoutGrid } from "lucide-react";
+import { Bookmark, LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getExitExams, getExamQuestions, submitAttempt, type ExamPaper } from "../api/quiz";
@@ -239,91 +239,6 @@ export default function SimulationScreen() {
                         </div>
                     </div>
 
-                    <div className="mt-3 app-sheet p-4">
-                        <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2">
-                                <div className="app-icon-chip h-10 w-10 bg-[#EAF4F1] text-[#3F6F6A]">
-                                    <LayoutGrid size={16} />
-                                </div>
-                                <div>
-                                    <p className="app-section-label">Question navigator</p>
-                                    <p className="mt-1 text-xs text-[#60728F]">
-                                        Jump between questions and mark items for review.
-                                    </p>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setShowNavigator((current) => !current)}
-                                className="inline-flex items-center gap-2 rounded-full bg-[#F4F8F5] px-3 py-2 text-xs font-bold text-[#172B2F]"
-                            >
-                                {showNavigator ? "Hide" : "Open"}
-                                {showNavigator ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                            </button>
-                        </div>
-
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[11px] font-bold text-[#3F6F6A]">
-                                {answeredCount} answered
-                            </span>
-                            <span className="rounded-full bg-[#FFF6DF] px-3 py-1.5 text-[11px] font-bold text-[#B27614]">
-                                {reviewCount} review
-                            </span>
-                            <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
-                                {unansweredCount} unanswered
-                            </span>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={() => quiz.toggleMarkedForReview()}
-                            className={`mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[18px] px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.985] ${currentMarkedForReview ? "bg-[#FFF6DF] text-[#8E5A00]" : "bg-[#F4F8F5] text-[#172B2F]"}`}
-                        >
-                            <Bookmark size={16} />
-                            {currentMarkedForReview ? "Marked for review" : "Mark this question for review"}
-                        </button>
-
-                        {showNavigator && (
-                            <div className="mt-4">
-                                <div className="grid grid-cols-5 gap-2">
-                                    {quiz.questions.map((question, index) => {
-                                        const isCurrent = index === quiz.currentIndex;
-                                        const isAnswered = isQuestionAnswered(question, quiz.answers);
-                                        const isMarked = Boolean(quiz.markedForReview[question.id]);
-
-                                        const paletteClass = isCurrent
-                                            ? "bg-[#172B2F] text-white"
-                                            : isMarked
-                                                ? "bg-[#FFF6DF] text-[#8E5A00] border border-[#F1C364]"
-                                                : isAnswered
-                                                    ? "bg-[#EAF4F1] text-[#3F6F6A]"
-                                                    : "bg-[#F4F8F5] text-[#60728F]";
-
-                                        return (
-                                            <button
-                                                type="button"
-                                                key={question.id}
-                                                onClick={() => {
-                                                    quiz.jumpToQuestion(index);
-                                                    setShowNavigator(false);
-                                                }}
-                                                className={`flex min-h-12 items-center justify-center rounded-[16px] text-sm font-bold transition-all duration-150 active:scale-[0.98] ${paletteClass}`}
-                                            >
-                                                {index + 1}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-
-                                <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-[#60728F]">
-                                    <span className="rounded-full bg-[#172B2F] px-3 py-1.5 text-white">Current</span>
-                                    <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[#3F6F6A]">Answered</span>
-                                    <span className="rounded-full bg-[#FFF6DF] px-3 py-1.5 text-[#8E5A00]">Review</span>
-                                    <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[#60728F]">Unanswered</span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
                 </div>
             </div>
 
@@ -337,9 +252,65 @@ export default function SimulationScreen() {
                     simulationMode
                     showQuestionType={false}
                 />
+
+                {showNavigator && (
+                    <div className="mt-4 app-sheet p-4">
+                        <div className="flex flex-wrap gap-2">
+                            <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[11px] font-bold text-[#3F6F6A]">
+                                {answeredCount} answered
+                            </span>
+                            <span className="rounded-full bg-[#FFF6DF] px-3 py-1.5 text-[11px] font-bold text-[#B27614]">
+                                {reviewCount} review
+                            </span>
+                            <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
+                                {unansweredCount} unanswered
+                            </span>
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-5 gap-2">
+                            {quiz.questions.map((question, index) => {
+                                const isCurrent = index === quiz.currentIndex;
+                                const isAnswered = isQuestionAnswered(question, quiz.answers);
+                                const isMarked = Boolean(quiz.markedForReview[question.id]);
+
+                                const paletteClass = isCurrent
+                                    ? "bg-[#172B2F] text-white"
+                                    : isMarked
+                                        ? "bg-[#FFF6DF] text-[#8E5A00] border border-[#F1C364]"
+                                        : isAnswered
+                                            ? "bg-[#EAF4F1] text-[#3F6F6A]"
+                                            : "bg-[#F4F8F5] text-[#60728F]";
+
+                                return (
+                                    <button
+                                        type="button"
+                                        key={question.id}
+                                        onClick={() => {
+                                            quiz.jumpToQuestion(index);
+                                            setShowNavigator(false);
+                                        }}
+                                        className={`flex min-h-12 items-center justify-center rounded-[16px] text-sm font-bold transition-all duration-150 active:scale-[0.98] ${paletteClass}`}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="app-footer space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                    <Button variant="secondary" size="md" fullWidth onClick={() => setShowNavigator((current) => !current)}>
+                        <LayoutGrid size={16} />
+                        {showNavigator ? "Hide list" : "Navigator"}
+                    </Button>
+                    <Button variant="secondary" size="md" fullWidth onClick={() => quiz.toggleMarkedForReview()}>
+                        <Bookmark size={16} />
+                        {currentMarkedForReview ? "Reviewed" : "Review"}
+                    </Button>
+                </div>
                 <Button
                     variant="primary"
                     size="lg"

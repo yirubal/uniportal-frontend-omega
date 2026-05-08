@@ -251,6 +251,11 @@ This file is the durable handoff for future Codex sessions working in this repos
   - exit exam categorization now reads `exam_type` directly before falling back to older `exit_category`/title matching
   - simulation detail loading now uses the same exit exam loader so `/simulate/:examId` can find both `exit_real` and `exit_model` papers
   - verification after this pass: `npm run lint` and `npm run build` both passed
+- Fixed post-submit results/performance display robustness:
+  - attempt summaries now normalize backend topic breakdown objects into percentages before `ResultsScreen` reads them
+  - performance analytics now normalize backend `attempts_by_paper` into the frontend breakdown model and guard empty arrays with visible empty states
+  - timed simulation no longer puts the question navigator/review controls above the question; those actions now live in the footer and the navigator expands below the question only when opened
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

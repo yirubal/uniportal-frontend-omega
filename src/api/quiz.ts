@@ -172,6 +172,39 @@ export interface SubmitAttemptPayload {
 
 export interface AttemptResponse extends AttemptSummary {}
 
+type RawTopicScore = number | { percentage?: number; correct?: number; total?: number };
+
+function asNumber(value: unknown, fallback = 0) {
+    return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeTopicScore(score: RawTopicScore) {
+    if (typeof score === "number") return score;
+    if (typeof score?.percentage === "number") return score.percentage;
+    if (typeof score?.correct === "number" && typeof score?.total === "number" && score.total > 0) {
+        return Math.round((score.correct / score.total) * 100);
+    }
+    return 0;
+}
+
+function normalizeAttemptSummary(summary: AttemptResponse): AttemptResponse {
+    return {
+        ...summary,
+        score: asNumber(summary.score),
+        total: summary.total,
+        percentage: asNumber(summary.percentage, summary.gradable_total ? (summary.score / summary.gradable_total) * 100 : 0),
+        gradable_total: asNumber(summary.gradable_total),
+        pending_count: asNumber(summary.pending_count),
+        topic_breakdown: Object.fromEntries(
+            Object.entries(summary.topic_breakdown ?? {}).map(([topic, score]) => [
+                topic,
+                normalizeTopicScore(score as RawTopicScore),
+            ])
+        ),
+        weak_topics: Array.isArray(summary.weak_topics) ? summary.weak_topics : [],
+    };
+}
+
 export const submitAttempt = async (
     payload: SubmitAttemptPayload
 ): Promise<AttemptResponse> => {
@@ -191,7 +224,7 @@ export const submitAttempt = async (
             const questions = payload.exam_paper
                 ? mocks.getMockExamQuestions(payload.exam_paper)
                 : [];
-            return mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode);
+            return normalizeAttemptSummary(mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode));
         }
     }
 
@@ -200,7 +233,7 @@ export const submitAttempt = async (
             "/api/quiz/attempts/",
             requestPayload
         );
-        return response.data;
+        return normalizeAttemptSummary(response.data);
     } catch (err) {
         const mocks = await getMocks();
         if (mocks) {
@@ -208,7 +241,7 @@ export const submitAttempt = async (
             const questions = payload.exam_paper
                 ? mocks.getMockExamQuestions(payload.exam_paper)
                 : [];
-            return mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode);
+            return normalizeAttemptSummary(mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode));
         }
         throw err;
     }
@@ -279,25 +312,70 @@ export interface Performance {
     }[];
 }
 
+type RawPerformance = Partial<Performance> & {
+    attempts_by_paper?: {
+        paper_title?: string;
+        exam_type?: string;
+        attempts?: number;
+        average?: number;
+    }[];
+};
+
+function normalizePerformance(performance: RawPerformance): Performance {
+    const attemptsByCourse = Array.isArray(performance.attempts_by_course)
+        ? performance.attempts_by_course
+        : (performance.attempts_by_paper ?? []).map((paper) => ({
+            course_name: paper.paper_title ?? formatExamTypeLabel(paper.exam_type) ?? "Exam paper",
+            attempts: asNumber(paper.attempts),
+            average: asNumber(paper.average),
+        }));
+
+    return {
+        total_attempts: asNumber(performance.total_attempts),
+        average_score: asNumber(performance.average_score),
+        best_score: asNumber(performance.best_score),
+        weak_topics: Array.isArray(performance.weak_topics) ? performance.weak_topics : [],
+        score_over_time: Array.isArray(performance.score_over_time)
+            ? performance.score_over_time.map((point) => ({
+                date: point.date,
+                score: asNumber(point.score),
+            }))
+            : [],
+        attempts_by_course: attemptsByCourse,
+    };
+}
+
+function formatExamTypeLabel(type?: string) {
+    const labels: Record<string, string> = {
+        quiz: "Quiz",
+        final: "Past exam",
+        exit_real: "Past years exit exam",
+        exit_model: "Exit exam model",
+        exit: "Exit exam",
+    };
+
+    return type ? labels[type] : undefined;
+}
+
 export const getMyPerformance = async (): Promise<Performance> => {
     if (forceDevMocks || (isDev && isLocalDevHost)) {
         const mocks = await getMocks();
         if (mocks) {
             console.info("[dev] Using mock performance");
-            return mocks.MOCK_PERFORMANCE;
+            return normalizePerformance(mocks.MOCK_PERFORMANCE);
         }
     }
 
     try {
-        const response = await client.get<Performance>(
+        const response = await client.get<RawPerformance>(
             "/api/students/me/performance/"
         );
-        return response.data;
+        return normalizePerformance(response.data);
     } catch (err) {
         const mocks = await getMocks();
         if (mocks) {
             console.info("[dev] Using mock performance");
-            return mocks.MOCK_PERFORMANCE;
+            return normalizePerformance(mocks.MOCK_PERFORMANCE);
         }
         throw err;
     }

@@ -105,52 +105,70 @@ export default function PerformanceScreen() {
                         </span>
                     </div>
 
-                    <div className="mt-6 flex h-44 items-end gap-2">
-                        {performance.score_over_time.map((point) => (
-                            <div key={point.date} className="flex flex-1 flex-col items-center gap-2">
-                                <div className="relative w-full overflow-hidden rounded-t-[18px] bg-[#E6ECF7]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }}>
-                                    <div className="absolute inset-x-0 bottom-0 rounded-t-[18px] bg-[linear-gradient(180deg,#5D8F88_0%,#172B2F_100%)]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }} />
+                    {performance.score_over_time.length === 0 ? (
+                        <div className="mt-6 rounded-[22px] bg-[#F4F8F5] px-4 py-5 text-sm font-medium text-[#526B70]">
+                            Submit an exam or quiz attempt to start building your score trend.
+                        </div>
+                    ) : (
+                        <div className="mt-6 flex h-44 items-end gap-2">
+                            {performance.score_over_time.map((point) => (
+                                <div key={`${point.date}-${point.score}`} className="flex flex-1 flex-col items-center gap-2">
+                                    <div className="relative w-full overflow-hidden rounded-t-[18px] bg-[#E6ECF7]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }}>
+                                        <div className="absolute inset-x-0 bottom-0 rounded-t-[18px] bg-[linear-gradient(180deg,#5D8F88_0%,#172B2F_100%)]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }} />
+                                    </div>
+                                    <span className="text-[10px] font-semibold text-[#70868B]">
+                                        {new Date(point.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                    </span>
                                 </div>
-                                <span className="text-[10px] font-semibold text-[#70868B]">
-                                    {new Date(point.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="app-sheet p-5">
                     <p className="app-section-label">Weak topics</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        {performance.weak_topics.map((topic) => (
-                            <span key={topic} className="rounded-full bg-[#FFF6DF] px-3 py-2 text-[12px] font-semibold text-[#B27614]">
-                                {topic}
-                            </span>
-                        ))}
-                    </div>
+                    {performance.weak_topics.length === 0 ? (
+                        <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
+                            No weak topics have been detected from your submitted attempts yet.
+                        </p>
+                    ) : (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {performance.weak_topics.map((topic) => (
+                                <span key={topic} className="rounded-full bg-[#FFF6DF] px-3 py-2 text-[12px] font-semibold text-[#B27614]">
+                                    {topic}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                     <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
                         These need attention first. Pair topic-based practice with matching resources to improve recall.
                     </p>
                 </div>
 
                 <div className="app-sheet p-5">
-                    <p className="app-section-label">Course breakdown</p>
-                    <div className="mt-4 space-y-3">
-                        {performance.attempts_by_course.map((course) => (
-                            <div key={course.course_name} className="app-panel-muted rounded-[24px] p-4">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                        <p className="text-sm font-semibold text-[#172B2F]">{course.course_name}</p>
-                                        <p className="mt-1 text-xs text-[#70868B]">{course.attempts} attempts</p>
+                    <p className="app-section-label">Paper breakdown</p>
+                    {performance.attempts_by_course.length === 0 ? (
+                        <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
+                            Your submitted papers will appear here after the backend records attempt history.
+                        </p>
+                    ) : (
+                        <div className="mt-4 space-y-3">
+                            {performance.attempts_by_course.map((course) => (
+                                <div key={course.course_name} className="app-panel-muted rounded-[24px] p-4">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p className="text-sm font-semibold text-[#172B2F]">{course.course_name}</p>
+                                            <p className="mt-1 text-xs text-[#70868B]">{course.attempts} attempts</p>
+                                        </div>
+                                        <span className="text-lg font-black text-[#172B2F]">{course.average}%</span>
                                     </div>
-                                    <span className="text-lg font-black text-[#172B2F]">{course.average}%</span>
+                                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E1E7F2]">
+                                        <div className="h-full rounded-full bg-[linear-gradient(90deg,#5D8F88_0%,#172B2F_100%)]" style={{ width: `${course.average}%` }} />
+                                    </div>
                                 </div>
-                                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E1E7F2]">
-                                    <div className="h-full rounded-full bg-[linear-gradient(90deg,#5D8F88_0%,#172B2F_100%)]" style={{ width: `${course.average}%` }} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
