@@ -223,6 +223,22 @@ This file is the durable handoff for future Codex sessions working in this repos
   - this matches the backend `Student.is_premium` model rule: `subscription_status === premium` plus non-null, unexpired `subscription_expiry`
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
+### 2026-05-08
+
+- Added resource source trust badges for the backend `source` / `source_display` fields:
+  - `Resource` now accepts `source` values `official`, `textbook`, `reference`, `notes`, and `other`, while remaining tolerant of missing/null cached API responses
+  - `ResourceSourceBadge` is reused on resource cards, the featured pack, related resources, and the resource detail/download screen
+  - non-official resources show a small pre-download disclaimer; official resources do not show extra warning copy
+  - the resource list now has a second source-filter row for Official, Textbooks, Reference, Study notes, and Other while keeping past/exit exams out of the normal downloadable shelf
+  - dev mocks include representative source values for local testing
+  - verification after this pass: `npm run lint` and `npm run build` both passed
+- Tightened the mobile resource card layout:
+  - `ResourceCard` is now a compact stacked card with a 40px file icon, title/source/file-type/metadata content column, and a bottom access/download row
+  - the source badge stays visible but uses an extra-small badge size inline with the plain file-type label instead of competing with a second top badge
+  - the title uses CSS two-line clamping without pre-truncating the text, and metadata now reads as `date · downloads`
+  - the download action and locked/premium behavior were not changed
+  - verification after this pass: `npm run lint` and `npm run build` both passed
+
 ## Next Work
 
 - Continue all new implementation on `dev`.

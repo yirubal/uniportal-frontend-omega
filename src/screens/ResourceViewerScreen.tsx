@@ -5,6 +5,7 @@ import { getResourceDetail, requestDownload } from "../api/content";
 import { getWatermarkText } from "../api/auth";
 import Button from "../components/ui/Button";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
+import { ResourceSourceBadge } from "../components/ResourceSourceBadge";
 import TopBackButton from "../components/TopBackButton";
 import { useAccess } from "../hooks/useAccess";
 import { useTelegram } from "../hooks/useTelegram";
@@ -103,6 +104,9 @@ export default function ResourceViewerScreen() {
         );
     }
 
+    const source = resource.source ?? "other";
+    const sourceDisplay = resource.source_display ?? "Other Resource";
+
     return (
         <div className="app-screen">
             <div className="app-topbar">
@@ -117,6 +121,9 @@ export default function ResourceViewerScreen() {
                     <p className="mt-2 text-sm text-[#526B70]">
                         {selectedCourse?.code ? `${selectedCourse.code} · ` : ""}Updated {formatDate(resource.created_at)}
                     </p>
+                    <div className="mt-3">
+                        <ResourceSourceBadge source={source} source_display={sourceDisplay} />
+                    </div>
                 </div>
             </div>
 
@@ -129,6 +136,7 @@ export default function ResourceViewerScreen() {
                         <span className="app-badge app-badge-blue">
                             {resource.downloads_count} downloads
                         </span>
+                        <ResourceSourceBadge source={source} source_display={sourceDisplay} />
                     </div>
 
                     <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
@@ -196,7 +204,13 @@ export default function ResourceViewerScreen() {
                                 >
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-semibold text-[#172B2F]">{item.title}</p>
-                                        <p className="mt-1 text-xs text-[#70868B]">{formatFileType(item.file_type)}</p>
+                                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                                            <p className="text-xs text-[#70868B]">{formatFileType(item.file_type)}</p>
+                                            <ResourceSourceBadge
+                                                source={item.source ?? "other"}
+                                                source_display={item.source_display ?? "Other Resource"}
+                                            />
+                                        </div>
                                     </div>
                                 </button>
                             ))}
@@ -216,6 +230,11 @@ export default function ResourceViewerScreen() {
                     {isLocked ? <Lock size={16} /> : <Download size={16} />}
                     {isLocked ? "Unlock premium resource" : "Download resource"}
                 </Button>
+                {source !== "official" && (
+                    <p className="mt-2 text-center text-xs font-medium leading-relaxed text-[#70868B]">
+                        ℹ️ {sourceDisplay} - not an official Unity University document
+                    </p>
+                )}
             </div>
         </div>
     );

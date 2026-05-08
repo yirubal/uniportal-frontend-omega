@@ -3,21 +3,32 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCourses, getDepartments, getResources } from "../api/content";
 import ResourceCard from "../components/ResourceCard";
+import { ResourceSourceBadge } from "../components/ResourceSourceBadge";
 import TopBackButton from "../components/TopBackButton";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import { useAccess } from "../hooks/useAccess";
 import { useStudentProfile } from "../hooks/useStudentProfile";
 import { useContentStore } from "../store/contentStore";
-import type { Course, Department } from "../store/contentStore";
+import type { Course, Department, ResourceSource } from "../store/contentStore";
 import { getPeriodLabel, getPeriodOptions, getProgramLabel, PROGRAM_OPTIONS, type ProgramType, YEAR_OPTIONS } from "../utils/periods";
 
 type FilterType = "All" | "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
+type SourceFilter = "All" | ResourceSource;
 const INTERACTIVE_RESOURCE_TYPES = new Set<FilterType>(["past_exam", "exit_exam"]);
 
 const FILTER_TABS: { key: FilterType; label: string }[] = [
     { key: "All", label: "All" },
     { key: "lecture_note", label: "Notes" },
     { key: "worksheet", label: "Worksheets" },
+];
+
+const SOURCE_FILTER_TABS: { key: SourceFilter; label: string }[] = [
+    { key: "All", label: "All sources" },
+    { key: "official", label: "Official" },
+    { key: "textbook", label: "Textbooks" },
+    { key: "reference", label: "Reference" },
+    { key: "notes", label: "Study notes" },
+    { key: "other", label: "Other" },
 ];
 
 export default function ResourcesScreen() {
@@ -42,6 +53,7 @@ export default function ResourcesScreen() {
     const [selPeriod, setSelPeriod] = useState<number | null>(profile.period ?? store.selectedPeriod ?? null);
     const [selCourse, setSelCourse] = useState<Course | null>(null);
     const [filterType, setFilterType] = useState<FilterType>("All");
+    const [sourceFilter, setSourceFilter] = useState<SourceFilter>("All");
     const [departmentSearch, setDepartmentSearch] = useState("");
     const [search, setSearch] = useState("");
     const useTailoredStart = profile.hasCompleteProfile && !customizingProfile;
@@ -124,15 +136,18 @@ export default function ResourcesScreen() {
     const filteredResources = useMemo(() => {
         return visibleResources.filter((resource) => {
             const matchesType = filterType === "All" || resource.file_type === filterType;
+            const resourceSource = resource.source ?? "other";
+            const matchesSource = sourceFilter === "All" || resourceSource === sourceFilter;
             const query = search.trim().toLowerCase();
             const matchesSearch = !query ||
                 resource.title.toLowerCase().includes(query) ||
                 resource.description?.toLowerCase().includes(query) ||
+                resource.source_display?.toLowerCase().includes(query) ||
                 resource.tags?.some((tag) => tag.toLowerCase().includes(query));
 
-            return matchesType && matchesSearch;
+            return matchesType && matchesSource && matchesSearch;
         });
-    }, [filterType, search, visibleResources]);
+    }, [filterType, search, sourceFilter, visibleResources]);
 
     const resourceStats = useMemo(() => {
         const total = visibleResources.length;
@@ -393,7 +408,13 @@ export default function ResourcesScreen() {
                         <p className="app-section-label">Featured pack</p>
                         <div className="mt-3 flex items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
-                                <p className="break-words text-base font-semibold text-[#172B2F]">{featuredResource.title}</p>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <p className="break-words text-base font-semibold text-[#172B2F]">{featuredResource.title}</p>
+                                    <ResourceSourceBadge
+                                        source={featuredResource.source ?? "other"}
+                                        source_display={featuredResource.source_display ?? "Other Resource"}
+                                    />
+                                </div>
                                 <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
                                     {featuredResource.description}
                                 </p>
@@ -425,6 +446,18 @@ export default function ResourcesScreen() {
                                 key={tab.key}
                                 onClick={() => setFilterType(tab.key)}
                                 className={`app-chip whitespace-nowrap ${filterType === tab.key ? "app-chip-active" : ""}`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                        {SOURCE_FILTER_TABS.map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setSourceFilter(tab.key)}
+                                className={`app-chip whitespace-nowrap ${sourceFilter === tab.key ? "app-chip-active" : ""}`}
                             >
                                 {tab.label}
                             </button>

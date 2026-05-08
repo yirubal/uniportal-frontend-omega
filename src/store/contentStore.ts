@@ -17,11 +17,15 @@ export interface Course {
     period: number;
 }
 
+export type ResourceSource = "official" | "textbook" | "reference" | "notes" | "other";
+
 export interface Resource {
     id: number;
     title: string;
     description?: string;
     file_type: "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
+    source?: ResourceSource | null;
+    source_display?: string | null;
     access_level: "free" | "premium";
     status: "pending" | "published" | "rejected";
     course: number;
