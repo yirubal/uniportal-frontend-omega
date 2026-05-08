@@ -256,6 +256,12 @@ This file is the durable handoff for future Codex sessions working in this repos
   - performance analytics now normalize backend `attempts_by_paper` into the frontend breakdown model and guard empty arrays with visible empty states
   - timed simulation no longer puts the question navigator/review controls above the question; those actions now live in the footer and the navigator expands below the question only when opened
   - verification after this pass: `npm run lint` and `npm run build` both passed
+- Refined performance page card overflow and retake actions:
+  - KPI cards now use tighter, wrapping-safe typography so large attempt counts/percentages do not spill out of the colorful cards
+  - paper breakdown entries are clickable cards with a `Retake paper` action
+  - performance normalization now preserves optional `paper_id` / `exam_paper_id` plus `exam_type`; when the current backend only sends paper title/type, the frontend resolves the id by fetching matching exam papers before navigating
+  - retake routing sends `exit_real`/`exit_model` papers to `/simulate/:id` and quiz/final papers to `/quiz/take/:id`
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

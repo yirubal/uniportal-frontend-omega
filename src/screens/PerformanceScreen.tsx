@@ -1,17 +1,22 @@
+import { RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { getMyPerformance, type Performance } from "../api/quiz";
+import { getExamPapers, getMyPerformance, type ExamPaper, type Performance } from "../api/quiz";
 import LockedOverlay from "../components/LockedOverlay";
 import TopBackButton from "../components/TopBackButton";
 import { ErrorState, Skeleton } from "../components/ui";
 import { useAccess } from "../hooks/useAccess";
 import { useNavigate } from "react-router-dom";
+import { useQuizStore } from "../store/quizStore";
 
 export default function PerformanceScreen() {
     const navigate = useNavigate();
     const { canAccessPerformance } = useAccess();
+    const { resetAttempt, setPracticeContentType, setSelectedQuiz } = useQuizStore();
     const [performance, setPerformance] = useState<Performance | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [retryingPaperKey, setRetryingPaperKey] = useState<string | null>(null);
+    const [retryError, setRetryError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!canAccessPerformance) {
@@ -72,6 +77,48 @@ export default function PerformanceScreen() {
     }
 
     const maxScore = Math.max(...performance.score_over_time.map((item) => item.score), 100);
+
+    const handleRetakePaper = async (
+        paper: Performance["attempts_by_course"][number],
+        paperKey: string
+    ) => {
+        setRetryingPaperKey(paperKey);
+        setRetryError(null);
+
+        try {
+            const paperId = paper.paper_id ?? await resolvePaperId(paper);
+
+            if (!paperId || !paper.exam_type) {
+                setRetryError("This paper cannot be reopened yet because the performance data does not include a reusable paper id.");
+                return;
+            }
+
+            resetAttempt();
+
+            if (isExitExamType(paper.exam_type)) {
+                navigate(`/simulate/${paperId}`);
+                return;
+            }
+
+            setPracticeContentType(paper.exam_type === "final" ? "past_exam" : "quiz");
+            setSelectedQuiz(paperId, paper.course_name);
+            navigate(`/quiz/take/${paperId}`);
+        } catch {
+            setRetryError("Could not reopen this paper. Please try again from the exam list.");
+        } finally {
+            setRetryingPaperKey(null);
+        }
+    };
+
+    const resolvePaperId = async (paper: Performance["attempts_by_course"][number]) => {
+        if (!paper.exam_type) return null;
+
+        const papers = await getExamPapers({ type: paper.exam_type });
+        const title = normalizeTitle(paper.course_name);
+        const match = papers.find((item) => normalizeTitle(item.title) === title);
+
+        return match?.id ?? null;
+    };
 
     return (
         <div className="app-screen">
@@ -147,26 +194,46 @@ export default function PerformanceScreen() {
 
                 <div className="app-sheet p-5">
                     <p className="app-section-label">Paper breakdown</p>
+                    {retryError && (
+                        <div className="mt-4 rounded-[18px] bg-[#FFF0ED] px-4 py-3 text-sm font-semibold text-[#B75F57]">
+                            {retryError}
+                        </div>
+                    )}
                     {performance.attempts_by_course.length === 0 ? (
                         <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
                             Your submitted papers will appear here after the backend records attempt history.
                         </p>
                     ) : (
                         <div className="mt-4 space-y-3">
-                            {performance.attempts_by_course.map((course) => (
-                                <div key={course.course_name} className="app-panel-muted rounded-[24px] p-4">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <p className="text-sm font-semibold text-[#172B2F]">{course.course_name}</p>
-                                            <p className="mt-1 text-xs text-[#70868B]">{course.attempts} attempts</p>
+                            {performance.attempts_by_course.map((course, index) => {
+                                const paperKey = `${course.exam_type ?? "paper"}-${course.paper_id ?? course.course_name}-${index}`;
+                                const isRetrying = retryingPaperKey === paperKey;
+
+                                return (
+                                    <button
+                                        type="button"
+                                        key={paperKey}
+                                        onClick={() => void handleRetakePaper(course, paperKey)}
+                                        disabled={isRetrying}
+                                        className="app-panel-muted w-full rounded-[24px] p-4 text-left transition-all duration-200 active:scale-[0.985] disabled:cursor-wait"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="break-words text-sm font-semibold leading-snug text-[#172B2F]">{course.course_name}</p>
+                                                <p className="mt-1 text-xs text-[#70868B]">{course.attempts} attempts</p>
+                                            </div>
+                                            <span className="shrink-0 text-lg font-black text-[#172B2F]">{course.average}%</span>
                                         </div>
-                                        <span className="text-lg font-black text-[#172B2F]">{course.average}%</span>
-                                    </div>
-                                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E1E7F2]">
-                                        <div className="h-full rounded-full bg-[linear-gradient(90deg,#5D8F88_0%,#172B2F_100%)]" style={{ width: `${course.average}%` }} />
-                                    </div>
-                                </div>
-                            ))}
+                                        <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E1E7F2]">
+                                            <div className="h-full rounded-full bg-[linear-gradient(90deg,#5D8F88_0%,#172B2F_100%)]" style={{ width: `${Math.max(0, Math.min(100, course.average))}%` }} />
+                                        </div>
+                                        <div className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-[16px] bg-[#172B2F] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-white">
+                                            <RotateCcw size={14} />
+                                            {isRetrying ? "Opening..." : "Retake paper"}
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -185,9 +252,17 @@ function KpiCard({
     tone: string;
 }) {
     return (
-        <div className={`app-stat-card rounded-[24px] ${tone}`}>
-            <p className="text-2xl font-black">{value}</p>
-            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em]">{label}</p>
+        <div className={`app-stat-card min-w-0 overflow-hidden rounded-[24px] ${tone}`}>
+            <p className="max-w-full break-words text-[1.2rem] font-black leading-tight [overflow-wrap:anywhere]">{value}</p>
+            <p className="mt-1 max-w-full break-words text-[10px] font-semibold uppercase tracking-[0.08em] [overflow-wrap:anywhere]">{label}</p>
         </div>
     );
+}
+
+function isExitExamType(examType: ExamPaper["exam_type"]) {
+    return examType === "exit" || examType === "exit_real" || examType === "exit_model";
+}
+
+function normalizeTitle(title: string) {
+    return title.trim().toLowerCase().replace(/\s+/g, " ");
 }

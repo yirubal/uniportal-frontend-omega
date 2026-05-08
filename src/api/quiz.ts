@@ -306,6 +306,8 @@ export interface Performance {
     weak_topics: string[];
     score_over_time: { date: string; score: number }[];
     attempts_by_course: {
+        paper_id?: number;
+        exam_type?: ExamPaper["exam_type"];
         course_name: string;
         attempts: number;
         average: number;
@@ -314,8 +316,11 @@ export interface Performance {
 
 type RawPerformance = Partial<Performance> & {
     attempts_by_paper?: {
+        id?: number;
+        paper_id?: number;
+        exam_paper_id?: number;
         paper_title?: string;
-        exam_type?: string;
+        exam_type?: ExamPaper["exam_type"];
         attempts?: number;
         average?: number;
     }[];
@@ -325,6 +330,8 @@ function normalizePerformance(performance: RawPerformance): Performance {
     const attemptsByCourse = Array.isArray(performance.attempts_by_course)
         ? performance.attempts_by_course
         : (performance.attempts_by_paper ?? []).map((paper) => ({
+            paper_id: paper.paper_id ?? paper.exam_paper_id ?? paper.id,
+            exam_type: paper.exam_type,
             course_name: paper.paper_title ?? formatExamTypeLabel(paper.exam_type) ?? "Exam paper",
             attempts: asNumber(paper.attempts),
             average: asNumber(paper.average),
