@@ -404,24 +404,45 @@ export default function ResourcesScreen() {
                 </div>
 
                 {featuredResource && (
-                    <div className="mt-4 app-sheet p-5">
+                    <div className="mt-4 app-sheet overflow-hidden p-5">
                         <p className="app-section-label">Featured pack</p>
-                        <div className="mt-3 flex items-start justify-between gap-3">
+                        <div className="mt-3 flex min-w-0 items-start gap-3">
                             <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <p className="break-words text-base font-semibold text-[#172B2F]">{featuredResource.title}</p>
-                                    <ResourceSourceBadge
-                                        source={featuredResource.source ?? "other"}
-                                        source_display={featuredResource.source_display ?? "Other Resource"}
-                                    />
+                                <div className="min-w-0">
+                                    <p
+                                        className="line-clamp-2 overflow-hidden text-base font-semibold leading-snug text-[#172B2F]"
+                                        style={{
+                                            display: "-webkit-box",
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: "vertical",
+                                            overflowWrap: "anywhere",
+                                        }}
+                                    >
+                                        {featuredResource.title}
+                                    </p>
+                                    <div className="mt-2">
+                                        <ResourceSourceBadge
+                                            source={featuredResource.source ?? "other"}
+                                            source_display={featuredResource.source_display ?? "Other Resource"}
+                                            size="xs"
+                                        />
+                                    </div>
                                 </div>
-                                <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
+                                <p
+                                    className="mt-2 line-clamp-2 overflow-hidden text-sm leading-relaxed text-[#526B70]"
+                                    style={{
+                                        display: "-webkit-box",
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: "vertical",
+                                        overflowWrap: "anywhere",
+                                    }}
+                                >
                                     {featuredResource.description}
                                 </p>
                             </div>
-                            <div className="flex min-h-[4.5rem] min-w-[5.5rem] flex-col items-center justify-start self-start rounded-[20px] bg-[#FFF6DF] px-3.5 py-2.5 text-[#B27614]">
-                                <span className="w-full text-center text-base font-black leading-none">{featuredResource.downloads_count}</span>
-                                <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em]">Downloads</span>
+                            <div className="flex min-h-[4rem] w-[4.75rem] flex-shrink-0 flex-col items-center justify-start self-start rounded-[18px] bg-[#FFF6DF] px-2.5 py-2.5 text-[#B27614]">
+                                <span className="w-full truncate text-center text-base font-black leading-none">{featuredResource.downloads_count}</span>
+                                <span className="mt-1 text-center text-[9px] font-bold uppercase tracking-[0.08em]">Downloads</span>
                             </div>
                         </div>
                     </div>
