@@ -8,6 +8,9 @@ import { getPeriodLabel, getProgramLabel } from "../utils/periods";
 import { useEffect, useState } from "react";
 import { getMyProfile } from "../api/auth";
 import { getSubscriptionRequest, type SubscriptionRequestState } from "../api/quiz";
+import { fetchActiveTerm } from "../api/exams";
+import ExamScheduleCard from "../components/ExamScheduleCard";
+import type { ActiveTermResponse } from "../types/exams";
 
 const QUICK_ACTIONS = [
     {
@@ -49,6 +52,7 @@ export default function HomeScreen() {
     const { student, token, setAuth } = useAuthStore();
     const { isPremium, daysRemaining } = useAccess();
     const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
+    const [activeTerm, setActiveTerm] = useState<ActiveTermResponse | null>(null);
     const greeting = "Selam";
     const currentRequestStatus = subscriptionRequestState?.current_request?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
@@ -95,6 +99,26 @@ export default function HomeScreen() {
             document.removeEventListener("visibilitychange", handleResume);
         };
     }, [setAuth, token]);
+
+    useEffect(() => {
+        let active = true;
+
+        fetchActiveTerm()
+            .then((term) => {
+                if (active) {
+                    setActiveTerm(term);
+                }
+            })
+            .catch(() => {
+                if (active) {
+                    setActiveTerm(null);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
         <div className="app-screen">
@@ -183,6 +207,12 @@ export default function HomeScreen() {
                     </div>
 
                     <div className="space-y-3">
+                        {activeTerm?.active && (
+                            <ExamScheduleCard
+                                term={activeTerm}
+                                onClick={() => navigate("/exam-schedule")}
+                            />
+                        )}
                         {QUICK_ACTIONS.map((action) => {
                             const Icon = action.icon;
 

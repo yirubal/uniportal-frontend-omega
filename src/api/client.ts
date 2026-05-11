@@ -76,6 +76,7 @@ client.interceptors.response.use(
         const message =
             error.response?.data?.message ||
             error.response?.data?.detail ||
+            error.response?.data?.error ||
             "Something went wrong. Please try again.";
 
         return Promise.reject({

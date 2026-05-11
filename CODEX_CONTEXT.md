@@ -245,22 +245,20 @@ This file is the durable handoff for future Codex sessions working in this repos
   - related resources in the detail screen now match by overlapping `course_codes`
   - `module` is accepted/formatted as a resource file type because the backend can now return it
   - verification after this pass: `npm run lint` and `npm run build` both passed
-- Fixed exit exam model/past-year loading against the live backend contract:
-  - backend `ExamPaper.exam_type` uses `exit_real` for official/past-year exit papers and `exit_model` for model papers, not the old frontend `type=exit` filter
-  - `getExitExams()` now fetches both backend exit types for the selected department, dedupes results, and keeps a legacy `exit` fallback for old mocks/data
-  - exit exam categorization now reads `exam_type` directly before falling back to older `exit_category`/title matching
-  - simulation detail loading now uses the same exit exam loader so `/simulate/:examId` can find both `exit_real` and `exit_model` papers
-  - verification after this pass: `npm run lint` and `npm run build` both passed
-- Fixed post-submit results/performance display robustness:
-  - attempt summaries now normalize backend topic breakdown objects into percentages before `ResultsScreen` reads them
-  - performance analytics now normalize backend `attempts_by_paper` into the frontend breakdown model and guard empty arrays with visible empty states
-  - timed simulation no longer puts the question navigator/review controls above the question; those actions now live in the footer and the navigator expands below the question only when opened
-  - verification after this pass: `npm run lint` and `npm run build` both passed
-- Refined performance page card overflow and retake actions:
-  - KPI cards now use tighter, wrapping-safe typography so large attempt counts/percentages do not spill out of the colorful cards
-  - paper breakdown entries are clickable cards with a `Retake paper` action
-  - performance normalization now preserves optional `paper_id` / `exam_paper_id` plus `exam_type`; when the current backend only sends paper title/type, the frontend resolves the id by fetching matching exam papers before navigating
-  - retake routing sends `exit_real`/`exit_model` papers to `/simulate/:id` and quiz/final papers to `/quiz/take/:id`
+
+### 2026-05-11
+
+- Added the student exam schedule feature:
+  - new typed exam schedule contracts live in `src/types/exams.ts`
+  - new API helpers in `src/api/exams.ts` call `/api/exams/active-term/` and `/api/exams/lookup/`
+  - exam schedule requests explicitly bypass client-side caching with no-cache headers plus a timestamp query param
+  - exam APIs now also honor dev mocks so the Home card and schedule flow work when `VITE_FORCE_DEV_MOCKS=true`
+- `HomeScreen` now conditionally shows an amber `Exam Schedule` quick-access card only when the active term API returns `active: true`
+- Added `src/screens/ExamSchedule.tsx` and the protected `/exam-schedule` route:
+  - students first see a search form for Student ID or registered full name
+  - successful lookups group exams by date and emphasize room codes for physical navigation
+  - inactive-term, loading, and not-found/error states are handled on-page without exposing exam data publicly
+- Shared API error shaping in `src/api/client.ts` now surfaces backend `{ error: ... }` messages in addition to `message` and `detail`
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work

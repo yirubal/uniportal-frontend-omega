@@ -27,6 +27,7 @@ import PerformanceScreen from "./screens/PerformanceScreen";
 import SubscriptionScreen from "./screens/SubscriptionScreen";
 import SubscribeScreen from "./screens/SubscribeScreen";
 import ChannelGateScreen from "./screens/ChannelGateScreen";
+import ExamSchedule from "./screens/ExamSchedule";
 import BottomNav from "./components/BottomNav";
 import SlowRequestLoader from "./components/SlowRequestLoader";
 
@@ -99,6 +100,14 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <ResourceViewerScreen />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/exam-schedule"
+                    element={
+                        <ProtectedRoute>
+                            <ExamSchedule />
                         </ProtectedRoute>
                     }
                 />

@@ -9,6 +9,7 @@ import type { Student } from "../store/authStore";
 import type { Course, Department, Resource } from "../store/contentStore";
 import type { PaymentInstructions, Performance, Plan, ExamPaper } from "./quiz";
 import type { AttemptSummary, Question, QuizAnswer, QuizMode } from "../store/quizStore";
+import type { ActiveTermResponse, ExamScheduleResponse } from "../types/exams";
 
 export const MOCK_DEPARTMENTS: Department[] = [
     { id: 1, name: "Computer Science & Engineering", code: "CSE" },
@@ -643,6 +644,70 @@ export const MOCK_EXAM_PAPERS: ExamPaper[] = [
         duration_minutes: 90,
         total_questions: 5,
         access_level: "premium",
+    },
+];
+
+export const MOCK_ACTIVE_TERM: ActiveTermResponse = {
+    active: true,
+    year: 2018,
+    term: 1,
+    center: "Addis Ababa",
+};
+
+export const MOCK_EXAM_SCHEDULES: ExamScheduleResponse[] = [
+    {
+        student_name: "Abirham Worku",
+        student_id: "93372",
+        term: "2018 Term 1 - Addis Ababa",
+        exams: [
+            {
+                course_name: "Accounting Information System",
+                course_code: "ACFN 322",
+                room_code: "K-6",
+                department: "Accounting",
+                date: "Saturday, February 21, 2026",
+                start_time: "10:30 AM",
+                end_time: "12:30 PM",
+                session: "Session II",
+            },
+            {
+                course_name: "Mathematics for Social Science",
+                course_code: "MATH 1011",
+                room_code: "K-3",
+                department: "Accounting",
+                date: "Sunday, February 22, 2026",
+                start_time: "8:00 AM",
+                end_time: "10:00 AM",
+                session: "Session I",
+            },
+        ],
+    },
+    {
+        student_name: "Test Student",
+        student_id: "999999",
+        term: "2018 Term 1 - Addis Ababa",
+        exams: [
+            {
+                course_name: "Data Structures & Algorithms",
+                course_code: "CS301",
+                room_code: "J-25",
+                department: "Computer Science & Engineering",
+                date: "Saturday, February 21, 2026",
+                start_time: "10:30 AM",
+                end_time: "12:30 PM",
+                session: "Session II",
+            },
+            {
+                course_name: "Database Systems",
+                course_code: "CS305",
+                room_code: "H-12",
+                department: "Computer Science & Engineering",
+                date: "Sunday, February 22, 2026",
+                start_time: "8:00 AM",
+                end_time: "10:00 AM",
+                session: "Session I",
+            },
+        ],
     },
 ];
 
