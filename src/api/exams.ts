@@ -4,14 +4,23 @@ import type { ActiveTermResponse, ExamScheduleResponse } from "../types/exams";
 const isDev = import.meta.env.DEV;
 const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
 
-const NO_CACHE_HEADERS = {
-    "Cache-Control": "no-cache",
-    Pragma: "no-cache",
-};
-
 async function getMocks() {
     if (!isDev) return null;
     return import("./devMocks");
+}
+
+function normalizeActiveTerm(data: unknown): ActiveTermResponse {
+    const record = data && typeof data === "object" ? data as Record<string, unknown> : {};
+    const nestedTerm = record.term && typeof record.term === "object" ? record.term as Record<string, unknown> : null;
+    const source = nestedTerm ?? record;
+    const activeValue = record.active ?? record.is_active ?? Boolean(nestedTerm);
+
+    return {
+        active: activeValue === true,
+        year: typeof source.year === "number" ? source.year : undefined,
+        term: typeof source.term === "number" ? source.term : undefined,
+        center: typeof source.center === "string" ? source.center : undefined,
+    };
 }
 
 export const fetchActiveTerm = async (): Promise<ActiveTermResponse> => {
@@ -25,17 +34,11 @@ export const fetchActiveTerm = async (): Promise<ActiveTermResponse> => {
 
     try {
         const response = await client.get<ActiveTermResponse>("/api/exams/active-term/", {
-            headers: NO_CACHE_HEADERS,
             params: { _ts: Date.now() },
         });
 
-        return response.data;
+        return normalizeActiveTerm(response.data);
     } catch (error) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock active term");
-            return mocks.MOCK_ACTIVE_TERM;
-        }
         throw error;
     }
 };
@@ -77,15 +80,11 @@ export const lookupExamSchedule = async (
 
     try {
         const response = await client.get<ExamScheduleResponse>("/api/exams/lookup/", {
-            headers: NO_CACHE_HEADERS,
             params,
         });
 
         return response.data;
     } catch (error) {
-        if (isDev) {
-            return getMockSchedule();
-        }
         throw error;
     }
 };

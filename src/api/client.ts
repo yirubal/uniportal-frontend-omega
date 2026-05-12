@@ -72,11 +72,18 @@ client.interceptors.response.use(
             useAuthStore.getState().clearAuth();
         }
 
+        const requestPath = error.config?.url ?? "";
+        const networkMessage =
+            !error.response && error.message
+                ? `${error.message}${requestPath ? ` while calling ${requestPath}` : ""}`
+                : "";
+
         // Shape the error so every catch block gets a clean message
         const message =
             error.response?.data?.message ||
             error.response?.data?.detail ||
             error.response?.data?.error ||
+            networkMessage ||
             "Something went wrong. Please try again.";
 
         return Promise.reject({

@@ -261,6 +261,24 @@ This file is the durable handoff for future Codex sessions working in this repos
 - Shared API error shaping in `src/api/client.ts` now surfaces backend `{ error: ... }` messages in addition to `message` and `detail`
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
+### 2026-05-12
+
+- Fixed exam schedule visibility/fetching issues after local testing feedback:
+  - `.env.development.local` now points back to `http://127.0.0.1:8000` instead of the stale `8002` override, matching the repo default backend port
+  - `HomeScreen` now always shows the exam schedule entry card; active-term only improves the label and no longer gates visibility
+  - `ExamSchedule` no longer replaces the whole page with an inactive-term/error state if `/api/exams/active-term/` fails or returns inactive; it still shows the search form with a compact retry notice
+  - `ExamScheduleCard` supports an unknown term label for fallback visibility
+  - `fetchActiveTerm()` defensively normalizes active-term response variants such as `{ active: true }`, `{ is_active: true }`, or a nested `term`
+  - `client.ts` now preserves network error messages with the called path, and local development lookup errors show the API status code
+  - keep lookup errors from the backend visible during development; mock fallback should not mask real backend `404/401` responses as fake "No exam found" results
+  - removed custom `Cache-Control` / `Pragma` request headers from `src/api/exams.ts` after Firefox reported CORS preflight failure for disallowed `cache-control`; `_ts` query params remain for cache busting
+  - compacted the exam schedule results UI only: smaller result header, minimal date rows, inline time/room exam cards, no `ROOM` label, no session line, and smaller bottom warning
+  - restored shared page chrome around the compact results: standard `app-topbar`, `TopBackButton`, section label, title sizing, and `app-scroll app-scroll-compact` spacing so it matches other UniPortal pages
+  - result summary now shows `student name · ID: <id> · N exams found` when the backend returns `student_id`
+  - active-term notice rendering is explicitly gated so it cannot display after results are loaded or when the active term is confirmed
+  - exam result cards are hardened for long course names with `overflow-hidden`, `min-w-0`, two-line clamping, and `break-words`; course code/department metadata remains single-line truncated
+  - verification after this pass: `npm run lint` and `npm run build` both passed
+
 ## Next Work
 
 - Continue all new implementation on `dev`.

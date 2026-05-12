@@ -12,7 +12,7 @@ function formatActiveTermLabel(term: ActiveTermResponse) {
 }
 
 interface ExamScheduleCardProps {
-    term: ActiveTermResponse;
+    term?: ActiveTermResponse | null;
     onClick: () => void;
 }
 
@@ -40,7 +40,7 @@ export default function ExamScheduleCard({
                     </span>
                 </div>
                 <p className="mt-1 text-sm font-medium text-[#355D59]">
-                    {formatActiveTermLabel(term)}
+                    {term ? formatActiveTermLabel(term) : "Check current exam schedule"}
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
                     Tap to find your exam room

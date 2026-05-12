@@ -207,12 +207,10 @@ export default function HomeScreen() {
                     </div>
 
                     <div className="space-y-3">
-                        {activeTerm?.active && (
-                            <ExamScheduleCard
-                                term={activeTerm}
-                                onClick={() => navigate("/exam-schedule")}
-                            />
-                        )}
+                        <ExamScheduleCard
+                            term={activeTerm?.active ? activeTerm : null}
+                            onClick={() => navigate("/exam-schedule")}
+                        />
                         {QUICK_ACTIONS.map((action) => {
                             const Icon = action.icon;
 
