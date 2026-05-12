@@ -277,6 +277,7 @@ This file is the durable handoff for future Codex sessions working in this repos
   - result summary now shows `student name · ID: <id> · N exams found` when the backend returns `student_id`
   - active-term notice rendering is explicitly gated so it cannot display after results are loaded or when the active term is confirmed
   - exam result cards are hardened for long course names with `overflow-hidden`, `min-w-0`, two-line clamping, and `break-words`; course code/department metadata remains single-line truncated
+  - active-term warning retry action now uses the shared primary `Button` styling to avoid white-background/white-text contrast issues
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work

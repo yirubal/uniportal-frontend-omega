@@ -172,13 +172,14 @@ export default function ExamSchedule() {
                                 <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
                                     You can still search your exam room. The lookup request will check the schedule directly.
                                 </p>
-                                <button
+                                <Button
                                     type="button"
                                     onClick={loadActiveTerm}
-                                    className="mt-3 text-sm font-bold text-[#3F6F6A]"
+                                    size="sm"
+                                    className="mt-3"
                                 >
                                     Retry term check
-                                </button>
+                                </Button>
                             </div>
                         )}
 
