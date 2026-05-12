@@ -177,6 +177,11 @@ export default function ExamSchedule() {
                                     onClick={loadActiveTerm}
                                     size="sm"
                                     className="mt-3"
+                                    style={{
+                                        backgroundColor: "#172B2F",
+                                        borderColor: "#172B2F",
+                                        color: "#FFFFFF",
+                                    }}
                                 >
                                     Retry term check
                                 </Button>
@@ -326,6 +331,11 @@ export default function ExamSchedule() {
                                 size="sm"
                                 className="mt-6"
                                 onClick={resetSearch}
+                                style={{
+                                    backgroundColor: "#172B2F",
+                                    borderColor: "#172B2F",
+                                    color: "#FFFFFF",
+                                }}
                             >
                                 Try Again
                             </Button>
