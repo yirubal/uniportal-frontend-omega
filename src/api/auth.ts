@@ -4,6 +4,7 @@ import type { ProgramType } from "../utils/periods";
 
 const isDev = import.meta.env.DEV;
 const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
+const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 const DEV_STUDENT_STORAGE_KEY = "uniportal-dev-student";
 
 type TelegramWindow = Window & {

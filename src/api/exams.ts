@@ -53,9 +53,7 @@ export const lookupExamSchedule = async (
     }
 
     const isId = /^\d+$/.test(trimmedQuery);
-    const params = isId
-        ? { student_id: trimmedQuery, _ts: Date.now() }
-        : { name: trimmedQuery, _ts: Date.now() };
+    const params = { query: trimmedQuery, _ts: Date.now() };
 
     const getMockSchedule = async () => {
         const mocks = await getMocks();

@@ -115,7 +115,6 @@ export default function ExamSchedule() {
     }, [query]);
 
     const isNotFoundError = lookupError?.toLowerCase().includes("no exam found") ?? false;
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
     const lookupErrorTitle =
         isNotFoundError
             ? `No exam found for "${searchedQuery}"`
@@ -318,20 +317,10 @@ export default function ExamSchedule() {
                                     ? "Make sure you entered your correct Student ID or full name exactly as registered."
                                     : lookupError}
                             </p>
-                            {import.meta.env.DEV && lookupStatus && (
-                                <p className="mt-3 rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-[#8A4B3F]">
-                                    API status: {lookupStatus}
-                                </p>
-                            )}
-                            {import.meta.env.DEV && !lookupStatus && (
-                                <p className="mt-3 max-w-xs rounded-[14px] bg-white/70 px-3 py-2 text-xs font-bold leading-relaxed text-[#8A4B3F]">
-                                    API base: {apiBaseUrl || "not configured"}
-                                </p>
-                            )}
                             <Button
                                 variant="primary"
                                 size="sm"
-                                className="mt-6"
+                                className="mt-6 !px-5"
                                 onClick={resetSearch}
                                 style={{
                                     backgroundColor: "#172B2F",
@@ -339,7 +328,7 @@ export default function ExamSchedule() {
                                     color: "#FFFFFF",
                                 }}
                             >
-                                Try Again
+                                Try Again Later
                             </Button>
                         </div>
                     </section>

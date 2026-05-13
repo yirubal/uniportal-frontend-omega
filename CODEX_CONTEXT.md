@@ -280,6 +280,11 @@ This file is the durable handoff for future Codex sessions working in this repos
   - active-term warning `Retry term check` and lookup-error `Try Again` actions now force the same dark teal background/white text treatment as the main search button to avoid inherited white/pink contrast issues
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
+### 2026-05-13
+
+- Updated `lookupExamSchedule()` in `src/api/exams.ts` to call `/api/exams/lookup/` with the unified `query` parameter while keeping `_ts` cache busting and existing dev mock behavior.
+- Backend compatibility still accepts legacy `student_id` and `name` params, but new frontend calls should use `query`.
+
 ## Next Work
 
 - Continue all new implementation on `dev`.
