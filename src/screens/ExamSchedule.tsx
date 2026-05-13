@@ -181,6 +181,7 @@ export default function ExamSchedule() {
                                         backgroundColor: "#172B2F",
                                         borderColor: "#172B2F",
                                         color: "#FFFFFF",
+                                        paddingInline: "1rem",
                                     }}
                                 >
                                     Retry term check
@@ -220,6 +221,7 @@ export default function ExamSchedule() {
                                     backgroundColor: "#172B2F",
                                     borderColor: "#172B2F",
                                     color: "#FFFFFF",
+                                    paddingInline: "1rem",
                                 }}
                             >
                                 <Search size={18} />
