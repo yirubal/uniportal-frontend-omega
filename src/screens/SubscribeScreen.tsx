@@ -32,6 +32,11 @@ export default function SubscribeScreen() {
     const [statusModalOpen, setStatusModalOpen] = useState(false);
     const backgroundRefreshInFlightRef = useRef(false);
     const lastBackgroundRefreshAtRef = useRef(0);
+    // Stable refs — prevent useCallback/useEffect from re-running when Zustand recreates setAuth
+    const setAuthRef = useRef(setAuth);
+    const tokenRef = useRef(token);
+    useEffect(() => { setAuthRef.current = setAuth; }, [setAuth]);
+    useEffect(() => { tokenRef.current = token; }, [token]);
     const currentRequestStatus = subscriptionRequestState?.current_request?.status ?? instructions?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
     const paymentOptions = instructions?.payment_options ?? subscriptionRequestState?.payment_options ?? {};
@@ -97,8 +102,8 @@ export default function SubscribeScreen() {
                 getSubscriptionRequest(requestOptions),
             ]);
 
-            if (profileResult.status === "fulfilled" && token) {
-                setAuth(token, profileResult.value);
+            if (profileResult.status === "fulfilled" && tokenRef.current) {
+                setAuthRef.current(tokenRef.current, profileResult.value);
             }
 
             if (requestResult.status === "fulfilled") {
@@ -109,7 +114,7 @@ export default function SubscribeScreen() {
                 backgroundRefreshInFlightRef.current = false;
             }
         }
-    }, [applySubscriptionRequestState, setAuth, token]);
+    }, [applySubscriptionRequestState]); // stable: setAuth/token read from refs
 
     useEffect(() => {
         const profileOptions = { skipGlobalLoader: true };
@@ -132,12 +137,12 @@ export default function SubscribeScreen() {
                     applySubscriptionRequestState(requestResult.value, Boolean(requestResult.value.current_request));
                 }
 
-                if (profileResult.status === "fulfilled" && token) {
-                    setAuth(token, profileResult.value);
+                if (profileResult.status === "fulfilled" && tokenRef.current) {
+                    setAuthRef.current(tokenRef.current, profileResult.value);
                 }
             })
             .finally(() => setLoading(false));
-    }, [applySubscriptionRequestState, setAuth, token]);
+    }, [applySubscriptionRequestState]); // stable: setAuth/token read from refs
 
     useEffect(() => {
         const handleFocus = () => {

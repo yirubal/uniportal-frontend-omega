@@ -1,5 +1,5 @@
 import { CreditCard } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyProfile } from "../api/auth";
 import { getPlans, getSubscriptionRequest, type Plan, type SubscriptionRequestState } from "../api/quiz";
@@ -18,6 +18,11 @@ export default function SubscriptionScreen() {
     const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // Stable refs — prevent callback re-creation when Zustand recreates setAuth
+    const setAuthRef = useRef(setAuth);
+    const tokenRef = useRef(token);
+    useEffect(() => { setAuthRef.current = setAuth; }, [setAuth]);
+    useEffect(() => { tokenRef.current = token; }, [token]);
 
     const currentRequestStatus = subscriptionRequestState?.current_request?.status;
     const currentPlanName = subscriptionRequestState?.current_request?.plan;
@@ -60,12 +65,12 @@ export default function SubscriptionScreen() {
                     setSubscriptionRequestState(requestResult.value);
                 }
 
-                if (profileResult.status === "fulfilled" && token) {
-                    setAuth(token, profileResult.value);
+                if (profileResult.status === "fulfilled" && tokenRef.current) {
+                    setAuthRef.current(tokenRef.current, profileResult.value);
                 }
             })
             .finally(() => setLoading(false));
-    }, [setAuth, token]);
+    }, []); // stable: setAuth/token read from refs
 
     useEffect(() => {
         refreshSubscriptionPage();
