@@ -9,6 +9,7 @@ const DEV_STUDENT_STORAGE_KEY = "uniportal-dev-student";
 
 interface ApiRequestOptions {
     skipGlobalLoader?: boolean;
+    skipAuthClear?: boolean;
 }
 
 type TelegramWindow = Window & {
@@ -280,6 +281,7 @@ export const getMyProfile = async (options?: ApiRequestOptions): Promise<Student
 
     const response = await client.get<BackendStudent>("/api/students/me/", {
         skipGlobalLoader: options?.skipGlobalLoader,
+        skipAuthClear: options?.skipAuthClear,
     });
     return normalizeStudent(response.data);
 };

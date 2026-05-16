@@ -14,6 +14,7 @@ const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1
 
 interface ApiRequestOptions {
     skipGlobalLoader?: boolean;
+    skipAuthClear?: boolean;
 }
 
 async function getMocks() {
@@ -487,6 +488,7 @@ export const getPlans = async (options?: ApiRequestOptions): Promise<Plan[]> => 
     try {
         const response = await client.get<Plan[]>("/api/subscription/plans/", {
             skipGlobalLoader: options?.skipGlobalLoader,
+            skipAuthClear: options?.skipAuthClear,
         });
         return response.data;
     } catch (err) {
@@ -542,6 +544,7 @@ export const getSubscriptionRequest = async (options?: ApiRequestOptions): Promi
     try {
         const response = await client.get<PaymentInstructions | SubscriptionRequestResponse>("/api/subscription/request/", {
             skipGlobalLoader: options?.skipGlobalLoader,
+            skipAuthClear: options?.skipAuthClear,
         });
         return normalizeSubscriptionRequestState(response.data);
     } catch (err) {

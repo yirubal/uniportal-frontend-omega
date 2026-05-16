@@ -47,6 +47,8 @@ const QUICK_ACTIONS = [
     },
 ];
 
+const BACKGROUND_REFRESH_THROTTLE_MS = 8000;
+
 export default function HomeScreen() {
     const navigate = useNavigate();
     const { student, token, setAuth } = useAuthStore();
@@ -54,6 +56,7 @@ export default function HomeScreen() {
     const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
     const [activeTerm, setActiveTerm] = useState<ActiveTermResponse | null>(null);
     const backgroundRefreshInFlightRef = useRef(false);
+    const lastBackgroundRefreshAtRef = useRef(0);
     const greeting = "Selam";
     const currentRequestStatus = subscriptionRequestState?.current_request?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
@@ -69,13 +72,17 @@ export default function HomeScreen() {
     useEffect(() => {
         let active = true;
 
-        const refreshHomeState = () => {
+        const refreshHomeState = (force = false) => {
             if (backgroundRefreshInFlightRef.current) return;
+            const now = Date.now();
+            if (!force && now - lastBackgroundRefreshAtRef.current < BACKGROUND_REFRESH_THROTTLE_MS) return;
+
             backgroundRefreshInFlightRef.current = true;
+            lastBackgroundRefreshAtRef.current = now;
 
             Promise.allSettled([
                 getMyProfile({ skipGlobalLoader: true }),
-                getSubscriptionRequest({ skipGlobalLoader: true }),
+                getSubscriptionRequest({ skipGlobalLoader: true, skipAuthClear: true }),
             ]).then(([profileResult, requestResult]) => {
                 if (!active) return;
 
@@ -98,7 +105,7 @@ export default function HomeScreen() {
             }
         };
 
-        refreshHomeState();
+        refreshHomeState(true);
         window.addEventListener("focus", refreshHomeState);
         document.addEventListener("visibilitychange", handleResume);
 
@@ -112,7 +119,7 @@ export default function HomeScreen() {
     useEffect(() => {
         let active = true;
 
-        fetchActiveTerm({ skipGlobalLoader: true })
+        fetchActiveTerm({ skipGlobalLoader: true, skipAuthClear: true })
             .then((term) => {
                 if (active) {
                     setActiveTerm(term);

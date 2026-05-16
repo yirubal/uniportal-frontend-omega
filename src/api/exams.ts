@@ -6,6 +6,7 @@ const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
 
 interface ApiRequestOptions {
     skipGlobalLoader?: boolean;
+    skipAuthClear?: boolean;
 }
 
 async function getMocks() {
@@ -40,6 +41,7 @@ export const fetchActiveTerm = async (options?: ApiRequestOptions): Promise<Acti
         const response = await client.get<ActiveTermResponse>("/api/exams/active-term/", {
             params: { _ts: Date.now() },
             skipGlobalLoader: options?.skipGlobalLoader,
+            skipAuthClear: options?.skipAuthClear,
         });
 
         return normalizeActiveTerm(response.data);

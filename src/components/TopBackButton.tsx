@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import WebApp from "@twa-dev/sdk";
 
@@ -17,6 +17,13 @@ export default function TopBackButton({
     trailing,
 }: TopBackButtonProps) {
     const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
+    const onClickRef = useRef(onClick);
+    const supportsHapticsRef = useRef(supportsHaptics);
+
+    useEffect(() => {
+        onClickRef.current = onClick;
+        supportsHapticsRef.current = supportsHaptics;
+    }, [onClick, supportsHaptics]);
 
     useEffect(() => {
         if (!WebApp.isVersionAtLeast?.("6.1")) {
@@ -24,10 +31,10 @@ export default function TopBackButton({
         }
 
         const handleBack = () => {
-            if (supportsHaptics) {
+            if (supportsHapticsRef.current) {
                 WebApp.HapticFeedback.impactOccurred("light");
             }
-            onClick();
+            onClickRef.current();
         };
 
         WebApp.BackButton.show();
@@ -37,7 +44,7 @@ export default function TopBackButton({
             WebApp.BackButton.offClick(handleBack);
             WebApp.BackButton.hide();
         };
-    }, [onClick]);
+    }, []);
 
     const isSurfaceTone = tone === "dark";
     const buttonStyle = isSurfaceTone

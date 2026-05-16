@@ -290,7 +290,9 @@ This file is the durable handoff for future Codex sessions working in this repos
 - Investigated production-style app flicker/refresh behavior in the frontend:
   - root cause found in background Home/Subscribe syncs: profile/subscription/active-term fetches ran on mount plus focus/visibility events and were all counted by the global slow request loader
   - `src/api/client.ts` now supports `skipGlobalLoader` for background requests without sending extra request headers
-  - Home profile/subscription/active-term refreshes now run silently and Home dedupes overlapping focus/visibility refreshes
+  - deeper follow-up found `TopBackButton` was re-registering and hide/showing the native Telegram BackButton on every parent render; it now keeps one native handler and reads the latest callback from refs
+  - optional background APIs can use `skipAuthClear` so subscription/active-term failures do not kick the student back to splash; `/api/students/me/` remains the source of truth for invalid auth
+  - Home profile/subscription/active-term refreshes now run silently, dedupe overlapping focus/visibility refreshes, and throttle rapid sequential focus/visibility events
   - Subscribe and Subscription pages use their own local loading/requesting states for subscription syncs instead of showing the global app-wide syncing overlay
   - verification after this pass: `npm run lint` and `npm run build` both passed
   - `npx tsc --noEmit -p tsconfig.json` still reports existing baseline type errors unrelated to this flicker patch

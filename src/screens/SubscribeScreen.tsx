@@ -10,6 +10,7 @@ import { getMyProfile } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
 
 const PAYMENT_REFERENCE_PATTERN = /^[A-Z0-9]{10,12}$/;
+const BACKGROUND_REFRESH_THROTTLE_MS = 8000;
 
 interface RefreshOptions {
     silent?: boolean;
@@ -30,6 +31,7 @@ export default function SubscribeScreen() {
     const [error, setError] = useState<string | null>(null);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
     const backgroundRefreshInFlightRef = useRef(false);
+    const lastBackgroundRefreshAtRef = useRef(0);
     const currentRequestStatus = subscriptionRequestState?.current_request?.status ?? instructions?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
     const paymentOptions = instructions?.payment_options ?? subscriptionRequestState?.payment_options ?? {};
@@ -79,13 +81,19 @@ export default function SubscribeScreen() {
     const refreshSubscriptionState = useCallback(async (openModal = false, options?: RefreshOptions) => {
         if (options?.dedupe && backgroundRefreshInFlightRef.current) return;
         if (options?.dedupe) {
+            const now = Date.now();
+            if (now - lastBackgroundRefreshAtRef.current < BACKGROUND_REFRESH_THROTTLE_MS) return;
+            lastBackgroundRefreshAtRef.current = now;
+        }
+        if (options?.dedupe) {
             backgroundRefreshInFlightRef.current = true;
         }
 
         try {
-            const requestOptions = { skipGlobalLoader: options?.silent };
+            const profileOptions = { skipGlobalLoader: options?.silent };
+            const requestOptions = { skipGlobalLoader: options?.silent, skipAuthClear: true };
             const [profileResult, requestResult] = await Promise.allSettled([
-                getMyProfile(requestOptions),
+                getMyProfile(profileOptions),
                 getSubscriptionRequest(requestOptions),
             ]);
 
@@ -104,8 +112,14 @@ export default function SubscribeScreen() {
     }, [applySubscriptionRequestState, setAuth, token]);
 
     useEffect(() => {
-        const requestOptions = { skipGlobalLoader: true };
-        Promise.allSettled([getPlans(requestOptions), getSubscriptionRequest(requestOptions), getMyProfile(requestOptions)])
+        const profileOptions = { skipGlobalLoader: true };
+        const optionalRequestOptions = { skipGlobalLoader: true, skipAuthClear: true };
+        lastBackgroundRefreshAtRef.current = Date.now();
+        Promise.allSettled([
+            getPlans(optionalRequestOptions),
+            getSubscriptionRequest(optionalRequestOptions),
+            getMyProfile(profileOptions),
+        ])
             .then(([plansResult, requestResult, profileResult]) => {
                 if (plansResult.status === "fulfilled") {
                     setPlans(plansResult.value);

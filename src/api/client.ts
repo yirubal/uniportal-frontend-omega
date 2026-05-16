@@ -5,10 +5,12 @@ import { useNetworkStore } from "../store/networkStore";
 declare module "axios" {
     export interface AxiosRequestConfig {
         skipGlobalLoader?: boolean;
+        skipAuthClear?: boolean;
     }
 
     export interface InternalAxiosRequestConfig {
         skipGlobalLoader?: boolean;
+        skipAuthClear?: boolean;
     }
 }
 
@@ -85,7 +87,7 @@ client.interceptors.response.use(
         }
         const status = error.response?.status;
 
-        if (status === 401) {
+        if (status === 401 && !error.config?.skipAuthClear) {
             // Token expired or invalid — clear auth and reload
             useAuthStore.getState().clearAuth();
         }
