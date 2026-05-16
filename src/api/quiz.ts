@@ -207,6 +207,9 @@ function normalizeAttemptSummary(summary: AttemptResponse): AttemptResponse {
             ])
         ),
         weak_topics: Array.isArray(summary.weak_topics) ? summary.weak_topics : [],
+        detailed_answers: summary.detailed_answers && typeof summary.detailed_answers === "object"
+            ? summary.detailed_answers
+            : undefined,
     };
 }
 

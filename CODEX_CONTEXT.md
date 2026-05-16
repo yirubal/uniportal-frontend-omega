@@ -296,6 +296,18 @@ This file is the durable handoff for future Codex sessions working in this repos
   - Subscribe and Subscription pages use their own local loading/requesting states for subscription syncs instead of showing the global app-wide syncing overlay
   - verification after this pass: `npm run lint` and `npm run build` both passed
   - `npx tsc --noEmit -p tsconfig.json` still reports existing baseline type errors unrelated to this flicker patch
+- Added detailed quiz answer review on the results screen:
+  - `ResultsScreen` now keeps the score circle/topic breakdown and adds `Review Answers`, `Try again`, and contextual back actions
+  - `AnswerReviewModal` shows question-by-question review with selected answer, correct answer, explanation, topic tags, keyboard navigation, and responsive mobile/desktop layout
+  - review data is built from the in-memory completed attempt (`questions` + `answers`) and also preserves backend `detailed_answers` when returned by `/api/quiz/attempts/`
+  - verification after this pass: `npm run lint` and `npm run build` both passed
+  - `npx tsc --noEmit -p tsconfig.json` still reports existing baseline type errors unrelated to this review feature
+- Refined the answer review modal into a production-grade review flow:
+  - kept the existing `AttemptSummary`/`detailed_answers` normalization contract unchanged
+  - rebuilt the modal with a desktop question sidebar, mobile single-panel detail flow, 48px controls, keyboard navigation, clearer status banners, left-border answer states, expandable long explanations, and topic tags aligned with the current Unity green-slate/gold palette
+  - follow-up refinement: review navigation buttons now use dark text on light app surfaces, and answer choice cards no longer use colored left rails; the full-card background and border carry the answer state
+  - follow-up refinement: review navigation buttons use tighter horizontal padding, and modal cards/text containers are constrained with overflow wrapping for long question, option, explanation, and tag text
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

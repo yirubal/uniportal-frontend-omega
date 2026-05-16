@@ -44,6 +44,17 @@ export interface AttemptSummary {
     pending_count: number;
     topic_breakdown: Record<string, number>;
     weak_topics: string[];
+    detailed_answers?: Record<string, AttemptAnswerDetail>;
+}
+
+export interface AttemptAnswerDetail {
+    question_text?: string;
+    options?: Record<string, string>;
+    selected_option?: string | null;
+    correct_option?: string | null;
+    is_correct?: boolean | null;
+    explanation?: string | null;
+    topic_tags?: string[];
 }
 
 interface QuizState {

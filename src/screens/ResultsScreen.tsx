@@ -1,5 +1,7 @@
-import { ArrowLeft, RotateCcw } from "lucide-react";
+import { ArrowLeft, BookOpenCheck, RotateCcw } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AnswerReviewModal from "../components/AnswerReviewModal";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { useQuizStore } from "../store/quizStore";
@@ -8,7 +10,8 @@ import { getPracticeContentMeta } from "../utils/practice";
 
 export default function ResultsScreen() {
     const navigate = useNavigate();
-    const { attemptSummary, courseId, examPaperId, mode, practiceContentType, resetAttempt } = useQuizStore();
+    const { attemptSummary, answers, courseId, examPaperId, mode, practiceContentType, questions, resetAttempt } = useQuizStore();
+    const [showReview, setShowReview] = useState(false);
     const meta = getPracticeContentMeta(practiceContentType);
 
     const percentage = Math.round(
@@ -19,6 +22,8 @@ export default function ResultsScreen() {
     );
     const emoji = getScoreEmoji(percentage);
     const message = getScoreMessage(percentage);
+    const passed = percentage >= 50;
+    const canReview = Boolean(attemptSummary && (questions.length > 0 || Object.keys(attemptSummary.detailed_answers ?? {}).length > 0));
     const circumference = 2 * Math.PI * 40;
     const dashOffset = circumference - (percentage / 100) * circumference;
 
@@ -36,6 +41,15 @@ export default function ResultsScreen() {
         }
 
         navigate("/quiz", { replace: true });
+    };
+
+    const handleExit = () => {
+        if (mode === "simulation") {
+            navigate("/exit-exam", { replace: true });
+            return;
+        }
+
+        navigate("/quiz/setup", { replace: true });
     };
 
     return (
@@ -77,6 +91,9 @@ export default function ResultsScreen() {
                     </div>
 
                     <p className="mt-5 text-xl font-bold text-[#172B2F]">{message}</p>
+                    <div className={`mx-auto mt-3 inline-flex min-h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-black ${passed ? "bg-[#D1FAE5] text-[#065F46]" : "bg-[#FEE2E2] text-[#991B1B]"}`}>
+                        {passed ? "Passed" : "Needs more practice"}
+                    </div>
                     <p className="mt-2 text-sm text-[#526B70]">
                         Auto-graded score across {attemptSummary?.gradable_total ?? 0} gradable questions
                     </p>
@@ -129,21 +146,40 @@ export default function ResultsScreen() {
                     variant="primary"
                     size="lg"
                     fullWidth
+                    onClick={() => setShowReview(true)}
+                    disabled={!canReview}
                     style={{
                         backgroundColor: "#172B2F",
                         color: "#FFFFFF",
                         borderColor: "#172B2F",
                     }}
+                >
+                    <BookOpenCheck size={16} />
+                    Review Answers
+                </Button>
+                <Button
+                    variant="secondary"
+                    size="lg"
+                    fullWidth
                     onClick={handleRetry}
                 >
                     <RotateCcw size={16} />
                     {mode === "simulation" ? "Try again" : meta.resultsRetryLabel}
                 </Button>
-                <Button variant="ghost" size="md" fullWidth onClick={() => navigate("/home")}>
+                <Button variant="ghost" size="md" fullWidth onClick={handleExit}>
                     <ArrowLeft size={16} />
-                    Back to home
+                    {mode === "simulation" ? "Back to Exams" : "Back to Courses"}
                 </Button>
             </div>
+
+            {showReview && attemptSummary && (
+                <AnswerReviewModal
+                    attempt={attemptSummary}
+                    questions={questions}
+                    answers={answers}
+                    onClose={() => setShowReview(false)}
+                />
+            )}
         </div>
     );
 }
