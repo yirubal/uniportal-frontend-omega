@@ -261,6 +261,11 @@ export interface SelectivePracticeStartResponse {
     filtered_count: number;
 }
 
+interface SelectivePracticeTopicsResponse {
+    chapters?: unknown;
+    topics?: unknown;
+}
+
 function normalizeTopicList(data: unknown): string[] {
     if (Array.isArray(data)) {
         return data
@@ -294,8 +299,11 @@ export const getSelectivePracticeTopics = async (
     }
 
     try {
-        const response = await client.get("/api/quiz/courses/" + courseId + "/topics/");
-        return normalizeTopicList(response.data);
+        const response = await client.get<SelectivePracticeTopicsResponse>("/api/quiz/courses/" + courseId + "/topics/");
+        if (response.data && typeof response.data === "object" && "chapters" in response.data) {
+            return normalizeTopicList(response.data.chapters);
+        }
+        return normalizeTopicList(response.data?.topics ?? response.data);
     } catch (err) {
         const mocks = await getMocks();
         if (mocks) {
