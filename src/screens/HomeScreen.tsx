@@ -5,7 +5,7 @@ import { useAuthStore } from "../store/authStore";
 import { useAccess } from "../hooks/useAccess";
 import { formatDaysRemaining } from "../utils/format";
 import { getPeriodLabel, getProgramLabel } from "../utils/periods";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getMyProfile } from "../api/auth";
 import { getSubscriptionRequest, type SubscriptionRequestState } from "../api/quiz";
 import { fetchActiveTerm } from "../api/exams";
@@ -57,6 +57,12 @@ export default function HomeScreen() {
     const [activeTerm, setActiveTerm] = useState<ActiveTermResponse | null>(null);
     const backgroundRefreshInFlightRef = useRef(false);
     const lastBackgroundRefreshAtRef = useRef(0);
+    // Stable refs so the effect never re-runs due to Zustand action/token identity changes
+    const setAuthRef = useRef(setAuth);
+    const tokenRef = useRef(token);
+    useEffect(() => { setAuthRef.current = setAuth; }, [setAuth]);
+    useEffect(() => { tokenRef.current = token; }, [token]);
+
     const greeting = "Selam";
     const currentRequestStatus = subscriptionRequestState?.current_request?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
@@ -69,52 +75,47 @@ export default function HomeScreen() {
         getPeriodLabel(student?.preferred_period, student?.preferred_program),
     ];
 
+    const refreshHomeState = useCallback((force = false) => {
+        if (backgroundRefreshInFlightRef.current) return;
+        const now = Date.now();
+        if (!force && now - lastBackgroundRefreshAtRef.current < BACKGROUND_REFRESH_THROTTLE_MS) return;
+
+        backgroundRefreshInFlightRef.current = true;
+        lastBackgroundRefreshAtRef.current = now;
+
+        Promise.allSettled([
+            getMyProfile({ skipGlobalLoader: true }),
+            getSubscriptionRequest({ skipGlobalLoader: true, skipAuthClear: true }),
+        ]).then(([profileResult, requestResult]) => {
+            if (profileResult.status === "fulfilled" && tokenRef.current) {
+                setAuthRef.current(tokenRef.current, profileResult.value);
+            }
+
+            if (requestResult.status === "fulfilled") {
+                setSubscriptionRequestState(requestResult.value);
+            }
+        }).finally(() => {
+            backgroundRefreshInFlightRef.current = false;
+        });
+    }, []); // stable — reads token/setAuth from refs
+
     useEffect(() => {
-        let active = true;
-
-        const refreshHomeState = (force = false) => {
-            if (backgroundRefreshInFlightRef.current) return;
-            const now = Date.now();
-            if (!force && now - lastBackgroundRefreshAtRef.current < BACKGROUND_REFRESH_THROTTLE_MS) return;
-
-            backgroundRefreshInFlightRef.current = true;
-            lastBackgroundRefreshAtRef.current = now;
-
-            Promise.allSettled([
-                getMyProfile({ skipGlobalLoader: true }),
-                getSubscriptionRequest({ skipGlobalLoader: true, skipAuthClear: true }),
-            ]).then(([profileResult, requestResult]) => {
-                if (!active) return;
-
-                if (profileResult.status === "fulfilled" && token) {
-                    setAuth(token, profileResult.value);
-                }
-
-                if (requestResult.status === "fulfilled") {
-                    setSubscriptionRequestState(requestResult.value);
-                }
-            }).finally(() => {
-                backgroundRefreshInFlightRef.current = false;
-            });
-        };
-
         const handleResume = () => {
-            if (!active) return;
             if (document.visibilityState === "visible") {
                 refreshHomeState();
             }
         };
 
         refreshHomeState(true);
-        window.addEventListener("focus", refreshHomeState);
+        const handleFocus = () => refreshHomeState();
+        window.addEventListener("focus", handleFocus);
         document.addEventListener("visibilitychange", handleResume);
 
         return () => {
-            active = false;
-            window.removeEventListener("focus", refreshHomeState);
+            window.removeEventListener("focus", handleFocus);
             document.removeEventListener("visibilitychange", handleResume);
         };
-    }, [setAuth, token]);
+    }, [refreshHomeState]); // refreshHomeState is stable (useCallback with [])
 
     useEffect(() => {
         let active = true;
