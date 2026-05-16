@@ -17,6 +17,7 @@ import ResourcesScreen from "./screens/ResourcesScreen";
 import ResourceViewerScreen from "./screens/ResourceViewerScreen";
 import QuizScreen from "./screens/QuizScreen";
 import PracticeSetupScreen from "./screens/PracticeSetupScreen";
+import SelectivePracticeScreen from "./screens/SelectivePracticeScreen";
 import QuizListScreen from "./screens/QuizListScreen";
 import QuizAttemptScreen from "./screens/QuizAttemptScreen";
 import ExitExamScreen from "./screens/ExitExamScreen";
@@ -44,6 +45,7 @@ function AppRoutes() {
 
     const hideBottomNav =
         location.pathname === "/onboarding" ||
+        location.pathname.startsWith("/quiz/selective") ||
         location.pathname.startsWith("/quiz/take/") ||
         location.pathname.startsWith("/simulate/") ||
         location.pathname === "/results";
@@ -124,6 +126,22 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <PracticeSetupScreen />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/quiz/selective"
+                    element={
+                        <ProtectedRoute>
+                            <SelectivePracticeScreen />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/quiz/selective/take"
+                    element={
+                        <ProtectedRoute>
+                            <QuizAttemptScreen selectiveMode />
                         </ProtectedRoute>
                     }
                 />

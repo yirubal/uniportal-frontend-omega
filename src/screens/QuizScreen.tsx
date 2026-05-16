@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpenCheck, FileText } from "lucide-react";
+import { ArrowRight, BookOpenCheck, FileText, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import TopBackButton from "../components/TopBackButton";
 import { useQuizStore, type PracticeContentType } from "../store/quizStore";
@@ -76,6 +76,37 @@ export default function QuizScreen() {
                             </button>
                         );
                     })}
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            resetAttempt();
+                            navigate("/quiz/selective");
+                        }}
+                        className="app-list-item"
+                    >
+                        <div className="app-icon-chip bg-[#EAF4F1] text-[#3F6F6A]">
+                            <Target size={18} />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                                <p className="text-sm font-semibold text-[#172B2F]">
+                                    Selective Practice
+                                </p>
+                                <span className="rounded-full bg-[#F4F8F5] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#70868B]">
+                                    Topics
+                                </span>
+                            </div>
+                            <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
+                                Choose specific chapters or topics and practice only those questions.
+                            </p>
+                        </div>
+
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F4F8F5] text-[#172B2F]">
+                            <ArrowRight size={16} />
+                        </div>
+                    </button>
                 </div>
             </div>
         </div>

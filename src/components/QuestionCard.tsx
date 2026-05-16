@@ -97,11 +97,10 @@ export default function QuestionCard({
                                 haptic.light();
                                 setShowHint((current) => !current);
                             }}
-                            className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
-                                showHint
-                                    ? "bg-[#172B2F] text-white"
-                                    : "bg-[#EAF4F1] text-[#3F6F6A]"
-                            }`}
+                            className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${showHint
+                                ? "bg-[#172B2F] text-white"
+                                : "bg-[#EAF4F1] text-[#3F6F6A]"
+                                }`}
                         >
                             {showHint ? "Hide hint" : "Show hint"}
                         </button>
@@ -134,24 +133,24 @@ export default function QuestionCard({
                                     haptic.medium();
                                     onSelect(option);
                                 }}
-                                className="flex min-h-16 min-w-0 items-start gap-3.5 rounded-[22px] px-5 py-4 text-left transition-all duration-200 active:scale-[0.98]"
+                                className="flex min-h-16 min-w-0 items-center gap-3 rounded-[16px] px-4 py-3.5 text-left transition-all duration-200 active:scale-[0.98] !px-1"
                                 style={{
-                                    border: `1px solid ${style.border}`,
+                                    border: `2px solid ${style.border}`,
                                     backgroundColor: style.bg,
                                 }}
                             >
                                 <span
-                                    className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200"
+                                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center self-center rounded-full px-1 py-1 text-xs font-bold transition-colors duration-200"
                                     style={{
                                         backgroundColor: style.labelBg,
-                                        color: isSelected ? "#FFFFFF" : "#526B70",
+                                        color: style.labelText,
                                     }}
                                 >
                                     {OPTION_LABELS[option] ?? option.toUpperCase()}
                                 </span>
 
                                 <span
-                                    className="min-w-0 flex-1 text-sm font-medium leading-relaxed [overflow-wrap:anywhere]"
+                                    className="min-w-0 flex-1 self-center text-sm font-medium leading-relaxed [overflow-wrap:anywhere]"
                                     style={{ color: style.text }}
                                 >
                                     {label}
@@ -254,27 +253,30 @@ export default function QuestionCard({
 function getOptionStyle(option: string, selectedAnswer: string | null, simulationMode: boolean) {
     if (selectedAnswer === null) {
         return {
-            border: "rgba(23, 43, 47, 0.08)",
-            bg: "rgba(239, 244, 249, 0.9)",
-            text: "#172B2F",
-            labelBg: "rgba(224, 232, 241, 0.95)",
+            border: "#E0E0E0",
+            bg: "#FFFFFF",
+            text: "#1F2937",
+            labelBg: "#F3F4F6",
+            labelText: "#374151",
         };
     }
 
     if (option === selectedAnswer) {
         return {
             border: "#0A1628",
-            bg: simulationMode ? "#DDE6F2" : "#E5ECF6",
+            bg: simulationMode ? "#F5F7FA" : "#F5F7FA",
             text: "#0A1628",
             labelBg: "#0A1628",
+            labelText: "#FFFFFF",
         };
     }
 
     return {
-        border: "rgba(23, 43, 47, 0.08)",
-        bg: "rgba(239, 244, 249, 0.72)",
-        text: "#4D607F",
-        labelBg: "rgba(224, 232, 241, 0.95)",
+        border: "#E0E0E0",
+        bg: "#FFFFFF",
+        text: "#1F2937",
+        labelBg: "#F3F4F6",
+        labelText: "#374151",
     };
 }
 

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { Course } from "./contentStore";
 import type { ProgramType } from "../utils/periods";
 
 export type QuestionType =
@@ -33,7 +34,7 @@ export interface QuizAnswer {
     selected_option: string;
 }
 
-export type QuizMode = "practice" | "simulation" | "topic";
+export type QuizMode = "practice" | "simulation" | "topic" | "selective";
 export type PracticeContentType = "quiz" | "past_exam";
 
 export interface AttemptSummary {
@@ -70,6 +71,7 @@ interface QuizState {
     selectedQuizTitle: string | null;
     examPaperId: number | null;
     totalTime: number | null;
+    selectedTopics: string[];
 
     questions: Question[];
     currentIndex: number;
@@ -98,6 +100,7 @@ interface QuizState {
         examPaperId?: number,
         totalTime?: number
     ) => void;
+    initializeSelectivePractice: (questions: Question[], course: Course, topics: string[]) => void;
     setAnswer: (answer: string) => void;
     jumpToQuestion: (index: number) => void;
     toggleMarkedForReview: (questionId?: number) => void;
@@ -121,6 +124,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     selectedQuizTitle: null,
     examPaperId: null,
     totalTime: null,
+    selectedTopics: [],
     questions: [],
     currentIndex: 0,
     answers: {},
@@ -160,6 +164,28 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             examPaperId: examPaperId ?? null,
             totalTime: totalTime ?? null,
             timeRemaining: totalTime ?? null,
+            selectedTopics: [],
+            currentIndex: 0,
+            answers: {},
+            markedForReview: {},
+            selectedAnswer: null,
+            isComplete: false,
+            attemptSummary: null,
+        }),
+
+    initializeSelectivePractice: (questions, course, selectedTopics) =>
+        set({
+            practiceContentType: "quiz",
+            questions,
+            mode: "selective",
+            courseId: course.id,
+            courseName: course.name,
+            selectedQuizId: null,
+            selectedQuizTitle: "Selective Practice",
+            examPaperId: null,
+            totalTime: null,
+            timeRemaining: null,
+            selectedTopics,
             currentIndex: 0,
             answers: {},
             markedForReview: {},
@@ -233,6 +259,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             totalTime: null,
             selectedQuizId: null,
             selectedQuizTitle: null,
+            selectedTopics: [],
         }),
 
     resetQuiz: () =>
@@ -256,5 +283,6 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             selectedQuizTitle: null,
             examPaperId: null,
             totalTime: null,
+            selectedTopics: [],
         }),
 }));

@@ -173,6 +173,7 @@ export interface SubmitAttemptPayload {
     exam_paper?: number;
     answers: Record<string, string>;
     mode: QuizMode;
+    questions?: Question[];
 }
 
 export interface AttemptResponse extends AttemptSummary {}
@@ -231,7 +232,7 @@ export const submitAttempt = async (
             console.info("[dev] Force evaluating mock attempt");
             const questions = payload.exam_paper
                 ? mocks.getMockExamQuestions(payload.exam_paper)
-                : [];
+                : payload.questions ?? [];
             return normalizeAttemptSummary(mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode));
         }
     }
@@ -248,8 +249,96 @@ export const submitAttempt = async (
             console.info("[dev] Evaluating mock attempt");
             const questions = payload.exam_paper
                 ? mocks.getMockExamQuestions(payload.exam_paper)
-                : [];
+                : payload.questions ?? [];
             return normalizeAttemptSummary(mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode));
+        }
+        throw err;
+    }
+};
+
+export interface SelectivePracticeStartResponse {
+    questions: Question[];
+    filtered_count: number;
+}
+
+function normalizeTopicList(data: unknown): string[] {
+    if (Array.isArray(data)) {
+        return data
+            .map((item) => {
+                if (typeof item === "string") return item;
+                if (item && typeof item === "object" && "topic" in item) return String(item.topic);
+                if (item && typeof item === "object" && "chapter" in item) return String(item.chapter);
+                if (item && typeof item === "object" && "name" in item) return String(item.name);
+                if (item && typeof item === "object" && "title" in item) return String(item.title);
+                return "";
+            })
+            .filter(Boolean);
+    }
+
+    if (data && typeof data === "object" && "topics" in data) {
+        return normalizeTopicList((data as { topics: unknown }).topics);
+    }
+
+    return [];
+}
+
+export const getSelectivePracticeTopics = async (
+    courseId: number
+): Promise<string[]> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock selective practice topics");
+            return mocks.getMockSelectivePracticeTopics(courseId);
+        }
+    }
+
+    try {
+        const response = await client.get("/api/quiz/courses/" + courseId + "/topics/");
+        return normalizeTopicList(response.data);
+    } catch (err) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Using mock selective practice topics");
+            return mocks.getMockSelectivePracticeTopics(courseId);
+        }
+        throw err;
+    }
+};
+
+export const startSelectivePractice = async (
+    courseId: number,
+    selectedTopics: string[],
+    limit = 50
+): Promise<SelectivePracticeStartResponse> => {
+    if (forceDevMocks) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Force using mock selective practice questions");
+            const questions = mocks.getMockSelectivePracticeQuestions(courseId, selectedTopics, limit);
+            return { questions, filtered_count: questions.length };
+        }
+    }
+
+    try {
+        const response = await client.post<SelectivePracticeStartResponse>(
+            "/api/quiz/selective-practice/",
+            {
+                course_id: courseId,
+                selected_topics: selectedTopics,
+                limit,
+            }
+        );
+        return {
+            questions: Array.isArray(response.data.questions) ? response.data.questions : [],
+            filtered_count: Number(response.data.filtered_count ?? response.data.questions?.length ?? 0),
+        };
+    } catch (err) {
+        const mocks = await getMocks();
+        if (mocks) {
+            console.info("[dev] Using mock selective practice questions");
+            const questions = mocks.getMockSelectivePracticeQuestions(courseId, selectedTopics, limit);
+            return { questions, filtered_count: questions.length };
         }
         throw err;
     }
@@ -281,7 +370,6 @@ export const getExitExamTopicQuestions = async (
         throw err;
     }
 };
-
 export const getMyAttempts = async () => {
     if (forceDevMocks || (isDev && isLocalDevHost)) {
         console.info("[dev] Using mock attempts");

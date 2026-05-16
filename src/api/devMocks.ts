@@ -1122,6 +1122,34 @@ export function getMockQuestions(
     return questions;
 }
 
+export function getMockSelectivePracticeTopics(courseId: number): string[] {
+    const topics = new Set<string>();
+
+    (MOCK_QUESTIONS[courseId] ?? []).forEach((question) => {
+        if (question.topic) topics.add(question.topic);
+        question.topic_tags?.forEach((tag) => topics.add(tag));
+    });
+
+    return [...topics].sort((a, b) => a.localeCompare(b));
+}
+
+export function getMockSelectivePracticeQuestions(
+    courseId: number,
+    selectedTopics: string[],
+    limit = 50
+): Question[] {
+    const selected = new Set(selectedTopics.map((topic) => topic.toLowerCase()));
+    const questions = (MOCK_QUESTIONS[courseId] ?? []).filter((question) => {
+        const questionTopics = [question.topic, ...(question.topic_tags ?? [])]
+            .filter(Boolean)
+            .map((topic) => String(topic).toLowerCase());
+
+        return questionTopics.some((topic) => selected.has(topic));
+    });
+
+    return questions.slice(0, limit);
+}
+
 export function getMockExamQuestions(examPaperId: number): Question[] {
     if (MOCK_EXAM_QUESTIONS[examPaperId]) {
         return MOCK_EXAM_QUESTIONS[examPaperId];

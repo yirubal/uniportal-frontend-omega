@@ -309,6 +309,14 @@ This file is the durable handoff for future Codex sessions working in this repos
   - follow-up refinement: review navigation buttons use tighter horizontal padding, and modal cards/text containers are constrained with overflow wrapping for long question, option, explanation, and tag text
   - follow-up refinement: review modal is top-aligned with a small safe-area gap, and shared quiz/simulation option rows have more internal spacing around the A/B/C/D badge so the badge does not feel pressed against the selected border
   - verification after this pass: `npm run lint` and `npm run build` both passed
+- Added Selective Practice to the Practice Hub:
+  - `/quiz` now includes a `Selective Practice` card that opens `/quiz/selective`
+  - `SelectivePracticeScreen` loads saved-profile courses by default, supports filter override, loads course topics from `/api/quiz/courses/<courseId>/topics/`, multi-selects topics, and starts filtered practice through `/api/quiz/selective-practice/`
+  - selective attempts reuse `QuizAttemptScreen`, `QuestionCard`, submission, and `ResultsScreen`; quiz store mode now supports `selective` with selected topics preserved for results context
+  - dev mocks expose selective topics/questions from the existing mock question bank for local testing
+  - follow-up refinement: the student-facing selector now says `Chapters` and uses a scannable card grid with dark text on light selected cards; avoid white selected-card text in this flow
+  - follow-up refinement: chapter cards were realigned to the PROJECT.md deep-navy primary (`#0A1628`) for selected/start states, checkmarks are no longer clipped, progress/status text uses dark readable colors, and shared answer choices use dark text on white/light surfaces with 2px borders
+  - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
 

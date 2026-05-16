@@ -10,7 +10,7 @@ import { getPracticeContentMeta } from "../utils/practice";
 
 export default function ResultsScreen() {
     const navigate = useNavigate();
-    const { attemptSummary, answers, courseId, examPaperId, mode, practiceContentType, questions, resetAttempt } = useQuizStore();
+    const { attemptSummary, answers, courseId, examPaperId, mode, practiceContentType, questions, resetAttempt, selectedTopics } = useQuizStore();
     const [showReview, setShowReview] = useState(false);
     const meta = getPracticeContentMeta(practiceContentType);
 
@@ -35,6 +35,11 @@ export default function ResultsScreen() {
             return;
         }
 
+        if (mode === "selective") {
+            navigate("/quiz/selective", { replace: true });
+            return;
+        }
+
         if (courseId) {
             navigate("/quiz/list", { replace: true });
             return;
@@ -46,6 +51,11 @@ export default function ResultsScreen() {
     const handleExit = () => {
         if (mode === "simulation") {
             navigate("/exit-exam", { replace: true });
+            return;
+        }
+
+        if (mode === "selective") {
+            navigate("/quiz", { replace: true });
             return;
         }
 
@@ -69,6 +79,15 @@ export default function ResultsScreen() {
 
             <div className="app-scroll app-scroll-compact">
                 <div className="app-sheet px-5 py-6 text-center">
+                    {mode === "selective" && selectedTopics.length > 0 && (
+                        <div className="mx-auto mb-5 max-w-sm rounded-[18px] border border-[#CFE2DE] bg-[#EAF4F1] px-4 py-3 text-left">
+                            <p className="app-section-label">Selective practice</p>
+                            <p className="mt-2 text-sm font-semibold leading-relaxed text-[#234C48] [overflow-wrap:anywhere]">
+                                {selectedTopics.join(", ")}
+                            </p>
+                        </div>
+                    )}
+
                     <div className="mx-auto relative h-32 w-32">
                         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
                             <circle cx="50" cy="50" r="40" fill="none" stroke="#E8EDF6" strokeWidth="8" />
@@ -164,11 +183,11 @@ export default function ResultsScreen() {
                     onClick={handleRetry}
                 >
                     <RotateCcw size={16} />
-                    {mode === "simulation" ? "Try again" : meta.resultsRetryLabel}
+                    {mode === "simulation" ? "Try again" : mode === "selective" ? "Choose chapters again" : meta.resultsRetryLabel}
                 </Button>
                 <Button variant="ghost" size="md" fullWidth onClick={handleExit}>
                     <ArrowLeft size={16} />
-                    {mode === "simulation" ? "Back to Exams" : "Back to Courses"}
+                    {mode === "simulation" ? "Back to Exams" : mode === "selective" ? "Back to Practice Hub" : "Back to Courses"}
                 </Button>
             </div>
 

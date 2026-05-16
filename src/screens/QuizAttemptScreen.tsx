@@ -11,11 +11,12 @@ import { AttemptSummary, useQuizStore } from "../store/quizStore";
 import { getPracticeContentMeta } from "../utils/practice";
 import { buildSubmissionAnswers, isOptionQuestion, isQuestionAnswered } from "../utils/questions";
 
-export default function QuizAttemptScreen() {
+export default function QuizAttemptScreen({ selectiveMode = false }: { selectiveMode?: boolean }) {
     const navigate = useNavigate();
     const { quizId } = useParams();
     const quiz = useQuizStore();
     const meta = getPracticeContentMeta(quiz.practiceContentType);
+    const attemptMode = selectiveMode ? "selective" : "practice";
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -30,6 +31,17 @@ export default function QuizAttemptScreen() {
         : false;
 
     useEffect(() => {
+        if (selectiveMode) {
+            if (quiz.mode === "selective" && quiz.questions.length > 0) {
+                setLoading(false);
+                return;
+            }
+
+            setError("Choose chapters before starting selective practice.");
+            setLoading(false);
+            return;
+        }
+
         if (!quizId) {
             setError("Missing quiz id.");
             setLoading(false);
@@ -60,10 +72,10 @@ export default function QuizAttemptScreen() {
             })
             .catch(() => setError(`Failed to load ${quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"} questions.`))
             .finally(() => setLoading(false));
-    }, [quiz, quizId]);
+    }, [quiz, quizId, selectiveMode]);
 
     const handleSubmit = useCallback(async () => {
-        if (!quizId || submitting) return;
+        if ((!quizId && !selectiveMode) || submitting) return;
 
         setSubmitting(true);
         setAutoAdvancing(false);
@@ -73,11 +85,12 @@ export default function QuizAttemptScreen() {
             const submissionAnswers = buildSubmissionAnswers(quiz.questions, quiz.answers);
 
             const result = await submitAttempt({
-                exam_paper: Number(quizId),
+                exam_paper: selectiveMode ? undefined : Number(quizId),
                 answers: Object.fromEntries(
                     Object.entries(submissionAnswers).map(([questionId, answer]) => [String(questionId), answer])
                 ),
-                mode: "practice",
+                mode: attemptMode,
+                questions: quiz.questions,
             });
 
             quiz.completeQuiz(result);
@@ -97,7 +110,7 @@ export default function QuizAttemptScreen() {
         } finally {
             setSubmitting(false);
         }
-    }, [quiz, quizId, submitting]);
+    }, [attemptMode, quiz, quizId, selectiveMode, submitting]);
 
     useEffect(() => {
         if (quiz.isComplete) {
@@ -159,12 +172,12 @@ export default function QuizAttemptScreen() {
                 <div className="app-topbar">
                     <div className="relative z-10">
                         <TopBackButton
-                            onClick={() => navigate("/quiz/list")}
-                            label={quiz.practiceContentType === "past_exam" ? "Past exams" : "Quiz list"}
+                            onClick={() => navigate(selectiveMode ? "/quiz/selective" : "/quiz/list")}
+                            label={selectiveMode ? "Chapters" : quiz.practiceContentType === "past_exam" ? "Past exams" : "Quiz list"}
                         />
-                        <p className="app-section-label">{meta.sectionLabel}</p>
+                        <p className="app-section-label">{selectiveMode ? "Selective practice" : meta.sectionLabel}</p>
                         <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
-                            Unable to start {quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}
+                            Unable to start {selectiveMode ? "selective practice" : quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}
                         </h1>
                     </div>
                 </div>
@@ -195,18 +208,20 @@ export default function QuizAttemptScreen() {
                     <div className="app-sheet p-4">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <p className="app-section-label">{meta.attemptLabel}</p>
+                                <p className="app-section-label">{selectiveMode ? "Selective practice" : meta.attemptLabel}</p>
                                 <p className="mt-2 text-sm font-semibold text-[#172B2F]">
-                                    {quiz.selectedQuizTitle ?? meta.attemptFallbackTitle}
+                                    {selectiveMode ? quiz.courseName ?? "Selective Practice" : quiz.selectedQuizTitle ?? meta.attemptFallbackTitle}
                                 </p>
                                 <div className="mt-3 flex flex-wrap gap-2">
                                     <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#3F6F6A]">
                                         {quiz.questions.filter((question) => isQuestionAnswered(question, quiz.answers)).length}/{quiz.questions.length} answered
                                     </span>
                                     <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
-                                        {quiz.practiceContentType === "past_exam"
-                                            ? "Mixed question styles supported"
-                                            : "Tap once to continue"}
+                                        {selectiveMode
+                                            ? `${quiz.selectedTopics.length} chapters`
+                                            : quiz.practiceContentType === "past_exam"
+                                                ? "Mixed question styles supported"
+                                                : "Tap once to continue"}
                                     </span>
                                 </div>
                             </div>
@@ -253,11 +268,11 @@ export default function QuizAttemptScreen() {
                     }}
                 >
                     {submitting
-                        ? `Submitting ${quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}`
+                        ? `Submitting ${selectiveMode ? "selective practice" : quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}`
                         : autoAdvancing
                             ? (isLast ? "Submitting automatically..." : "Loading next question...")
                             : isLast
-                                ? `Submit ${quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}`
+                                ? `Submit ${selectiveMode ? "selective practice" : quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}`
                                 : "Next question"}
                 </Button>
                 <Button variant="ghost" size="md" fullWidth loading={submitting} onClick={() => void handleSubmit()}>
@@ -274,7 +289,7 @@ export default function QuizAttemptScreen() {
                 onConfirm={() => {
                     setShowLeaveModal(false);
                     quiz.resetAttempt();
-                    navigate("/quiz/list");
+                    navigate(selectiveMode ? "/quiz/selective" : "/quiz/list");
                 }}
                 onCancel={() => setShowLeaveModal(false)}
             />
