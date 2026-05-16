@@ -1,5 +1,5 @@
 import { Check, CheckCircle2, Clock3, Sparkles, X, XCircle } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getPlans, getSubscriptionRequest, requestSubscription, type PaymentInstructions, type PaymentOptions, type Plan, type SubscriptionRequestState } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
@@ -10,6 +10,11 @@ import { getMyProfile } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
 
 const PAYMENT_REFERENCE_PATTERN = /^[A-Z0-9]{10,12}$/;
+
+interface RefreshOptions {
+    silent?: boolean;
+    dedupe?: boolean;
+}
 
 export default function SubscribeScreen() {
     const navigate = useNavigate();
@@ -24,6 +29,7 @@ export default function SubscribeScreen() {
     const [requesting, setRequesting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
+    const backgroundRefreshInFlightRef = useRef(false);
     const currentRequestStatus = subscriptionRequestState?.current_request?.status ?? instructions?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
     const paymentOptions = instructions?.payment_options ?? subscriptionRequestState?.payment_options ?? {};
@@ -70,20 +76,36 @@ export default function SubscribeScreen() {
         }
     }, []);
 
-    const refreshSubscriptionState = useCallback(async (openModal = false) => {
-        const [profileResult, requestResult] = await Promise.allSettled([getMyProfile(), getSubscriptionRequest()]);
-
-        if (profileResult.status === "fulfilled" && token) {
-            setAuth(token, profileResult.value);
+    const refreshSubscriptionState = useCallback(async (openModal = false, options?: RefreshOptions) => {
+        if (options?.dedupe && backgroundRefreshInFlightRef.current) return;
+        if (options?.dedupe) {
+            backgroundRefreshInFlightRef.current = true;
         }
 
-        if (requestResult.status === "fulfilled") {
-            applySubscriptionRequestState(requestResult.value, openModal);
+        try {
+            const requestOptions = { skipGlobalLoader: options?.silent };
+            const [profileResult, requestResult] = await Promise.allSettled([
+                getMyProfile(requestOptions),
+                getSubscriptionRequest(requestOptions),
+            ]);
+
+            if (profileResult.status === "fulfilled" && token) {
+                setAuth(token, profileResult.value);
+            }
+
+            if (requestResult.status === "fulfilled") {
+                applySubscriptionRequestState(requestResult.value, openModal);
+            }
+        } finally {
+            if (options?.dedupe) {
+                backgroundRefreshInFlightRef.current = false;
+            }
         }
     }, [applySubscriptionRequestState, setAuth, token]);
 
     useEffect(() => {
-        Promise.allSettled([getPlans(), getSubscriptionRequest(), getMyProfile()])
+        const requestOptions = { skipGlobalLoader: true };
+        Promise.allSettled([getPlans(requestOptions), getSubscriptionRequest(requestOptions), getMyProfile(requestOptions)])
             .then(([plansResult, requestResult, profileResult]) => {
                 if (plansResult.status === "fulfilled") {
                     setPlans(plansResult.value);
@@ -105,12 +127,12 @@ export default function SubscribeScreen() {
 
     useEffect(() => {
         const handleFocus = () => {
-            void refreshSubscriptionState();
+            void refreshSubscriptionState(false, { silent: true, dedupe: true });
         };
 
         const handleResume = () => {
             if (document.visibilityState === "visible") {
-                void refreshSubscriptionState();
+                void refreshSubscriptionState(false, { silent: true, dedupe: true });
             }
         };
 
@@ -139,7 +161,7 @@ export default function SubscribeScreen() {
 
         try {
             await requestSubscription(selectedPlan, paymentMethod, normalizedPaymentReference);
-            await refreshSubscriptionState(true);
+            await refreshSubscriptionState(true, { silent: true });
         } catch {
             setStatusModalOpen(false);
             setError("Failed to generate payment instructions.");

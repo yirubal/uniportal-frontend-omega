@@ -285,6 +285,16 @@ This file is the durable handoff for future Codex sessions working in this repos
 - Updated `lookupExamSchedule()` in `src/api/exams.ts` to call `/api/exams/lookup/` with the unified `query` parameter while keeping `_ts` cache busting and existing dev mock behavior.
 - Backend compatibility still accepts legacy `student_id` and `name` params, but new frontend calls should use `query`.
 
+### 2026-05-16
+
+- Investigated production-style app flicker/refresh behavior in the frontend:
+  - root cause found in background Home/Subscribe syncs: profile/subscription/active-term fetches ran on mount plus focus/visibility events and were all counted by the global slow request loader
+  - `src/api/client.ts` now supports `skipGlobalLoader` for background requests without sending extra request headers
+  - Home profile/subscription/active-term refreshes now run silently and Home dedupes overlapping focus/visibility refreshes
+  - Subscribe and Subscription pages use their own local loading/requesting states for subscription syncs instead of showing the global app-wide syncing overlay
+  - verification after this pass: `npm run lint` and `npm run build` both passed
+  - `npx tsc --noEmit -p tsconfig.json` still reports existing baseline type errors unrelated to this flicker patch
+
 ## Next Work
 
 - Continue all new implementation on `dev`.

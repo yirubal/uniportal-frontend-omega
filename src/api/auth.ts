@@ -7,6 +7,10 @@ const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
 const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 const DEV_STUDENT_STORAGE_KEY = "uniportal-dev-student";
 
+interface ApiRequestOptions {
+    skipGlobalLoader?: boolean;
+}
+
 type TelegramWindow = Window & {
     Telegram?: {
         WebApp?: {
@@ -267,14 +271,16 @@ export const loginWithDevMode = async (): Promise<LoginResponse> => {
     };
 };
 
-export const getMyProfile = async (): Promise<Student> => {
+export const getMyProfile = async (options?: ApiRequestOptions): Promise<Student> => {
     const mockStudent = await getMockStudent();
     if (mockStudent) {
         console.info("[dev] Using mock student profile");
         return mockStudent;
     }
 
-    const response = await client.get<BackendStudent>("/api/students/me/");
+    const response = await client.get<BackendStudent>("/api/students/me/", {
+        skipGlobalLoader: options?.skipGlobalLoader,
+    });
     return normalizeStudent(response.data);
 };
 

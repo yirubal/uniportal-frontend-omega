@@ -42,7 +42,8 @@ export default function SubscriptionScreen() {
         setLoading(true);
         setError(null);
 
-        Promise.allSettled([getPlans(), getSubscriptionRequest(), getMyProfile()])
+        const requestOptions = { skipGlobalLoader: true };
+        Promise.allSettled([getPlans(requestOptions), getSubscriptionRequest(requestOptions), getMyProfile(requestOptions)])
             .then(([plansResult, requestResult, profileResult]) => {
                 if (plansResult.status === "fulfilled") {
                     setPlans(plansResult.value);

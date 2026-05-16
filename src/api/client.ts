@@ -2,6 +2,16 @@ import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 import { useNetworkStore } from "../store/networkStore";
 
+declare module "axios" {
+    export interface AxiosRequestConfig {
+        skipGlobalLoader?: boolean;
+    }
+
+    export interface InternalAxiosRequestConfig {
+        skipGlobalLoader?: boolean;
+    }
+}
+
 const SLOW_REQUEST_DELAY_MS = 700;
 let slowRequestTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -44,7 +54,9 @@ const client = axios.create({
 // Request interceptor — attach JWT token to every request
 client.interceptors.request.use(
     (config) => {
-        startNetworkTracking();
+        if (!config.skipGlobalLoader) {
+            startNetworkTracking();
+        }
         const token = useAuthStore.getState().token;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -52,7 +64,9 @@ client.interceptors.request.use(
         return config;
     },
     (error) => {
-        stopNetworkTracking();
+        if (!error.config?.skipGlobalLoader) {
+            stopNetworkTracking();
+        }
         return Promise.reject(error);
     }
 );
@@ -60,11 +74,15 @@ client.interceptors.request.use(
 // Response interceptor — handle global errors
 client.interceptors.response.use(
     (response) => {
-        stopNetworkTracking();
+        if (!response.config.skipGlobalLoader) {
+            stopNetworkTracking();
+        }
         return response;
     },
     (error) => {
-        stopNetworkTracking();
+        if (!error.config?.skipGlobalLoader) {
+            stopNetworkTracking();
+        }
         const status = error.response?.status;
 
         if (status === 401) {

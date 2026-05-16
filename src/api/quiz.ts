@@ -12,6 +12,10 @@ const isDev = import.meta.env.DEV;
 const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
 const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
+interface ApiRequestOptions {
+    skipGlobalLoader?: boolean;
+}
+
 async function getMocks() {
     if (!isDev) return null;
     return import("./devMocks");
@@ -479,9 +483,11 @@ function normalizeSubscriptionRequestState(
     };
 }
 
-export const getPlans = async (): Promise<Plan[]> => {
+export const getPlans = async (options?: ApiRequestOptions): Promise<Plan[]> => {
     try {
-        const response = await client.get<Plan[]>("/api/subscription/plans/");
+        const response = await client.get<Plan[]>("/api/subscription/plans/", {
+            skipGlobalLoader: options?.skipGlobalLoader,
+        });
         return response.data;
     } catch (err) {
         const mocks = await getMocks();
@@ -521,7 +527,7 @@ export const requestSubscription = async (
     }
 };
 
-export const getSubscriptionRequest = async (): Promise<SubscriptionRequestState> => {
+export const getSubscriptionRequest = async (options?: ApiRequestOptions): Promise<SubscriptionRequestState> => {
     if (forceDevMocks) {
         const mocks = await getMocks();
         if (mocks) {
@@ -534,7 +540,9 @@ export const getSubscriptionRequest = async (): Promise<SubscriptionRequestState
     }
 
     try {
-        const response = await client.get<PaymentInstructions | SubscriptionRequestResponse>("/api/subscription/request/");
+        const response = await client.get<PaymentInstructions | SubscriptionRequestResponse>("/api/subscription/request/", {
+            skipGlobalLoader: options?.skipGlobalLoader,
+        });
         return normalizeSubscriptionRequestState(response.data);
     } catch (err) {
         if (typeof err === "object" && err !== null && "status" in err && err.status === 404) {

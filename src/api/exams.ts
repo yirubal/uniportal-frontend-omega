@@ -4,6 +4,10 @@ import type { ActiveTermResponse, ExamScheduleResponse } from "../types/exams";
 const isDev = import.meta.env.DEV;
 const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
 
+interface ApiRequestOptions {
+    skipGlobalLoader?: boolean;
+}
+
 async function getMocks() {
     if (!isDev) return null;
     return import("./devMocks");
@@ -23,7 +27,7 @@ function normalizeActiveTerm(data: unknown): ActiveTermResponse {
     };
 }
 
-export const fetchActiveTerm = async (): Promise<ActiveTermResponse> => {
+export const fetchActiveTerm = async (options?: ApiRequestOptions): Promise<ActiveTermResponse> => {
     if (forceDevMocks) {
         const mocks = await getMocks();
         if (mocks) {
@@ -35,6 +39,7 @@ export const fetchActiveTerm = async (): Promise<ActiveTermResponse> => {
     try {
         const response = await client.get<ActiveTermResponse>("/api/exams/active-term/", {
             params: { _ts: Date.now() },
+            skipGlobalLoader: options?.skipGlobalLoader,
         });
 
         return normalizeActiveTerm(response.data);

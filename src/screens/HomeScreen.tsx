@@ -5,7 +5,7 @@ import { useAuthStore } from "../store/authStore";
 import { useAccess } from "../hooks/useAccess";
 import { formatDaysRemaining } from "../utils/format";
 import { getPeriodLabel, getProgramLabel } from "../utils/periods";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getMyProfile } from "../api/auth";
 import { getSubscriptionRequest, type SubscriptionRequestState } from "../api/quiz";
 import { fetchActiveTerm } from "../api/exams";
@@ -53,6 +53,7 @@ export default function HomeScreen() {
     const { isPremium, daysRemaining } = useAccess();
     const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
     const [activeTerm, setActiveTerm] = useState<ActiveTermResponse | null>(null);
+    const backgroundRefreshInFlightRef = useRef(false);
     const greeting = "Selam";
     const currentRequestStatus = subscriptionRequestState?.current_request?.status;
     const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
@@ -69,7 +70,13 @@ export default function HomeScreen() {
         let active = true;
 
         const refreshHomeState = () => {
-            Promise.allSettled([getMyProfile(), getSubscriptionRequest()]).then(([profileResult, requestResult]) => {
+            if (backgroundRefreshInFlightRef.current) return;
+            backgroundRefreshInFlightRef.current = true;
+
+            Promise.allSettled([
+                getMyProfile({ skipGlobalLoader: true }),
+                getSubscriptionRequest({ skipGlobalLoader: true }),
+            ]).then(([profileResult, requestResult]) => {
                 if (!active) return;
 
                 if (profileResult.status === "fulfilled" && token) {
@@ -79,6 +86,8 @@ export default function HomeScreen() {
                 if (requestResult.status === "fulfilled") {
                     setSubscriptionRequestState(requestResult.value);
                 }
+            }).finally(() => {
+                backgroundRefreshInFlightRef.current = false;
             });
         };
 
@@ -103,7 +112,7 @@ export default function HomeScreen() {
     useEffect(() => {
         let active = true;
 
-        fetchActiveTerm()
+        fetchActiveTerm({ skipGlobalLoader: true })
             .then((term) => {
                 if (active) {
                     setActiveTerm(term);
