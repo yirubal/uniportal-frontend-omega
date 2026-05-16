@@ -121,7 +121,7 @@ export default function QuestionCard({
             </div>
 
             {(questionType === "mcq" || questionType === "true_false") && (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3.5">
                     {optionEntries.map(([option, label]) => {
                         const style = getOptionStyle(option, selectedAnswer, simulationMode);
                         const isSelected = option === selectedAnswer;
@@ -134,14 +134,14 @@ export default function QuestionCard({
                                     haptic.medium();
                                     onSelect(option);
                                 }}
-                                className="flex items-center gap-3 rounded-[22px] p-4 text-left transition-all duration-200 active:scale-[0.98]"
+                                className="flex min-h-16 min-w-0 items-start gap-3.5 rounded-[22px] px-5 py-4 text-left transition-all duration-200 active:scale-[0.98]"
                                 style={{
                                     border: `1px solid ${style.border}`,
                                     backgroundColor: style.bg,
                                 }}
                             >
                                 <span
-                                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200"
+                                    className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors duration-200"
                                     style={{
                                         backgroundColor: style.labelBg,
                                         color: isSelected ? "#FFFFFF" : "#526B70",
@@ -151,7 +151,7 @@ export default function QuestionCard({
                                 </span>
 
                                 <span
-                                    className="flex-1 text-sm font-medium leading-relaxed"
+                                    className="min-w-0 flex-1 text-sm font-medium leading-relaxed [overflow-wrap:anywhere]"
                                     style={{ color: style.text }}
                                 >
                                     {label}

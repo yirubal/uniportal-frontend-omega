@@ -178,14 +178,14 @@ function ReviewShell({
 }) {
     return (
         <div
-            className="fixed inset-0 z-[90] flex items-end bg-[rgba(8,18,34,0.52)] px-3 py-3 backdrop-blur-sm sm:items-center sm:justify-center sm:px-5"
+            className="fixed inset-0 z-[90] flex items-start justify-center bg-[rgba(8,18,34,0.52)] px-3 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-sm sm:px-5 sm:pt-5"
             role="dialog"
             aria-modal="true"
             aria-labelledby="answer-review-title"
             onClick={onClose}
         >
             <div
-                className="flex h-[92dvh] max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-[24px] border border-[rgba(23,43,47,0.08)] bg-[#F8FBF9] shadow-[0_24px_70px_rgba(10,22,40,0.26)] sm:h-[86dvh] sm:max-h-[86dvh] sm:rounded-[24px]"
+                className="flex h-[92dvh] max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-[24px] border border-[rgba(23,43,47,0.08)] bg-[#F8FBF9] shadow-[0_24px_70px_rgba(10,22,40,0.26)] sm:h-[86dvh] sm:max-h-[86dvh]"
                 onClick={(event) => event.stopPropagation()}
             >
                 <header className="flex shrink-0 items-start justify-between gap-4 border-b border-[rgba(23,43,47,0.08)] px-4 py-4 sm:px-5">

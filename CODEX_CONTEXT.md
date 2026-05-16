@@ -307,6 +307,7 @@ This file is the durable handoff for future Codex sessions working in this repos
   - rebuilt the modal with a desktop question sidebar, mobile single-panel detail flow, 48px controls, keyboard navigation, clearer status banners, left-border answer states, expandable long explanations, and topic tags aligned with the current Unity green-slate/gold palette
   - follow-up refinement: review navigation buttons now use dark text on light app surfaces, and answer choice cards no longer use colored left rails; the full-card background and border carry the answer state
   - follow-up refinement: review navigation buttons use tighter horizontal padding, and modal cards/text containers are constrained with overflow wrapping for long question, option, explanation, and tag text
+  - follow-up refinement: review modal is top-aligned with a small safe-area gap, and shared quiz/simulation option rows have more internal spacing around the A/B/C/D badge so the badge does not feel pressed against the selected border
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
 ## Next Work
