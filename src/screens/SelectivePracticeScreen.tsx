@@ -2,7 +2,7 @@ import { Brain, Check, ChevronDown, Target } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCourses, getDepartments } from "../api/content";
-import { getSelectivePracticeTopics, startSelectivePractice } from "../api/quiz";
+import { getSelectivePracticeChapters, startSelectivePractice, type SelectivePracticeChapter } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import { useStudentProfile } from "../hooks/useStudentProfile";
@@ -18,8 +18,8 @@ export default function SelectivePracticeScreen() {
     const [departments, setDepartments] = useState<Department[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-    const [chapters, setChapters] = useState<string[]>([]);
-    const [selectedChapters, setSelectedChapters] = useState<string[]>([]);
+    const [chapters, setChapters] = useState<SelectivePracticeChapter[]>([]);
+    const [selectedChapters, setSelectedChapters] = useState<SelectivePracticeChapter[]>([]);
     const [customizingProfile, setCustomizingProfile] = useState(false);
     const [loadingDepartments, setLoadingDepartments] = useState(true);
     const [loadingCourses, setLoadingCourses] = useState(false);
@@ -101,7 +101,7 @@ export default function SelectivePracticeScreen() {
         setChapters([]);
         setSelectedChapters([]);
 
-        getSelectivePracticeTopics(selectedCourse.id)
+        getSelectivePracticeChapters(selectedCourse.id)
             .then((items) => setChapters(items))
             .catch(() => setError("Failed to load chapters for this course."))
             .finally(() => setLoadingChapters(false));
@@ -109,7 +109,7 @@ export default function SelectivePracticeScreen() {
 
     const selectedChapterSummary = useMemo(() => {
         if (selectedChapters.length === 0) return "Select at least one chapter";
-        if (selectedChapters.length === 1) return getChapterDisplay(selectedChapters[0], 0);
+        if (selectedChapters.length === 1) return getChapterDisplay(selectedChapters[0]);
         return `${selectedChapters.length} chapters selected`;
     }, [selectedChapters]);
 
@@ -124,10 +124,10 @@ export default function SelectivePracticeScreen() {
         navigate("/quiz");
     };
 
-    const toggleChapter = (chapter: string) => {
+    const toggleChapter = (chapter: SelectivePracticeChapter) => {
         setSelectedChapters((current) =>
-            current.includes(chapter)
-                ? current.filter((item) => item !== chapter)
+            current.some((item) => item.id === chapter.id)
+                ? current.filter((item) => item.id !== chapter.id)
                 : [...current, chapter]
         );
     };
@@ -139,14 +139,15 @@ export default function SelectivePracticeScreen() {
         setError(null);
 
         try {
-            const result = await startSelectivePractice(selectedCourse.id, selectedChapters, 50);
+            const selectedChapterFilters = selectedChapters.map(getChapterFilterValue);
+            const result = await startSelectivePractice(selectedCourse.id, selectedChapterFilters, 50);
 
             if (result.filtered_count === 0 || result.questions.length === 0) {
                 setError("No questions available for the selected chapters.");
                 return;
             }
 
-            initializeSelectivePractice(result.questions, selectedCourse, selectedChapters);
+            initializeSelectivePractice(result.questions, selectedCourse, selectedChapters.map(getChapterDisplay));
             navigate("/quiz/selective/take");
         } catch {
             setError("Failed to start selective practice. Please try again.");
@@ -440,9 +441,9 @@ function ChapterSelector({
     selectedChapters,
     onToggleChapter,
 }: {
-    chapters: string[];
-    selectedChapters: string[];
-    onToggleChapter: (chapter: string) => void;
+    chapters: SelectivePracticeChapter[];
+    selectedChapters: SelectivePracticeChapter[];
+    onToggleChapter: (chapter: SelectivePracticeChapter) => void;
 }) {
     const selectedPercent = chapters.length
         ? Math.round((selectedChapters.length / chapters.length) * 100)
@@ -460,18 +461,17 @@ function ChapterSelector({
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {chapters.map((chapter, index) => {
-                    const selected = selectedChapters.includes(chapter);
-                    const chapterNumber = getChapterNumber(chapter, index);
-                    const chapterDisplay = getChapterDisplay(chapter, index);
+                {chapters.map((chapter) => {
+                    const selected = selectedChapters.some((item) => item.id === chapter.id);
+                    const chapterDisplay = getChapterDisplay(chapter);
 
                     return (
                         <button
-                            key={chapter}
+                            key={chapter.id}
                             type="button"
                             onClick={() => onToggleChapter(chapter)}
                             aria-pressed={selected}
-                            aria-label={`${chapter}, chapter ${chapterNumber}, ${selected ? "selected" : "not selected"}`}
+                            aria-label={`${chapterDisplay}: ${chapter.title}, ${selected ? "selected" : "not selected"}`}
                             className={`flex min-h-[8.75rem] min-w-0 max-w-full flex-col items-stretch gap-3 overflow-visible rounded-[16px] border-2 p-4 text-left transition-all duration-150 active:scale-[0.985] ${
                                 selected
                                     ? "border-[#172B2F] bg-[#172B2F] text-white shadow-[0_10px_24px_rgba(23,43,47,0.20)]"
@@ -497,7 +497,7 @@ function ChapterSelector({
                                         ? "bg-[rgba(255,255,255,0.20)] text-white"
                                         : "bg-[#F3F4F6] text-[#374151]"
                                 }`}>
-                                    {chapterNumber}
+                                    {chapter.number}
                                 </span>
                                 <span className={`mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
                                     selected
@@ -519,6 +519,13 @@ function ChapterSelector({
                                     whiteSpace: "nowrap",
                                 }}>
                                     {chapterDisplay}
+                                </p>
+                                <p className={`mt-2 text-xs font-semibold ${
+                                    selected ? "text-white/75" : "text-[#70868B]"
+                                }`}>
+                                    {chapter.question_count > 0
+                                        ? `${chapter.question_count} questions`
+                                        : "Questions available"}
                                 </p>
                             </div>
                         </button>
@@ -543,18 +550,14 @@ function ChapterSelector({
     );
 }
 
-function getChapterNumber(chapter: string, fallbackIndex: number) {
-    return chapter.match(/\d+/)?.[0] ?? String(fallbackIndex + 1);
+function getChapterDisplay(chapter: SelectivePracticeChapter) {
+    return `Chapter ${chapter.number}`;
 }
 
-function getChapterDisplay(chapter: string, fallbackIndex: number) {
-    const explicitLabel = chapter.match(/^(chapter|ch)\s+\d+/i)?.[0];
-    if (explicitLabel) {
-        return explicitLabel.replace(/^ch\b/i, "Ch");
-    }
-
-    const chapterNumber = getChapterNumber(chapter, fallbackIndex);
-    return `Chapter ${chapterNumber}`;
+function getChapterFilterValue(chapter: SelectivePracticeChapter) {
+    if (chapter.filter_value) return chapter.filter_value;
+    if (/^(chapter|ch)\s+\d+/i.test(chapter.title)) return chapter.title;
+    return `Chapter ${chapter.number}: ${chapter.title}`;
 }
 
 function SegmentedPicker<T extends string | number>({

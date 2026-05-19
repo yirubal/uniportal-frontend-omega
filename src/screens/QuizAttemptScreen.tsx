@@ -30,9 +30,15 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
         ? isQuestionAnswered(currentQuestion, quiz.answers)
         : false;
 
+    // Extract specific primitives from the store so the effect doesn't restart on every quiz state change.
+    // Using quiz (full object) as a dep would re-run this on every answer, nav, etc. — causing flicker on touch.
+    const quizExamPaperId = quiz.examPaperId;
+    const quizQuestionsLength = quiz.questions.length;
+    const quizMode = quiz.mode;
+
     useEffect(() => {
         if (selectiveMode) {
-            if (quiz.mode === "selective" && quiz.questions.length > 0) {
+            if (quizMode === "selective" && quizQuestionsLength > 0) {
                 setLoading(false);
                 return;
             }
@@ -48,7 +54,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
             return;
         }
 
-        if (quiz.examPaperId === Number(quizId) && quiz.questions.length > 0) {
+        if (quizExamPaperId === Number(quizId) && quizQuestionsLength > 0) {
             setLoading(false);
             return;
         }
@@ -56,33 +62,40 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
         setLoading(true);
         setError(null);
 
+        // Read non-subscribed store values inside the callback via getState() to avoid stale closures
+        const { practiceContentType, courseId, setQuiz } = useQuizStore.getState();
+
         getExamQuestions(Number(quizId), "practice")
             .then((questions) => {
                 if (questions.length === 0) {
-                    setError(`This ${quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"} has no questions yet.`);
+                    setError(`This ${practiceContentType === "past_exam" ? "past exam" : "quiz"} has no questions yet.`);
                     return;
                 }
 
-                quiz.setQuiz(
+                setQuiz(
                     questions,
                     "practice",
-                    quiz.courseId ?? undefined,
+                    courseId ?? undefined,
                     Number(quizId)
                 );
             })
-            .catch(() => setError(`Failed to load ${quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"} questions.`))
+            .catch(() => setError(`Failed to load ${practiceContentType === "past_exam" ? "past exam" : "quiz"} questions.`))
             .finally(() => setLoading(false));
-    }, [quiz, quizId, selectiveMode]);
+    // Only re-run when the quiz ID changes or we switch modes — not on every quiz store update.
+    }, [quizExamPaperId, quizQuestionsLength, quizMode, quizId, selectiveMode]);
 
     const handleSubmit = useCallback(async () => {
         if ((!quizId && !selectiveMode) || submitting) return;
+
+        // Read live store values inside the callback — do NOT capture quiz in deps to avoid cascade re-renders
+        const { questions, answers, completeQuiz } = useQuizStore.getState();
 
         setSubmitting(true);
         setAutoAdvancing(false);
         setError(null);
 
         try {
-            const submissionAnswers = buildSubmissionAnswers(quiz.questions, quiz.answers);
+            const submissionAnswers = buildSubmissionAnswers(questions, answers);
 
             const result = await submitAttempt({
                 exam_paper: selectiveMode ? undefined : Number(quizId),
@@ -90,27 +103,29 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                     Object.entries(submissionAnswers).map(([questionId, answer]) => [String(questionId), answer])
                 ),
                 mode: attemptMode,
-                questions: quiz.questions,
+                questions,
             });
 
-            quiz.completeQuiz(result);
+            completeQuiz(result);
         } catch {
+            const { questions: qs } = useQuizStore.getState();
             const fallbackSummary: AttemptSummary = {
                 score: 0,
                 percentage: 0,
-                gradable_total: quiz.questions.length,
-                pending_count: quiz.questions.filter((question) =>
+                gradable_total: qs.length,
+                pending_count: qs.filter((question) =>
                     ["essay", "matching"].includes(question.question_type ?? "")
                 ).length,
                 topic_breakdown: {},
                 weak_topics: [],
             };
 
-            quiz.completeQuiz(fallbackSummary);
+            completeQuiz(fallbackSummary);
         } finally {
             setSubmitting(false);
         }
-    }, [attemptMode, quiz, quizId, selectiveMode, submitting]);
+    // No quiz object in deps — reads store via getState() to avoid the full-store re-subscription problem
+    }, [attemptMode, quizId, selectiveMode, submitting]);
 
     useEffect(() => {
         if (quiz.isComplete) {
@@ -118,17 +133,19 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
         }
     }, [navigate, quiz.isComplete]);
 
+    const quizCurrentIndex = quiz.currentIndex;
+    const quizPracticeContentType = quiz.practiceContentType;
     useEffect(() => {
         if (
             !isQuizActive ||
-            quiz.practiceContentType !== "quiz" ||
+            quizPracticeContentType !== "quiz" ||
             !currentQuestion ||
             !currentQuestionAnswered ||
             !isOptionQuestion(currentQuestion) ||
             submitting
         ) return;
 
-        const isLast = quiz.currentIndex + 1 >= quiz.questions.length;
+        const isLast = quizCurrentIndex + 1 >= quizQuestionsLength;
         setAutoAdvancing(true);
 
         const timer = window.setTimeout(() => {
@@ -137,7 +154,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                 return;
             }
 
-            quiz.nextQuestion();
+            useQuizStore.getState().nextQuestion();
             setAutoAdvancing(false);
         }, 550);
 
@@ -150,10 +167,9 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
         currentQuestion,
         currentQuestionAnswered,
         isQuizActive,
-        quiz,
-        quiz.currentIndex,
-        quiz.questions.length,
-        quiz.practiceContentType,
+        quizCurrentIndex,
+        quizQuestionsLength,
+        quizPracticeContentType,
         submitting,
     ]);
 

@@ -261,54 +261,110 @@ export interface SelectivePracticeStartResponse {
     filtered_count: number;
 }
 
-interface SelectivePracticeTopicsResponse {
+export interface SelectivePracticeChapter {
+    id: number;
+    number: number;
+    title: string;
+    description?: string;
+    icon?: string;
+    question_count: number;
+    filter_value?: string;
+}
+
+interface SelectivePracticeChaptersResponse {
     chapters?: unknown;
     topics?: unknown;
 }
 
-function normalizeTopicList(data: unknown): string[] {
-    if (Array.isArray(data)) {
-        return data
-            .map((item) => {
-                if (typeof item === "string") return item;
-                if (item && typeof item === "object" && "topic" in item) return String(item.topic);
-                if (item && typeof item === "object" && "chapter" in item) return String(item.chapter);
-                if (item && typeof item === "object" && "name" in item) return String(item.name);
-                if (item && typeof item === "object" && "title" in item) return String(item.title);
-                return "";
-            })
-            .filter(Boolean);
-    }
-
-    if (data && typeof data === "object" && "topics" in data) {
-        return normalizeTopicList((data as { topics: unknown }).topics);
-    }
-
-    return [];
+function asRecord(value: unknown): Record<string, unknown> | null {
+    return value && typeof value === "object" && !Array.isArray(value)
+        ? value as Record<string, unknown>
+        : null;
 }
 
-export const getSelectivePracticeTopics = async (
+function toNumber(value: unknown, fallback: number) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function toOptionalString(value: unknown) {
+    return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function getFallbackChapterNumber(label: string, fallbackIndex: number) {
+    const explicit = label.match(/\b(?:chapter|ch)\s*(\d+)\b/i)?.[1];
+    const anyNumber = label.match(/\d+/)?.[0];
+    return toNumber(explicit ?? anyNumber, fallbackIndex + 1);
+}
+
+function normalizeChapterList(data: unknown): SelectivePracticeChapter[] {
+    if (!Array.isArray(data)) {
+        const nested = asRecord(data);
+        if (nested && "chapters" in nested) return normalizeChapterList(nested.chapters);
+        if (nested && "topics" in nested) return normalizeChapterList(nested.topics);
+        return [];
+    }
+
+    return data
+        .map((item, index): SelectivePracticeChapter | null => {
+            if (typeof item === "string") {
+                const title = item.trim();
+                if (!title) return null;
+                const number = getFallbackChapterNumber(title, index);
+                return {
+                    id: number,
+                    number,
+                    title,
+                    question_count: 0,
+                    filter_value: title,
+                };
+            }
+
+            const record = asRecord(item);
+            if (!record) return null;
+
+            const title = toOptionalString(record.title)
+                ?? toOptionalString(record.name)
+                ?? toOptionalString(record.chapter)
+                ?? toOptionalString(record.topic)
+                ?? "";
+            if (!title) return null;
+
+            const number = toNumber(record.number, getFallbackChapterNumber(title, index));
+            return {
+                id: toNumber(record.id, number),
+                number,
+                title,
+                description: toOptionalString(record.description),
+                icon: toOptionalString(record.icon),
+                question_count: toNumber(record.question_count ?? record.count, 0),
+                filter_value: toOptionalString(record.filter_value)
+                    ?? toOptionalString(record.label)
+                    ?? undefined,
+            };
+        })
+        .filter((chapter): chapter is SelectivePracticeChapter => Boolean(chapter));
+}
+
+export const getSelectivePracticeChapters = async (
     courseId: number
-): Promise<string[]> => {
+): Promise<SelectivePracticeChapter[]> => {
     if (forceDevMocks) {
         const mocks = await getMocks();
         if (mocks) {
-            console.info("[dev] Force using mock selective practice topics");
-            return mocks.getMockSelectivePracticeTopics(courseId);
+            console.info("[dev] Force using mock selective practice chapters");
+            return mocks.getMockSelectivePracticeChapters(courseId);
         }
     }
 
     try {
-        const response = await client.get<SelectivePracticeTopicsResponse>("/api/quiz/courses/" + courseId + "/topics/");
-        if (response.data && typeof response.data === "object" && "chapters" in response.data) {
-            return normalizeTopicList(response.data.chapters);
-        }
-        return normalizeTopicList(response.data?.topics ?? response.data);
+        const response = await client.get<SelectivePracticeChaptersResponse>("/api/quiz/courses/" + courseId + "/chapters/");
+        return normalizeChapterList(response.data?.chapters ?? response.data);
     } catch (err) {
         const mocks = await getMocks();
         if (mocks) {
-            console.info("[dev] Using mock selective practice topics");
-            return mocks.getMockSelectivePracticeTopics(courseId);
+            console.info("[dev] Using mock selective practice chapters");
+            return mocks.getMockSelectivePracticeChapters(courseId);
         }
         throw err;
     }

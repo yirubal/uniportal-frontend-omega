@@ -318,6 +318,15 @@ This file is the durable handoff for future Codex sessions working in this repos
   - follow-up refinement: chapter cards were realigned to the PROJECT.md deep-navy primary (`#0A1628`) for selected/start states, checkmarks are no longer clipped, progress/status text uses dark readable colors, and shared answer choices use dark text on white/light surfaces with 2px borders
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
+### 2026-05-19
+
+- Updated Selective Practice chapter integration to use the backend chapter endpoint:
+  - `src/api/quiz.ts` now calls `/api/quiz/courses/<courseId>/chapters/` and normalizes chapter objects with `id`, `number`, `title`, `description`, `icon`, `question_count`, and optional `filter_value`
+  - `SelectivePracticeScreen` stores selected chapter objects for card state and metadata, then submits backend filter strings to `/api/quiz/selective-practice/`
+  - the chapter grid displays `Chapter N` plus question count from the backend object instead of rendering broad topic strings
+  - dev mocks now expose mock selective-practice chapters and keep mock filtering compatible with formatted chapter labels
+  - verification after this pass: `npm run lint` and `npm run build` both passed
+
 ## Next Work
 
 - Continue all new implementation on `dev`.

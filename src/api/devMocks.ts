@@ -1122,15 +1122,25 @@ export function getMockQuestions(
     return questions;
 }
 
-export function getMockSelectivePracticeTopics(courseId: number): string[] {
-    const topics = new Set<string>();
+export function getMockSelectivePracticeChapters(courseId: number) {
+    const counts = new Map<string, number>();
 
     (MOCK_QUESTIONS[courseId] ?? []).forEach((question) => {
-        if (question.topic) topics.add(question.topic);
-        question.topic_tags?.forEach((tag) => topics.add(tag));
+        const topic = question.topic;
+        if (!topic) return;
+        counts.set(topic, (counts.get(topic) ?? 0) + 1);
     });
 
-    return [...topics].sort((a, b) => a.localeCompare(b));
+    return [...counts.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([title, question_count], index) => ({
+            id: index + 1,
+            number: index + 1,
+            title,
+            icon: "📚",
+            question_count,
+            filter_value: title,
+        }));
 }
 
 export function getMockSelectivePracticeQuestions(
@@ -1138,16 +1148,23 @@ export function getMockSelectivePracticeQuestions(
     selectedTopics: string[],
     limit = 50
 ): Question[] {
-    const selected = new Set(selectedTopics.map((topic) => topic.toLowerCase()));
+    const selected = new Set(selectedTopics.map(normalizePracticeTopic));
     const questions = (MOCK_QUESTIONS[courseId] ?? []).filter((question) => {
         const questionTopics = [question.topic, ...(question.topic_tags ?? [])]
             .filter(Boolean)
-            .map((topic) => String(topic).toLowerCase());
+            .map((topic) => normalizePracticeTopic(String(topic)));
 
         return questionTopics.some((topic) => selected.has(topic));
     });
 
     return questions.slice(0, limit);
+}
+
+function normalizePracticeTopic(topic: string) {
+    return topic
+        .toLowerCase()
+        .replace(/^chapter\s+\d+\s*:\s*/i, "")
+        .trim();
 }
 
 export function getMockExamQuestions(examPaperId: number): Question[] {

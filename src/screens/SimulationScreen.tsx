@@ -1,5 +1,5 @@
 import { Bookmark, LayoutGrid } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getExitExams, getExamQuestions, submitAttempt, type ExamPaper } from "../api/quiz";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -16,6 +16,11 @@ export default function SimulationScreen() {
     const navigate = useNavigate();
     const { examId } = useParams();
     const quiz = useQuizStore();
+    // Stable action refs — keep the timer effect dep list slim
+    const setTimeRemainingRef = useRef(quiz.setTimeRemaining);
+    const handleSubmitCallRef = useRef<() => void>(() => {});
+    useEffect(() => { setTimeRemainingRef.current = quiz.setTimeRemaining; }, [quiz.setTimeRemaining]);
+    // Note: handleSubmitCallRef.current is assigned after handleSubmit is declared below
 
     const [exam, setExam] = useState<ExamPaper | null>(null);
     const [loading, setLoading] = useState(true);
@@ -49,21 +54,24 @@ export default function SimulationScreen() {
         if (isQuizComplete) navigate("/results", { replace: true });
     }, [isQuizComplete, navigate]);
 
+    // Timer effect — only depends on isQuizActive, NOT the full quiz object or timeRemaining.
+    // Reads current time via useQuizStore.getState() inside the interval to avoid stale closures.
     useEffect(() => {
-        if (!isQuizActive || quiz.timeRemaining === null) return;
+        if (!isQuizActive) return;
 
-        if (quiz.timeRemaining <= 0) {
-            void handleSubmit();
-            return;
-        }
+        const tick = () => {
+            const current = useQuizStore.getState().timeRemaining;
+            if (current === null) return;
+            if (current <= 0) {
+                handleSubmitCallRef.current();
+                return;
+            }
+            setTimeRemainingRef.current(Math.max(0, current - 1));
+        };
 
-        const timer = window.setInterval(() => {
-            const next = (quiz.timeRemaining ?? 0) - 1;
-            quiz.setTimeRemaining(Math.max(0, next));
-        }, 1000);
-
+        const timer = window.setInterval(tick, 1000);
         return () => window.clearInterval(timer);
-    }, [isQuizActive, quiz, quiz.timeRemaining]);
+    }, [isQuizActive]);
 
     const answeredCount = useMemo(
         () => quiz.questions.filter((question) => isQuestionAnswered(question, quiz.answers)).length,
@@ -104,24 +112,31 @@ export default function SimulationScreen() {
     const handleSubmit = useCallback(async () => {
         if (!exam || submitting) return;
 
+        // Read live store values via getState() — do NOT put quiz (full object) in deps
+        const { questions, answers, completeQuiz } = useQuizStore.getState();
+
         setSubmitting(true);
 
         try {
             const result = await submitAttempt({
                 exam_paper: exam.id,
                 answers: Object.fromEntries(
-                    Object.entries(buildSubmissionAnswers(quiz.questions, quiz.answers)).map(([questionId, selected]) => [String(questionId), selected])
+                    Object.entries(buildSubmissionAnswers(questions, answers)).map(([questionId, selected]) => [String(questionId), selected])
                 ),
                 mode: "simulation",
             });
 
-            quiz.completeQuiz(result);
+            completeQuiz(result);
         } catch {
             setError("Failed to submit the simulation.");
         } finally {
             setSubmitting(false);
         }
-    }, [exam, quiz, submitting]);
+    // No quiz object in deps — reads store via getState() to avoid full-store re-subscription problem
+    }, [exam, submitting]);
+
+    // Keep the call ref up to date after handleSubmit is declared (avoids used-before-declared error)
+    useEffect(() => { handleSubmitCallRef.current = () => { void handleSubmit(); }; }, [handleSubmit]);
 
     if (loading) {
         return (
