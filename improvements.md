@@ -96,8 +96,8 @@ These are bugs students hit, or that give them wrong information.
 
 ## Phase 4 — Resources, downloads & content protection
 
-- [ ] 🔴 **The resource viewer can't be reached.** Tapping a `ResourceCard` downloads the file immediately; the only way to reach `/resources/:id` is the viewer's own "related" list. Make the card open the viewer, and give download its own button with an `aria-label`.
-- [ ] 🟠 **Create one `useResourceDownload` hook.** Card and viewer duplicate the download logic. In the shared hook:
+- [x] 🔴 **The resource viewer can't be reached.** Tapping a `ResourceCard` downloads the file immediately; the only way to reach `/resources/:id` is the viewer's own "related" list. Make the card open the viewer, and give download its own button with an `aria-label`.
+- [x] 🟠 **Create one `useResourceDownload` hook.** Card and viewer duplicate the download logic. In the shared hook:
   - Version-gate `WebApp.downloadFile`, which needs Bot API 8.0.
   - Fall back to `WebApp.openLink` rather than `window.open`.
   - Reject non-http URLs.
@@ -140,7 +140,7 @@ These are bugs students hit, or that give them wrong information.
   - The commented-out icon in HomeScreen
   - The `public/*:Zone.Identifier` Windows artifact, which is served publicly
   - The redundant ternary in SelectivePractice (`useTailoredStart ? profile.departmentId : profile.departmentId`)
-- [ ] 🟠 **Clear the remaining `set-state-in-effect` warnings** (derived state in PracticeSetup, SelectivePractice, QuizList, ExitExamList, Onboarding, Subscription, QuestionCard, AnswerReviewModal), then set `react-hooks/set-state-in-effect` and `react-hooks/purity` back to errors in `eslint.config.js`.
+- [ ] 🟠 **Clear the remaining `set-state-in-effect` warnings** (derived state in PracticeSetup, QuizList, ExitExamList, Onboarding, ResourceViewer, Subscription, AnswerReviewModal), then set `react-hooks/set-state-in-effect` and `react-hooks/purity` back to errors in `eslint.config.js`.
 - [ ] 🟠 **Decide: should a premium student with a pending or rejected renewal show as "Free"?** Home and Subscription currently hide premium whenever a payment request is pending or rejected, even though the student still has an active subscription. Settle this when building `useSubscriptionStatus`.
 - [ ] 🟢 **Clean up the auth store.** `Student` stores preferences twice (the `preferred_*` fields and `preferences.*`). Keep one shape.
 

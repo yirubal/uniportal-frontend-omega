@@ -79,8 +79,5 @@ export const useTelegram = () => {
                 }
             },
         },
-
-        downloadFile: (url: string, fileName: string) =>
-            WebApp.downloadFile({ url, file_name: fileName }),
     };
 };

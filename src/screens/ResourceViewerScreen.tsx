@@ -1,14 +1,13 @@
 import { BookOpen, Download, Lock, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getResourceDetail, requestDownload } from "../api/content";
-import { getWatermarkText } from "../api/auth";
+import { getResourceDetail } from "../api/content";
 import Button from "../components/ui/Button";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import { ResourceSourceBadge } from "../components/ResourceSourceBadge";
 import TopBackButton from "../components/TopBackButton";
 import { useAccess } from "../hooks/useAccess";
-import { useTelegram } from "../hooks/useTelegram";
+import { useResourceDownload } from "../hooks/useResourceDownload";
 import { useContentStore } from "../store/contentStore";
 import type { Resource } from "../store/contentStore";
 import { formatDate, formatFileType } from "../utils/format";
@@ -18,12 +17,10 @@ export default function ResourceViewerScreen() {
     const { id } = useParams();
     const { resources, selectedCourse } = useContentStore();
     const { canAccessResource } = useAccess();
-    const { downloadFile } = useTelegram();
+    const { download, downloading, message: downloadMessage } = useResourceDownload();
 
     const [resource, setResource] = useState<Resource | null>(null);
     const [loading, setLoading] = useState(true);
-    const [downloading, setDownloading] = useState(false);
-    const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [reloadKey, setReloadKey] = useState(0);
 
@@ -68,37 +65,6 @@ export default function ResourceViewerScreen() {
     }, [resource, resources]);
 
     const isLocked = resource ? resource.is_locked || !canAccessResource(resource.access_level) : false;
-
-    const handleDownload = async () => {
-        if (!resource || isLocked) {
-            navigate("/subscribe");
-            return;
-        }
-
-        setDownloading(true);
-        setDownloadMessage(null);
-
-        try {
-            const watermark = await getWatermarkText().catch(() => undefined);
-            const response = await requestDownload(resource.id, watermark);
-            if (response.url.startsWith("http")) {
-                try {
-                    downloadFile(response.url, response.filename);
-                } catch {
-                    window.open(response.url, "_blank", "noopener,noreferrer");
-                }
-            }
-            setDownloadMessage(`Download ready: ${response.filename}`);
-        } catch (error) {
-            if (typeof error === "object" && error !== null && "status" in error && error.status === 403) {
-                navigate("/subscribe");
-                return;
-            }
-            setDownloadMessage("Unable to prepare the download right now.");
-        } finally {
-            setDownloading(false);
-        }
-    };
 
     if (loading) {
         return (
@@ -202,8 +168,11 @@ export default function ResourceViewerScreen() {
                 </div>
 
                 {downloadMessage && (
-                    <div className="rounded-[20px] bg-[rgba(230,242,237,0.96)] px-4 py-4 text-sm font-semibold text-[#2E7C62]">
-                        {downloadMessage}
+                    <div
+                        role={downloadMessage.tone === "error" ? "alert" : "status"}
+                        className={`rounded-[20px] px-4 py-4 text-sm font-semibold ${downloadMessage.tone === "error" ? "bg-[#FFF0ED] text-[#B4473F]" : "bg-[rgba(230,242,237,0.96)] text-[#2E7C62]"}`}
+                    >
+                        {downloadMessage.text}
                     </div>
                 )}
 
@@ -256,7 +225,7 @@ export default function ResourceViewerScreen() {
                             size="lg"
                             aria-label="Download resource"
                             loading={downloading}
-                            onClick={() => void handleDownload()}
+                            onClick={() => void download(resource.id)}
                             className="px-4"
                         >
                             <Download size={16} />
