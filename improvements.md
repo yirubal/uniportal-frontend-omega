@@ -11,7 +11,7 @@ Severity: 🔴 high · 🟠 medium · 🟢 low
 
 Without these, later phases have no automated checks.
 
-- [x] 🔴 **ESLint checks no TypeScript.** _Done: `react-hooks/set-state-in-effect` and `purity` are temporarily warnings (13 left) until Phases 1–2 rewrite those effects; switch them back to errors afterwards._ `eslint.config.js` targets `**/*.{js,jsx}` and `src/` has none, so `npm run lint` checks nothing. Install `typescript-eslint` and target `**/*.{ts,tsx}`. This also turns on the `react-hooks` rules. Expect a batch of new warnings to triage.
+- [x] 🔴 **ESLint checks no TypeScript.** _Done: `react-hooks/set-state-in-effect` and `purity` are temporarily warnings (13 left) until the rest are fixed in Phase 6; switch them back to errors afterwards._ `eslint.config.js` targets `**/*.{js,jsx}` and `src/` has none, so `npm run lint` checks nothing. Install `typescript-eslint` and target `**/*.{ts,tsx}`. This also turns on the `react-hooks` rules. Expect a batch of new warnings to triage.
 - [x] 🔴 **No type-checking in the pipeline.** `vite build` passes even though there are 19 `tsc` errors. Add `"typecheck": "tsc --noEmit -p tsconfig.json"` and fix the errors:
   - `api/quiz.ts` `normalizeSubscriptionRequestState`: the `in` checks don't narrow. Add a type guard.
   - `api/devMocks.ts` `getMockExitExamTopicQuestions` uses the undefined `MOCK_QUESTIONS_BY_EXAM`, so it throws a ReferenceError at runtime. It should be `MOCK_EXAM_QUESTIONS`. Also, `topicKey.includes("")` matches every question.
@@ -48,32 +48,32 @@ These are bugs students hit, or that give them wrong information.
 
 ## Phase 2 — API & data layer hardening
 
-- [ ] 🔴 **Dev fallbacks hide real backend errors.** Every `catch` in `content.ts`, `quiz.ts` and `exams.ts` returns mocks when `import.meta.env.DEV` is true, including for 401, 403 (`upgrade_required`) and 500. The worst cases:
+- [x] 🔴 **Dev fallbacks hide real backend errors.** Every `catch` in `content.ts`, `quiz.ts` and `exams.ts` returns mocks when `import.meta.env.DEV` is true, including for 401, 403 (`upgrade_required`) and 500. The worst cases:
   - `submitAttempt` grades locally.
   - `requestSubscription` returns fake payment instructions.
   - `getMyAttempts` and `getMyPerformance` always return mocks on localhost.
 
   Use mocks only when `VITE_FORCE_DEV_MOCKS=true`, and otherwise fall back only on network errors, never on HTTP responses. (Production is not affected: I checked that the built bundle contains no mock data.)
-- [ ] 🟠 **Shared mock helper.** `getMocks`, `isDev`, `forceDevMocks` and `ApiRequestOptions` are copied across 3–4 files, and each mock filter appears twice. Create `api/devFallback.ts` with a `withDevFallback(realFn, mockFn)` helper. `getPlans` has no force-mock branch at all.
-- [ ] 🟠 **Timeouts.** The axios client has no `timeout`, and the Telegram login `fetch` has no abort. A request that hangs leaves the loader up forever. Add a timeout of about 15s and `AbortSignal.timeout`, without changing the `initData` payload.
-- [ ] 🟠 **Cancellation.** Let API functions accept an optional `signal: AbortSignal`, and abort in effect cleanups. That fixes the stale-response races in:
+- [x] 🟠 **Shared mock helper.** `getMocks`, `isDev`, `forceDevMocks` and `ApiRequestOptions` are copied across 3–4 files, and each mock filter appears twice. Create `api/devFallback.ts` with a `withDevFallback(realFn, mockFn)` helper. `getPlans` has no force-mock branch at all.
+- [x] 🟠 **Timeouts.** The axios client has no `timeout`, and the Telegram login `fetch` has no abort. A request that hangs leaves the loader up forever. Add a timeout of about 15s and `AbortSignal.timeout`, without changing the `initData` payload.
+- [x] 🟠 **Cancellation.** Let API functions accept an optional `signal: AbortSignal`, and abort in effect cleanups. That fixes the stale-response races in:
   - ResourcesScreen (courses and resources)
   - ResourceViewerScreen (switching `id`)
   - SelectivePractice (courses and chapters)
   - PracticeSetup
   - QuizAttempt (question loading)
   - ExamSchedule (pressing Enter during a lookup)
-- [ ] 🟠 **Login errors lose detail.** `useAuth` turns every failure into "Authentication failed". Show `error.message` when it exists.
-- [ ] 🟠 **Premium logic is duplicated.** It is computed separately in `normalizeStudent`, `useAccess`, `HomeScreen` and `SubscriptionScreen`. Make one helper the source of truth. Decide how to treat `premium` with a null expiry (currently not premium), and stop showing "Expires today" for expired subscriptions (`daysRemaining` is clamped to 0).
-- [ ] 🟢 **Small number bugs.**
+- [x] 🟠 **Login errors lose detail.** `useAuth` turns every failure into "Authentication failed". Show `error.message` when it exists.
+- [x] 🟠 **Premium logic is duplicated.** It is computed separately in `normalizeStudent`, `useAccess`, `HomeScreen` and `SubscriptionScreen`. Make one helper the source of truth. Decide how to treat `premium` with a null expiry (currently not premium), and stop showing "Expires today" for expired subscriptions (`daysRemaining` is clamped to 0).
+- [x] 🟢 **Small number bugs.**
   - `auth.ts` turns `Number("abc")` into `NaN` instead of `null`.
   - `quiz.ts` computes a `NaN` percentage when `score` is missing.
   - `format.ts` `formatScore` divides by `total` with no zero check.
-- [ ] 🟢 **Fragile network counter.** `client.ts` reads the count from before `set`, and the request-error interceptor stops tracking a request it never started. Compute the count from `getState()` after begin/end.
-- [ ] 🟢 **Dead code and gaps.**
+- [x] 🟢 **Fragile network counter.** `client.ts` reads the count from before `set`, and the request-error interceptor stops tracking a request it never started. Compute the count from `getState()` after begin/end.
+- [x] 🟢 **Dead code and gaps.**
   - Remove the no-op `catch (e) { throw e }` in `exams.ts`.
   - Add `"module"` to `FilterType` in `contentStore`.
-  - Version-gate the MainButton calls in `useTelegram`.
+  - ~~Version-gate the MainButton calls in `useTelegram`.~~ Not needed: MainButton exists since Bot API 6.0, the first Mini App version.
   - `main.tsx` gates `disableVerticalSwipes`, which needs Bot API 7.7, on 6.1.
 
 ---
@@ -135,6 +135,8 @@ These are bugs students hit, or that give them wrong information.
   - The commented-out icon in HomeScreen
   - The `public/*:Zone.Identifier` Windows artifact, which is served publicly
   - The redundant ternary in SelectivePractice (`useTailoredStart ? profile.departmentId : profile.departmentId`)
+- [ ] 🟠 **Clear the remaining `set-state-in-effect` warnings** (derived state in PracticeSetup, SelectivePractice, QuizList, ExitExamList, Onboarding, Subscription, QuestionCard, AnswerReviewModal), then set `react-hooks/set-state-in-effect` and `react-hooks/purity` back to errors in `eslint.config.js`.
+- [ ] 🟠 **Decide: should a premium student with a pending or rejected renewal show as "Free"?** Home and Subscription currently hide premium whenever a payment request is pending or rejected, even though the student still has an active subscription. Settle this when building `useSubscriptionStatus`.
 - [ ] 🟢 **Clean up the auth store.** `Student` stores preferences twice (the `preferred_*` fields and `preferences.*`). Keep one shape.
 
 ---

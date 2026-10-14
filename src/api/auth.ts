@@ -1,16 +1,12 @@
-import client from "./client";
+import client, { REQUEST_TIMEOUT_MS } from "./client";
+import { forceDevMocks, type ApiRequestOptions } from "./devFallback";
 import { Student, StudentPreferences } from "../store/authStore";
 import type { ProgramType } from "../utils/periods";
+import { hasActiveSubscriptionExpiry } from "../utils/subscription";
 
 const isDev = import.meta.env.DEV;
-const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
 const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 const DEV_STUDENT_STORAGE_KEY = "uniportal-dev-student";
-
-interface ApiRequestOptions {
-    skipGlobalLoader?: boolean;
-    skipAuthClear?: boolean;
-}
 
 type TelegramWindow = Window & {
     Telegram?: {
@@ -119,7 +115,10 @@ function readPreference(
     for (const alias of aliases[key]) {
         const raw = preferences?.[alias];
         if (typeof raw === "number") return raw;
-        if (typeof raw === "string" && raw.trim() !== "") return Number(raw);
+        if (typeof raw === "string" && raw.trim() !== "") {
+            const parsed = Number(raw);
+            if (Number.isFinite(parsed)) return parsed;
+        }
     }
 
     return null;
@@ -163,13 +162,6 @@ function buildPreferences(student: BackendStudent): StudentPreferences {
             student.preferred_period ??
             null,
     };
-}
-
-function hasActiveSubscriptionExpiry(subscriptionExpiry: string | null | undefined): boolean {
-    if (!subscriptionExpiry) return false;
-
-    const expiryTime = new Date(subscriptionExpiry).getTime();
-    return Number.isFinite(expiryTime) && expiryTime > Date.now();
 }
 
 export function normalizeStudent(student: BackendStudent): Student {
@@ -216,13 +208,32 @@ export const loginWithTelegram = async (): Promise<LoginResponse> => {
         throw new MissingTelegramInitDataError();
     }
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/telegram/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            init_data: initData,
-        }),
-    });
+    // Manual abort timer: AbortSignal.timeout() is missing in older Telegram WebViews.
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    let response: Response;
+    try {
+        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/telegram/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            // initData must be sent exactly as Telegram provides it (backend signature check).
+            body: JSON.stringify({
+                init_data: initData,
+            }),
+            signal: controller.signal,
+        });
+    } catch {
+        throw {
+            status: undefined,
+            message: controller.signal.aborted
+                ? "The server took too long to respond. Please try again."
+                : "Could not reach the server. Check your connection and try again.",
+            upgrade_required: false,
+        };
+    } finally {
+        window.clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
         if (response.status === 403) {
@@ -273,6 +284,7 @@ export const getMyProfile = async (options?: ApiRequestOptions): Promise<Student
     const response = await client.get<BackendStudent>("/api/students/me/", {
         skipGlobalLoader: options?.skipGlobalLoader,
         skipAuthClear: options?.skipAuthClear,
+        signal: options?.signal,
     });
     return normalizeStudent(response.data);
 };

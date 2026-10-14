@@ -43,14 +43,24 @@ export default function SelectivePracticeScreen() {
     }, [resetAttempt]);
 
     useEffect(() => {
-        getDepartments()
-            .then(setDepartments)
-            .catch(() => setError("Failed to load departments."))
-            .finally(() => setLoadingDepartments(false));
+        const controller = new AbortController();
+
+        getDepartments({ signal: controller.signal })
+            .then((items) => {
+                if (!controller.signal.aborted) setDepartments(items);
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) setError("Failed to load departments.");
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoadingDepartments(false);
+            });
+
+        return () => controller.abort();
     }, []);
 
     useEffect(() => {
-        const preferredDepartmentId = useTailoredStart ? profile.departmentId : profile.departmentId;
+        const preferredDepartmentId = profile.departmentId;
         if (!preferredDepartmentId) return;
 
         const preferred = departments.find((department) => department.id === preferredDepartmentId) ?? null;
@@ -87,10 +97,24 @@ export default function SelectivePracticeScreen() {
         setChapters([]);
         setSelectedChapters([]);
 
-        getCourses(selDept.id, selProgram, selYear, selPeriod)
-            .then(setCourses)
-            .catch(() => setError("Failed to load courses."))
-            .finally(() => setLoadingCourses(false));
+        // Abort when filters change so an older, slower response can't overwrite the newer list.
+        const controller = new AbortController();
+
+        getCourses(selDept.id, selProgram, selYear, selPeriod, { signal: controller.signal })
+            .then((items) => {
+                if (!controller.signal.aborted) setCourses(items);
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) setError("Failed to load courses.");
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoadingCourses(false);
+            });
+
+        return () => {
+            controller.abort();
+            setLoadingCourses(false);
+        };
     }, [selDept, selProgram, selYear, selPeriod]);
 
     useEffect(() => {
@@ -101,10 +125,24 @@ export default function SelectivePracticeScreen() {
         setChapters([]);
         setSelectedChapters([]);
 
-        getSelectivePracticeChapters(selectedCourse.id)
-            .then((items) => setChapters(items))
-            .catch(() => setError("Failed to load chapters for this course."))
-            .finally(() => setLoadingChapters(false));
+        // Abort when the course changes so chapters from the previous course can't land last.
+        const controller = new AbortController();
+
+        getSelectivePracticeChapters(selectedCourse.id, { signal: controller.signal })
+            .then((items) => {
+                if (!controller.signal.aborted) setChapters(items);
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) setError("Failed to load chapters for this course.");
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoadingChapters(false);
+            });
+
+        return () => {
+            controller.abort();
+            setLoadingChapters(false);
+        };
     }, [selectedCourse]);
 
     const selectedChapterSummary = useMemo(() => {

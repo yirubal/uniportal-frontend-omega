@@ -47,12 +47,20 @@ export default function PracticeSetupScreen() {
     }, [resetAttempt]);
 
     useEffect(() => {
-        getDepartments()
+        const controller = new AbortController();
+
+        getDepartments({ signal: controller.signal })
             .then((depts) => {
-                setDepartments(depts);
+                if (!controller.signal.aborted) setDepartments(depts);
             })
-            .catch(() => setError("Failed to load departments."))
-            .finally(() => setLoadingDepts(false));
+            .catch(() => {
+                if (!controller.signal.aborted) setError("Failed to load departments.");
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoadingDepts(false);
+            });
+
+        return () => controller.abort();
     }, []);
 
     useEffect(() => {
@@ -92,16 +100,29 @@ export default function PracticeSetupScreen() {
         setCourses([]);
         setSelCourse(null);
 
-        getCourses(selDept.id, selProgram, selYear, selPeriod)
+        // Abort when filters change so an older, slower response can't overwrite the newer list.
+        const controller = new AbortController();
+
+        getCourses(selDept.id, selProgram, selYear, selPeriod, { signal: controller.signal })
             .then((items) => {
+                if (controller.signal.aborted) return;
                 setCourses(items);
 
                 if (!courseId) return;
                 const preferredCourse = items.find((item) => item.id === courseId) ?? null;
                 setSelCourse(preferredCourse);
             })
-            .catch(() => setError("Failed to load courses."))
-            .finally(() => setLoadingCourses(false));
+            .catch(() => {
+                if (!controller.signal.aborted) setError("Failed to load courses.");
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoadingCourses(false);
+            });
+
+        return () => {
+            controller.abort();
+            setLoadingCourses(false);
+        };
     }, [courseId, selDept, selProgram, selYear, selPeriod]);
 
     const handleOpenList = (course: Course) => {

@@ -68,8 +68,11 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
         // Read non-subscribed store values inside the callback via getState() to avoid stale closures
         const { practiceContentType, courseId, setQuiz } = useQuizStore.getState();
 
-        getExamQuestions(Number(quizId), "practice")
+        const controller = new AbortController();
+
+        getExamQuestions(Number(quizId), "practice", { signal: controller.signal })
             .then((questions) => {
+                if (controller.signal.aborted) return;
                 if (questions.length === 0) {
                     setError(`This ${practiceContentType === "past_exam" ? "past exam" : "quiz"} has no questions yet.`);
                     return;
@@ -82,8 +85,16 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                     Number(quizId)
                 );
             })
-            .catch(() => setError(`Failed to load ${practiceContentType === "past_exam" ? "past exam" : "quiz"} questions.`))
-            .finally(() => setLoading(false));
+            .catch(() => {
+                if (!controller.signal.aborted) {
+                    setError(`Failed to load ${practiceContentType === "past_exam" ? "past exam" : "quiz"} questions.`);
+                }
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoading(false);
+            });
+
+        return () => controller.abort();
     // Only re-run when the quiz ID changes or we switch modes — not on every quiz store update.
     }, [quizExamPaperId, quizQuestionsLength, quizMode, quizId, selectiveMode]);
 

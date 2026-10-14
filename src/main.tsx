@@ -7,10 +7,12 @@ import App from "./App.tsx";
 // Initialize Telegram WebApp
 WebApp.ready();
 WebApp.expand();
-const supportsModernChrome = WebApp.isVersionAtLeast?.("6.1") ?? false;
-if (supportsModernChrome) {
-    WebApp.disableVerticalSwipes();
+// Each call is gated on the Bot API version that introduced it; older clients throw/warn otherwise.
+if (WebApp.isVersionAtLeast?.("6.2")) {
     WebApp.enableClosingConfirmation();
+}
+if (WebApp.isVersionAtLeast?.("7.7")) {
+    WebApp.disableVerticalSwipes();
 }
 
 const rootElement = document.getElementById("root");

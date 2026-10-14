@@ -1,18 +1,6 @@
 import client from "./client";
+import { withDevFallback, type ApiRequestOptions } from "./devFallback";
 import type { ActiveTermResponse, ExamScheduleResponse } from "../types/exams";
-
-const isDev = import.meta.env.DEV;
-const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
-
-interface ApiRequestOptions {
-    skipGlobalLoader?: boolean;
-    skipAuthClear?: boolean;
-}
-
-async function getMocks() {
-    if (!isDev) return null;
-    return import("./devMocks");
-}
 
 function normalizeActiveTerm(data: unknown): ActiveTermResponse {
     const record = data && typeof data === "object" ? data as Record<string, unknown> : {};
@@ -28,26 +16,25 @@ function normalizeActiveTerm(data: unknown): ActiveTermResponse {
     };
 }
 
-export const fetchActiveTerm = async (options?: ApiRequestOptions): Promise<ActiveTermResponse> => {
-    if (forceDevMocks) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Force using mock active term");
-            return mocks.MOCK_ACTIVE_TERM;
-        }
-    }
+export const fetchActiveTerm = async (options?: ApiRequestOptions): Promise<ActiveTermResponse> =>
+    withDevFallback(
+        "active term",
+        async () => {
+            const response = await client.get<ActiveTermResponse>("/api/exams/active-term/", {
+                params: { _ts: Date.now() },
+                skipGlobalLoader: options?.skipGlobalLoader,
+                skipAuthClear: options?.skipAuthClear,
+                signal: options?.signal,
+            });
 
-    const response = await client.get<ActiveTermResponse>("/api/exams/active-term/", {
-        params: { _ts: Date.now() },
-        skipGlobalLoader: options?.skipGlobalLoader,
-        skipAuthClear: options?.skipAuthClear,
-    });
-
-    return normalizeActiveTerm(response.data);
-};
+            return normalizeActiveTerm(response.data);
+        },
+        (mocks) => mocks.MOCK_ACTIVE_TERM
+    );
 
 export const lookupExamSchedule = async (
-    query: string
+    query: string,
+    options?: ApiRequestOptions
 ): Promise<ExamScheduleResponse> => {
     const trimmedQuery = query.trim();
 
@@ -56,32 +43,28 @@ export const lookupExamSchedule = async (
     }
 
     const isId = /^\d+$/.test(trimmedQuery);
-    const params = { query: trimmedQuery, _ts: Date.now() };
 
-    const getMockSchedule = async () => {
-        const mocks = await getMocks();
-        const match = mocks?.MOCK_EXAM_SCHEDULES.find((schedule) => {
-            if (isId) return schedule.student_id === trimmedQuery;
-            return schedule.student_name.toLowerCase().includes(trimmedQuery.toLowerCase());
-        });
+    return withDevFallback(
+        "exam schedule",
+        async () => {
+            const response = await client.get<ExamScheduleResponse>("/api/exams/lookup/", {
+                params: { query: trimmedQuery, _ts: Date.now() },
+                signal: options?.signal,
+            });
 
-        if (match) {
-            return match;
+            return response.data;
+        },
+        (mocks) => {
+            const match = mocks.MOCK_EXAM_SCHEDULES.find((schedule) => {
+                if (isId) return schedule.student_id === trimmedQuery;
+                return schedule.student_name.toLowerCase().includes(trimmedQuery.toLowerCase());
+            });
+
+            if (match) return match;
+
+            throw {
+                message: "No exam found. Check your ID or name spelling.",
+            };
         }
-
-        throw {
-            message: "No exam found. Check your ID or name spelling.",
-        };
-    };
-
-    if (forceDevMocks) {
-        console.info("[dev] Force using mock exam schedule");
-        return getMockSchedule();
-    }
-
-    const response = await client.get<ExamScheduleResponse>("/api/exams/lookup/", {
-        params,
-    });
-
-    return response.data;
+    );
 };

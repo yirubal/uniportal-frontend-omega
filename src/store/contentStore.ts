@@ -40,7 +40,7 @@ export interface Resource {
     tags?: string[];
 }
 
-type FilterType = "All" | "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
+export type ResourceFilterType = "All" | Resource["file_type"];
 
 interface ContentState {
     // Selection
@@ -56,7 +56,7 @@ interface ContentState {
     resources: Resource[];
 
     // UI state
-    filterType: FilterType;
+    filterType: ResourceFilterType;
     searchQuery: string;
     isLoadingResources: boolean;
 
@@ -69,7 +69,7 @@ interface ContentState {
     setDepartments: (departments: Department[]) => void;
     setCourses: (courses: Course[]) => void;
     setResources: (resources: Resource[]) => void;
-    setFilterType: (type: FilterType) => void;
+    setFilterType: (type: ResourceFilterType) => void;
     setSearchQuery: (query: string) => void;
     setLoadingResources: (loading: boolean) => void;
     resetSelection: () => void;

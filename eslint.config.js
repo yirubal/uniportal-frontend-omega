@@ -20,8 +20,8 @@ export default defineConfig([
       globals: globals.browser,
     },
     rules: {
-      // Temporarily warnings: the data-loading effects that trigger these are rewritten in
-      // improvements.md Phases 1-2 (cancellable fetches, refetch-based retries). Promote back to errors after.
+      // Temporarily warnings: the remaining hits are derived-state effects in the filter cascades,
+      // rewritten in improvements.md Phase 6 (useCourseFilter). Promote back to errors after.
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/purity': 'warn',
       '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],

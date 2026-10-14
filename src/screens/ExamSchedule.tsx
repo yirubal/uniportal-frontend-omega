@@ -88,7 +88,8 @@ export default function ExamSchedule() {
         event.preventDefault();
 
         const trimmedQuery = query.trim();
-        if (!trimmedQuery) return;
+        // Enter submits the form even while the button is disabled; ignore it until the lookup finishes.
+        if (!trimmedQuery || lookupLoading) return;
 
         setLookupLoading(true);
         setLookupError(null);
@@ -112,7 +113,7 @@ export default function ExamSchedule() {
         } finally {
             setLookupLoading(false);
         }
-    }, [query]);
+    }, [lookupLoading, query]);
 
     const isNotFoundError = lookupError?.toLowerCase().includes("no exam found") ?? false;
     const lookupErrorTitle =

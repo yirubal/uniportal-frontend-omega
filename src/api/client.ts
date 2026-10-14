@@ -14,30 +14,55 @@ declare module "axios" {
     }
 }
 
+/** Shape of every error rejected by this client. */
+export interface ApiError {
+    status: number | undefined;
+    message: string;
+    upgrade_required: boolean;
+    /** No HTTP response arrived (offline, DNS, CORS, timeout). */
+    network: boolean;
+    /** The request was cancelled through an AbortSignal. */
+    aborted: boolean;
+    original: unknown;
+}
+
+export const REQUEST_TIMEOUT_MS = 15_000;
 const SLOW_REQUEST_DELAY_MS = 700;
 let slowRequestTimer: ReturnType<typeof setTimeout> | null = null;
 
-function startNetworkTracking() {
-    const networkStore = useNetworkStore.getState();
-    networkStore.beginRequest();
+function isApiError(error: unknown): error is ApiError {
+    return Boolean(error && typeof error === "object" && "network" in error && "aborted" in error);
+}
 
-    if (networkStore.pendingRequests === 0 && !slowRequestTimer) {
+/** The backend could not be reached at all. Cancelled requests do not count. */
+export function isNetworkError(error: unknown): boolean {
+    return isApiError(error) && error.network && !error.aborted;
+}
+
+/** The request was cancelled (e.g. an effect cleanup aborted it); callers should ignore it. */
+export function isAbortError(error: unknown): boolean {
+    return isApiError(error) && error.aborted;
+}
+
+function startNetworkTracking() {
+    useNetworkStore.getState().beginRequest();
+
+    if (!slowRequestTimer) {
         slowRequestTimer = setTimeout(() => {
+            slowRequestTimer = null;
             const { pendingRequests, setShowSlowLoader } = useNetworkStore.getState();
             if (pendingRequests > 0) {
                 setShowSlowLoader(true);
             }
-            slowRequestTimer = null;
         }, SLOW_REQUEST_DELAY_MS);
     }
 }
 
 function stopNetworkTracking() {
-    const networkStore = useNetworkStore.getState();
-    networkStore.endRequest();
+    useNetworkStore.getState().endRequest();
 
-    const nextPendingRequests = Math.max(0, networkStore.pendingRequests - 1);
-    if (nextPendingRequests === 0) {
+    // Read the count after the decrement instead of predicting it from a stale snapshot.
+    if (useNetworkStore.getState().pendingRequests === 0) {
         if (slowRequestTimer) {
             clearTimeout(slowRequestTimer);
             slowRequestTimer = null;
@@ -48,30 +73,23 @@ function stopNetworkTracking() {
 
 const client = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
+    timeout: REQUEST_TIMEOUT_MS,
     headers: {
         "Content-Type": "application/json",
     },
 });
 
 // Request interceptor — attach JWT token to every request
-client.interceptors.request.use(
-    (config) => {
-        if (!config.skipGlobalLoader) {
-            startNetworkTracking();
-        }
-        const token = useAuthStore.getState().token;
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        if (!error.config?.skipGlobalLoader) {
-            stopNetworkTracking();
-        }
-        return Promise.reject(error);
+client.interceptors.request.use((config) => {
+    if (!config.skipGlobalLoader) {
+        startNetworkTracking();
     }
-);
+    const token = useAuthStore.getState().token;
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
 
 // Response interceptor — handle global errors
 client.interceptors.response.use(
@@ -86,6 +104,8 @@ client.interceptors.response.use(
             stopNetworkTracking();
         }
         const status = error.response?.status;
+        const aborted = axios.isCancel(error);
+        const timedOut = error.code === "ECONNABORTED" || error.code === "ETIMEDOUT";
 
         if (status === 401 && !error.config?.skipAuthClear) {
             // Token expired or invalid — App re-authenticates once, then Splash offers "Try again"
@@ -93,8 +113,9 @@ client.interceptors.response.use(
         }
 
         const requestPath = error.config?.url ?? "";
-        const networkMessage =
-            !error.response && error.message
+        const networkMessage = timedOut
+            ? "The server took too long to respond. Please try again."
+            : !error.response && error.message
                 ? `${error.message}${requestPath ? ` while calling ${requestPath}` : ""}`
                 : "";
 
@@ -106,12 +127,16 @@ client.interceptors.response.use(
             networkMessage ||
             "Something went wrong. Please try again.";
 
-        return Promise.reject({
+        const shaped: ApiError = {
             status,
             message,
             upgrade_required: error.response?.data?.upgrade_required ?? false,
+            network: !error.response,
+            aborted,
             original: error,
-        });
+        };
+
+        return Promise.reject(shaped);
     }
 );
 

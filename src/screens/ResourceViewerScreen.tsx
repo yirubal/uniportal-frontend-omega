@@ -36,10 +36,21 @@ export default function ResourceViewerScreen() {
         setLoading(true);
         setError(null);
 
-        getResourceDetail(Number(id))
-            .then(setResource)
-            .catch(() => setError("Failed to load resource details."))
-            .finally(() => setLoading(false));
+        // Abort when moving to a related resource so the previous detail can't land last.
+        const controller = new AbortController();
+
+        getResourceDetail(Number(id), { signal: controller.signal })
+            .then((item) => {
+                if (!controller.signal.aborted) setResource(item);
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) setError("Failed to load resource details.");
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoading(false);
+            });
+
+        return () => controller.abort();
     }, [id]);
 
     const relatedResources = useMemo(() => {

@@ -1,4 +1,5 @@
 import client from "./client";
+import { withDevFallback, type ApiRequestOptions } from "./devFallback";
 import {
     AttemptSummary,
     PracticeContentType,
@@ -8,47 +9,22 @@ import {
 import type { ExitExamCategory } from "../utils/exitExams";
 import { getPracticeContentMeta } from "../utils/practice";
 
-const isDev = import.meta.env.DEV;
-const forceDevMocks = import.meta.env.VITE_FORCE_DEV_MOCKS === "true";
-const isLocalDevHost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
-
-interface ApiRequestOptions {
-    skipGlobalLoader?: boolean;
-    skipAuthClear?: boolean;
-}
-
-async function getMocks() {
-    if (!isDev) return null;
-    return import("./devMocks");
-}
-
 export const getExamQuestions = async (
     examPaperId: number,
-    mode: "practice" | "simulation" = "practice"
-): Promise<Question[]> => {
-    if (forceDevMocks) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Force using mock exam questions");
-            return mocks.getMockExamQuestions(examPaperId);
-        }
-    }
-
-    try {
-        const response = await client.get<Question[]>(
-            `/api/exams/${examPaperId}/questions/`,
-            { params: { mode } }
-        );
-        return response.data;
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock exam questions");
-            return mocks.getMockExamQuestions(examPaperId);
-        }
-        throw err;
-    }
-};
+    mode: "practice" | "simulation" = "practice",
+    options?: ApiRequestOptions
+): Promise<Question[]> =>
+    withDevFallback(
+        "exam questions",
+        async () => {
+            const response = await client.get<Question[]>(
+                `/api/exams/${examPaperId}/questions/`,
+                { params: { mode }, signal: options?.signal }
+            );
+            return response.data;
+        },
+        (mocks) => mocks.getMockExamQuestions(examPaperId)
+    );
 
 export interface ExamPaper {
     id: number;
@@ -73,13 +49,17 @@ function dedupeExamPapers(exams: ExamPaper[]) {
 }
 
 export const getExamPapers = async (
-    params?: ExamPapersParams
-): Promise<ExamPaper[]> => {
-    if (forceDevMocks) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Force using mock exam papers");
-            return mocks.MOCK_EXAM_PAPERS.filter((exam) => {
+    params?: ExamPapersParams,
+    options?: ApiRequestOptions
+): Promise<ExamPaper[]> =>
+    withDevFallback(
+        "exam papers",
+        async () => {
+            const response = await client.get<ExamPaper[]>("/api/exams/", { params, signal: options?.signal });
+            return response.data;
+        },
+        (mocks) =>
+            mocks.MOCK_EXAM_PAPERS.filter((exam) => {
                 if (params?.type && exam.exam_type !== params.type) return false;
                 if (params?.course && exam.course !== params.course) return false;
                 if (params?.department) {
@@ -87,87 +67,58 @@ export const getExamPapers = async (
                     return course?.department === params.department;
                 }
                 return true;
-            });
-        }
-    }
-
-    try {
-        const response = await client.get<ExamPaper[]>("/api/exams/", { params });
-        return response.data;
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock exam papers");
-            return mocks.MOCK_EXAM_PAPERS.filter((exam) => {
-                if (params?.type && exam.exam_type !== params.type) return false;
-                if (params?.course && exam.course !== params.course) return false;
-                if (params?.department) {
-                    const course = mocks.MOCK_COURSES.find((item) => item.id === exam.course);
-                    return course?.department === params.department;
-                }
-                return true;
-            });
-        }
-        throw err;
-    }
-};
+            })
+    );
 
 export const getCourseQuizzes = async (
-    courseId: number
+    courseId: number,
+    options?: ApiRequestOptions
 ): Promise<ExamPaper[]> => {
-    return getExamPapers({ type: "quiz", course: courseId });
+    return getExamPapers({ type: "quiz", course: courseId }, options);
 };
 
 export const getCoursePracticePapers = async (
     courseId: number,
-    practiceContentType: PracticeContentType
+    practiceContentType: PracticeContentType,
+    options?: ApiRequestOptions
 ): Promise<ExamPaper[]> => {
     return getExamPapers({
         type: getPracticeContentMeta(practiceContentType).apiExamType,
         course: courseId,
-    });
+    }, options);
 };
 
 export const getExitExams = async (
-    departmentId?: number
+    departmentId?: number,
+    options?: ApiRequestOptions
 ): Promise<ExamPaper[]> => {
     const params = departmentId ? { department: departmentId } : undefined;
     const [officialExams, modelExams] = await Promise.all([
-        getExamPapers({ ...params, type: "exit_real" }),
-        getExamPapers({ ...params, type: "exit_model" }),
+        getExamPapers({ ...params, type: "exit_real" }, options),
+        getExamPapers({ ...params, type: "exit_model" }, options),
     ]);
     const exitExams = dedupeExamPapers([...officialExams, ...modelExams]);
 
     if (exitExams.length > 0) return exitExams;
 
-    return getExamPapers({ ...params, type: "exit" });
+    return getExamPapers({ ...params, type: "exit" }, options);
 };
 
 export const getExitExamTopics = async (
-    departmentId: number
-): Promise<{ topic: string; count: number }[]> => {
-    if (forceDevMocks) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Force using mock exit exam topics");
-            return mocks.getMockExitExamTopics(departmentId);
-        }
-    }
-
-    try {
-        const response = await client.get("/api/exit-exams/topics/", {
-            params: { department: departmentId },
-        });
-        return response.data;
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock exit exam topics");
-            return mocks.getMockExitExamTopics(departmentId);
-        }
-        throw err;
-    }
-};
+    departmentId: number,
+    options?: ApiRequestOptions
+): Promise<{ topic: string; count: number }[]> =>
+    withDevFallback(
+        "exit exam topics",
+        async () => {
+            const response = await client.get("/api/exit-exams/topics/", {
+                params: { department: departmentId },
+                signal: options?.signal,
+            });
+            return response.data;
+        },
+        (mocks) => mocks.getMockExitExamTopics(departmentId)
+    );
 
 export interface SubmitAttemptPayload {
     exam_paper?: number;
@@ -194,12 +145,15 @@ function normalizeTopicScore(score: RawTopicScore) {
 }
 
 function normalizeAttemptSummary(summary: AttemptResponse): AttemptResponse {
+    const score = asNumber(summary.score);
+    const gradableTotal = asNumber(summary.gradable_total);
+
     return {
         ...summary,
-        score: asNumber(summary.score),
+        score,
         total: summary.total,
-        percentage: asNumber(summary.percentage, summary.gradable_total ? (summary.score / summary.gradable_total) * 100 : 0),
-        gradable_total: asNumber(summary.gradable_total),
+        percentage: asNumber(summary.percentage, gradableTotal > 0 ? (score / gradableTotal) * 100 : 0),
+        gradable_total: gradableTotal,
         pending_count: asNumber(summary.pending_count),
         topic_breakdown: Object.fromEntries(
             Object.entries(summary.topic_breakdown ?? {}).map(([topic, score]) => [
@@ -226,34 +180,22 @@ export const submitAttempt = async (
         })),
     };
 
-    if (forceDevMocks) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Force evaluating mock attempt");
+    return withDevFallback(
+        "attempt grading",
+        async () => {
+            const response = await client.post<AttemptResponse>(
+                "/api/quiz/attempts/",
+                requestPayload
+            );
+            return normalizeAttemptSummary(response.data);
+        },
+        (mocks) => {
             const questions = payload.exam_paper
                 ? mocks.getMockExamQuestions(payload.exam_paper)
                 : payload.questions ?? [];
             return normalizeAttemptSummary(mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode));
         }
-    }
-
-    try {
-        const response = await client.post<AttemptResponse>(
-            "/api/quiz/attempts/",
-            requestPayload
-        );
-        return normalizeAttemptSummary(response.data);
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Evaluating mock attempt");
-            const questions = payload.exam_paper
-                ? mocks.getMockExamQuestions(payload.exam_paper)
-                : payload.questions ?? [];
-            return normalizeAttemptSummary(mocks.evaluateMockAttempt(questions, requestPayload.answers, payload.mode));
-        }
-        throw err;
-    }
+    );
 };
 
 export interface SelectivePracticeStartResponse {
@@ -347,117 +289,77 @@ function normalizeChapterList(data: unknown): SelectivePracticeChapter[] {
 }
 
 export const getSelectivePracticeChapters = async (
-    courseId: number
-): Promise<SelectivePracticeChapter[]> => {
-    if (forceDevMocks) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Force using mock selective practice chapters");
-            return mocks.getMockSelectivePracticeChapters(courseId);
-        }
-    }
-
-    try {
-        const response = await client.get<SelectivePracticeChaptersResponse>("/api/quiz/courses/" + courseId + "/chapters/");
-        return normalizeChapterList(response.data?.chapters ?? response.data);
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock selective practice chapters");
-            return mocks.getMockSelectivePracticeChapters(courseId);
-        }
-        throw err;
-    }
-};
+    courseId: number,
+    options?: ApiRequestOptions
+): Promise<SelectivePracticeChapter[]> =>
+    withDevFallback(
+        "selective practice chapters",
+        async () => {
+            const response = await client.get<SelectivePracticeChaptersResponse>(
+                `/api/quiz/courses/${courseId}/chapters/`,
+                { signal: options?.signal }
+            );
+            return normalizeChapterList(response.data?.chapters ?? response.data);
+        },
+        (mocks) => mocks.getMockSelectivePracticeChapters(courseId)
+    );
 
 export const startSelectivePractice = async (
     courseId: number,
     selectedTopics: string[],
     limit = 50
-): Promise<SelectivePracticeStartResponse> => {
-    if (forceDevMocks) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Force using mock selective practice questions");
+): Promise<SelectivePracticeStartResponse> =>
+    withDevFallback(
+        "selective practice questions",
+        async () => {
+            const response = await client.post<SelectivePracticeStartResponse>(
+                "/api/quiz/selective-practice/",
+                {
+                    course_id: courseId,
+                    selected_topics: selectedTopics,
+                    limit,
+                }
+            );
+            return {
+                questions: Array.isArray(response.data.questions) ? response.data.questions : [],
+                filtered_count: Number(response.data.filtered_count ?? response.data.questions?.length ?? 0),
+            };
+        },
+        (mocks) => {
             const questions = mocks.getMockSelectivePracticeQuestions(courseId, selectedTopics, limit);
             return { questions, filtered_count: questions.length };
         }
-    }
-
-    try {
-        const response = await client.post<SelectivePracticeStartResponse>(
-            "/api/quiz/selective-practice/",
-            {
-                course_id: courseId,
-                selected_topics: selectedTopics,
-                limit,
-            }
-        );
-        return {
-            questions: Array.isArray(response.data.questions) ? response.data.questions : [],
-            filtered_count: Number(response.data.filtered_count ?? response.data.questions?.length ?? 0),
-        };
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock selective practice questions");
-            const questions = mocks.getMockSelectivePracticeQuestions(courseId, selectedTopics, limit);
-            return { questions, filtered_count: questions.length };
-        }
-        throw err;
-    }
-};
+    );
 
 export const getExitExamTopicQuestions = async (
     departmentId: number,
-    topic: string
-): Promise<Question[]> => {
-    if (forceDevMocks) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Force using mock exit exam topic questions");
-            return mocks.getMockExitExamTopicQuestions(departmentId, topic);
-        }
-    }
+    topic: string,
+    options?: ApiRequestOptions
+): Promise<Question[]> =>
+    withDevFallback(
+        "exit exam topic questions",
+        async () => {
+            const response = await client.get<Question[]>("/api/exit-exams/topics/questions/", {
+                params: { department: departmentId, topic },
+                signal: options?.signal,
+            });
+            return response.data;
+        },
+        (mocks) => mocks.getMockExitExamTopicQuestions(departmentId, topic)
+    );
 
-    try {
-        const response = await client.get<Question[]>("/api/exit-exams/topics/questions/", {
-            params: { department: departmentId, topic },
-        });
-        return response.data;
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock exit exam topic questions");
-            return mocks.getMockExitExamTopicQuestions(departmentId, topic);
-        }
-        throw err;
-    }
-};
-export const getMyAttempts = async () => {
-    if (forceDevMocks || (isDev && isLocalDevHost)) {
-        console.info("[dev] Using mock attempts");
-        return [
+export const getMyAttempts = async (options?: ApiRequestOptions) =>
+    withDevFallback(
+        "attempts",
+        async () => {
+            const response = await client.get("/api/quiz/attempts/", { signal: options?.signal });
+            return response.data;
+        },
+        () => [
             { id: 1, score: 7, total: 10, mode: "practice", created_at: "2026-03-01T09:20:00Z" },
             { id: 2, score: 5, total: 6, mode: "simulation", created_at: "2026-03-10T14:10:00Z" },
-        ];
-    }
-
-    try {
-        const response = await client.get("/api/quiz/attempts/");
-        return response.data;
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock attempts");
-            return [
-                { id: 1, score: 7, total: 10, mode: "practice", created_at: "2026-03-01T09:20:00Z" },
-                { id: 2, score: 5, total: 6, mode: "simulation", created_at: "2026-03-10T14:10:00Z" },
-            ];
-        }
-        throw err;
-    }
-};
+        ]
+    );
 
 export interface Performance {
     total_attempts: number;
@@ -524,29 +426,18 @@ function formatExamTypeLabel(type?: string) {
     return type ? labels[type] : undefined;
 }
 
-export const getMyPerformance = async (): Promise<Performance> => {
-    if (forceDevMocks || (isDev && isLocalDevHost)) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock performance");
-            return normalizePerformance(mocks.MOCK_PERFORMANCE);
-        }
-    }
-
-    try {
-        const response = await client.get<RawPerformance>(
-            "/api/students/me/performance/"
-        );
-        return normalizePerformance(response.data);
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock performance");
-            return normalizePerformance(mocks.MOCK_PERFORMANCE);
-        }
-        throw err;
-    }
-};
+export const getMyPerformance = async (options?: ApiRequestOptions): Promise<Performance> =>
+    withDevFallback(
+        "performance",
+        async () => {
+            const response = await client.get<RawPerformance>(
+                "/api/students/me/performance/",
+                { signal: options?.signal }
+            );
+            return normalizePerformance(response.data);
+        },
+        (mocks) => normalizePerformance(mocks.MOCK_PERFORMANCE)
+    );
 
 export interface Plan {
     id: string;
@@ -645,82 +536,65 @@ function normalizeSubscriptionRequestState(
     };
 }
 
-export const getPlans = async (options?: ApiRequestOptions): Promise<Plan[]> => {
-    try {
-        const response = await client.get<Plan[]>("/api/subscription/plans/", {
-            skipGlobalLoader: options?.skipGlobalLoader,
-            skipAuthClear: options?.skipAuthClear,
-        });
-        return response.data;
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock plans");
-            return mocks.MOCK_PLANS;
-        }
-        throw err;
-    }
-};
+export const getPlans = async (options?: ApiRequestOptions): Promise<Plan[]> =>
+    withDevFallback(
+        "plans",
+        async () => {
+            const response = await client.get<Plan[]>("/api/subscription/plans/", {
+                skipGlobalLoader: options?.skipGlobalLoader,
+                skipAuthClear: options?.skipAuthClear,
+                signal: options?.signal,
+            });
+            return response.data;
+        },
+        (mocks) => mocks.MOCK_PLANS
+    );
 
 export const requestSubscription = async (
     planId: string,
     paymentMethod: "telebirr" | "cbe",
     paymentReference: string
-): Promise<PaymentInstructions> => {
-    try {
-        const response = await client.post<PaymentInstructions>(
-            "/api/subscription/request/",
-            {
-                plan: planId,
-                payment_method: paymentMethod,
-                payment_reference: paymentReference,
+): Promise<PaymentInstructions> =>
+    withDevFallback(
+        "subscription instructions",
+        async () => {
+            const response = await client.post<PaymentInstructions>(
+                "/api/subscription/request/",
+                {
+                    plan: planId,
+                    payment_method: paymentMethod,
+                    payment_reference: paymentReference,
+                }
+            );
+            return response.data;
+        },
+        (mocks) => ({
+            ...mocks.MOCK_PAYMENT_INSTRUCTIONS,
+            reference: `${mocks.MOCK_PAYMENT_INSTRUCTIONS.reference}-${planId.toUpperCase()}`,
+        })
+    );
+
+export const getSubscriptionRequest = async (options?: ApiRequestOptions): Promise<SubscriptionRequestState> =>
+    withDevFallback(
+        "subscription request state",
+        async () => {
+            try {
+                const response = await client.get<PaymentInstructions | SubscriptionRequestResponse>("/api/subscription/request/", {
+                    skipGlobalLoader: options?.skipGlobalLoader,
+                    skipAuthClear: options?.skipAuthClear,
+                    signal: options?.signal,
+                });
+                return normalizeSubscriptionRequestState(response.data);
+            } catch (err) {
+                // No request has been made yet.
+                if (typeof err === "object" && err !== null && "status" in err && err.status === 404) {
+                    return normalizeSubscriptionRequestState(null);
+                }
+                throw err;
             }
-        );
-        return response.data;
-    } catch (err) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock subscription instructions");
-            return {
-                ...mocks.MOCK_PAYMENT_INSTRUCTIONS,
-                reference: `${mocks.MOCK_PAYMENT_INSTRUCTIONS.reference}-${planId.toUpperCase()}`,
-            };
-        }
-        throw err;
-    }
-};
-
-export const getSubscriptionRequest = async (options?: ApiRequestOptions): Promise<SubscriptionRequestState> => {
-    if (forceDevMocks) {
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Force using mock subscription request state");
-            return {
-                ...normalizeSubscriptionRequestState(null),
-                payment_options: mocks.MOCK_PAYMENT_INSTRUCTIONS.payment_options,
-            };
-        }
-    }
-
-    try {
-        const response = await client.get<PaymentInstructions | SubscriptionRequestResponse>("/api/subscription/request/", {
-            skipGlobalLoader: options?.skipGlobalLoader,
-            skipAuthClear: options?.skipAuthClear,
-        });
-        return normalizeSubscriptionRequestState(response.data);
-    } catch (err) {
-        if (typeof err === "object" && err !== null && "status" in err && err.status === 404) {
-            return normalizeSubscriptionRequestState(null);
-        }
-
-        const mocks = await getMocks();
-        if (mocks) {
-            console.info("[dev] Using mock pending subscription request");
-            return {
-                ...normalizeSubscriptionRequestState(null),
-                payment_options: mocks.MOCK_PAYMENT_INSTRUCTIONS.payment_options,
-            };
-        }
-        throw err;
-    }
-};
+        },
+        (mocks) => ({
+            ...normalizeSubscriptionRequestState(null),
+            payment_options: mocks.MOCK_PAYMENT_INSTRUCTIONS.payment_options,
+        })
+    );

@@ -19,7 +19,7 @@ export const formatDate = (dateString: string): string => {
 };
 
 export const formatScore = (score: number, total: number): string => {
-    const percentage = Math.round((score / total) * 100);
+    const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
     return `${score}/${total} (${percentage}%)`;
 };
 
@@ -28,7 +28,7 @@ export const formatETB = (amount: number): string => {
 };
 
 export const formatDaysRemaining = (days: number): string => {
-    if (days === 0) return "Expires today";
+    if (days <= 0) return "Expired";
     if (days === 1) return "1 day remaining";
     if (days < 7) return `${days} days remaining`;
     if (days < 30) return `${Math.floor(days / 7)} weeks remaining`;

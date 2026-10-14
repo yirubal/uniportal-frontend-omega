@@ -6,6 +6,7 @@ import {
     loginWithDevMode,
     loginWithTelegram,
 } from "../api/auth";
+import { getErrorMessage } from "../utils/errors";
 
 interface InitAuthOptions {
     /** Skip the global loading state so the current screen (e.g. ChannelGateScreen) stays mounted. */
@@ -52,7 +53,7 @@ async function runAuth({ silent = false }: InitAuthOptions) {
         }
     } catch (error) {
         console.error("Auth failed:", error);
-        setError("Authentication failed. Please try again.");
+        setError(getErrorMessage(error, "Authentication failed. Please try again."));
     }
 }
 

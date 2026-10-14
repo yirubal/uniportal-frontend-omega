@@ -1,5 +1,5 @@
 import { Check, Search, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCourses, getDepartments, getResources } from "../api/content";
 import ResourceCard from "../components/ResourceCard";
@@ -9,10 +9,10 @@ import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import { useAccess } from "../hooks/useAccess";
 import { useStudentProfile } from "../hooks/useStudentProfile";
 import { useContentStore } from "../store/contentStore";
-import type { Course, Department, ResourceSource } from "../store/contentStore";
+import type { Course, Department, ResourceFilterType, ResourceSource } from "../store/contentStore";
 import { getPeriodLabel, getPeriodOptions, getProgramLabel, PROGRAM_OPTIONS, type ProgramType, YEAR_OPTIONS } from "../utils/periods";
 
-type FilterType = "All" | "lecture_note" | "worksheet" | "past_exam" | "exit_exam";
+type FilterType = ResourceFilterType;
 type SourceFilter = "All" | ResourceSource;
 const INTERACTIVE_RESOURCE_TYPES = new Set<FilterType>(["past_exam", "exit_exam"]);
 
@@ -63,6 +63,9 @@ export default function ResourcesScreen() {
     const selectedDepartmentName = selDept?.name ?? "Your department";
 
     const [departmentsError, setDepartmentsError] = useState(false);
+    const resourcesRequestRef = useRef<AbortController | null>(null);
+
+    useEffect(() => () => resourcesRequestRef.current?.abort(), []);
 
     const loadDepartments = useCallback(() => {
         setLoadingDepts(true);
@@ -111,31 +114,37 @@ export default function ResourcesScreen() {
     useEffect(() => {
         if (!selDeptId || !selProgram || !selYear || !selPeriod) return;
 
-        // Ignore responses from an older filter combination that resolve after a newer one.
-        let active = true;
+        // Abort when filters change so an older, slower response can't overwrite the newer list.
+        const controller = new AbortController();
 
         setLoadingCourses(true);
         setError(null);
         setCourses([]);
         setSelCourse(null);
 
-        getCourses(selDeptId, selProgram, selYear, selPeriod)
+        getCourses(selDeptId, selProgram, selYear, selPeriod, { signal: controller.signal })
             .then((items) => {
-                if (active) setCourses(items);
+                if (!controller.signal.aborted) setCourses(items);
             })
             .catch(() => {
-                if (active) setError("Failed to load courses.");
+                if (!controller.signal.aborted) setError("Failed to load courses.");
             })
             .finally(() => {
-                if (active) setLoadingCourses(false);
+                if (!controller.signal.aborted) setLoadingCourses(false);
             });
 
         return () => {
-            active = false;
+            controller.abort();
+            setLoadingCourses(false);
         };
     }, [selDeptId, selProgram, selYear, selPeriod]);
 
     const loadResources = useCallback(async (course: Course) => {
+        // Tapping a second course cancels the first request so its resources can't replace the newer ones.
+        resourcesRequestRef.current?.abort();
+        const controller = new AbortController();
+        resourcesRequestRef.current = controller;
+
         setLoadingResources(true);
         setError(null);
 
@@ -146,18 +155,19 @@ export default function ResourcesScreen() {
         store.setSelectedCourse(course);
 
         try {
-            const resources = await getResources(course.id);
+            const resources = await getResources(course.id, undefined, { signal: controller.signal });
+            if (controller.signal.aborted) return;
             store.setResources(resources);
             setView("list");
         } catch {
-            setError("Failed to load resources.");
+            if (!controller.signal.aborted) setError("Failed to load resources.");
         } finally {
-            setLoadingResources(false);
+            if (!controller.signal.aborted) setLoadingResources(false);
         }
     }, [selDept, selPeriod, selProgram, selYear, store]);
 
     const visibleResources = useMemo(() => {
-        return store.resources.filter((resource) => !INTERACTIVE_RESOURCE_TYPES.has(resource.file_type as FilterType));
+        return store.resources.filter((resource) => !INTERACTIVE_RESOURCE_TYPES.has(resource.file_type));
     }, [store.resources]);
 
     const filteredResources = useMemo(() => {
