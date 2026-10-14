@@ -101,10 +101,10 @@ export default function ResultsScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
                     <p className="app-section-label">Assessment complete</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">
                         {mode === "simulation" ? "Simulation summary" : meta.resultsSummaryLabel}
                     </h1>
-                    <p className="mt-2 text-sm text-[#526B70]">
+                    <p className="mt-2 text-sm text-subtle">
                         Review the score, pending items, and weak topics from the submitted attempt.
                     </p>
                 </div>
@@ -113,9 +113,9 @@ export default function ResultsScreen() {
             <div className="app-scroll app-scroll-compact">
                 <div className="app-sheet px-5 py-6 text-center">
                     {mode === "selective" && selectedTopics.length > 0 && (
-                        <div className="mx-auto mb-5 max-w-sm rounded-[18px] border border-[#CFE2DE] bg-[#EAF4F1] px-4 py-3 text-left">
+                        <div className="mx-auto mb-5 max-w-sm rounded-[18px] border border-accent-line bg-accent-soft px-4 py-3 text-left">
                             <p className="app-section-label">Selective practice</p>
-                            <p className="mt-2 text-sm font-semibold leading-relaxed text-[#234C48] [overflow-wrap:anywhere]">
+                            <p className="mt-2 text-sm font-semibold leading-relaxed text-accent-deep [overflow-wrap:anywhere]">
                                 {selectedTopics.join(", ")}
                             </p>
                         </div>
@@ -138,15 +138,15 @@ export default function ResultsScreen() {
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className="text-3xl">{emoji}</span>
-                            <span className="mt-1 text-xl font-black text-[#172B2F]">{percentage}%</span>
+                            <span className="mt-1 text-xl font-black text-ink">{percentage}%</span>
                         </div>
                     </div>
 
-                    <p className="mt-5 text-xl font-bold text-[#172B2F]">{message}</p>
+                    <p className="mt-5 text-xl font-bold text-ink">{message}</p>
                     <div className={`mx-auto mt-3 inline-flex min-h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-black ${passed ? "bg-[#D1FAE5] text-[#065F46]" : "bg-[#FEE2E2] text-[#991B1B]"}`}>
                         {passed ? "Passed" : "Needs more practice"}
                     </div>
-                    <p className="mt-2 text-sm text-[#526B70]">
+                    <p className="mt-2 text-sm text-subtle">
                         Auto-graded score across {attemptSummary?.gradable_total ?? 0} gradable questions
                     </p>
 
@@ -163,10 +163,10 @@ export default function ResultsScreen() {
                             {Object.entries(attemptSummary.topic_breakdown).map(([topic, score]) => (
                                 <div key={topic} className="app-list-item">
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-semibold leading-relaxed text-[#172B2F]">
+                                        <p className="text-sm font-semibold leading-relaxed text-ink">
                                             {topic}
                                         </p>
-                                        <p className="mt-2 text-xs text-[#70868B]">
+                                        <p className="mt-2 text-xs text-faint">
                                             {score}% topic score
                                         </p>
                                     </div>
@@ -200,11 +200,6 @@ export default function ResultsScreen() {
                     fullWidth
                     onClick={() => setShowReview(true)}
                     disabled={!canReview}
-                    style={{
-                        backgroundColor: "#172B2F",
-                        color: "#FFFFFF",
-                        borderColor: "#172B2F",
-                    }}
                 >
                     <BookOpenCheck size={16} />
                     Review Answers

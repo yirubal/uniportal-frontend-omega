@@ -49,8 +49,8 @@ export const ResourceSourceBadge = ({ source, source_display, size = "sm" }: Pro
     const normalizedDisplay = source_display ?? "Other Resource";
     const config = BADGE_CONFIG[normalizedSource] ?? BADGE_CONFIG.other;
     const sizeClass = size === "xs"
-        ? "!min-h-[1.25rem] !gap-1 !px-1.5 !py-0 !text-[0.58rem]"
-        : "!gap-1 !px-2 !py-0.5 !text-[0.62rem]";
+        ? "!min-h-[1.25rem] !gap-1 !px-1.5 !py-0 !text-[11px]"
+        : "!gap-1 !px-2 !py-0.5 !text-[0.72rem]";
 
     return (
         <span

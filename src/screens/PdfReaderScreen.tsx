@@ -139,7 +139,7 @@ export default function PdfReaderScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate(-1)} label="Back" />
                     <p className="app-section-label">Reader</p>
-                    <h1 className="mt-1 line-clamp-2 text-base font-bold leading-snug text-[#172B2F]">
+                    <h1 className="mt-1 line-clamp-2 text-base font-bold leading-snug text-ink">
                         {resource?.title ?? "Opening document"}
                     </h1>
                 </div>
@@ -189,12 +189,12 @@ export default function PdfReaderScreen() {
 function LoadingPanel({ progress, preparing }: { progress: number | null; preparing: boolean }) {
     return (
         <div className="w-full max-w-xs text-center" role="status" aria-live="polite">
-            <p className="text-sm font-semibold text-[#172B2F]">
+            <p className="text-sm font-semibold text-ink">
                 {preparing ? "Preparing document..." : progress === null ? "Downloading..." : `Downloading ${Math.round(progress * 100)}%`}
             </p>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-[rgba(23,43,47,0.08)]">
                 <div
-                    className={`h-full rounded-full bg-[#3F6F6A] transition-[width] duration-300 ${progress === null ? "w-1/3 animate-pulse" : ""}`}
+                    className={`h-full rounded-full bg-accent transition-[width] duration-300 ${progress === null ? "w-1/3 animate-pulse" : ""}`}
                     style={progress === null ? undefined : { width: `${Math.max(4, progress * 100)}%` }}
                 />
             </div>
@@ -217,9 +217,9 @@ function MessagePanel({
 }) {
     return (
         <div className="app-sheet w-full max-w-sm p-6 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF4F1] text-[#3F6F6A]">{icon}</div>
-            <h2 className="mt-4 text-lg font-bold text-[#172B2F]">{title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-[#526B70]">{description}</p>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-accent">{icon}</div>
+            <h2 className="mt-4 text-lg font-bold text-ink">{title}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-subtle">{description}</p>
             <div className="mt-5 grid gap-2">
                 <Button variant="primary" size="md" fullWidth onClick={primary.onClick}>
                     {primary.label}

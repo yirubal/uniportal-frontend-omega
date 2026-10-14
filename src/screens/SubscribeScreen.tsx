@@ -119,8 +119,8 @@ export default function SubscribeScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
                     <p className="app-section-label">Premium access</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">Unlock the full study suite</h1>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">Unlock the full study suite</h1>
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-subtle">
                         Keep subscription choices simple, clear, and fast to scan inside Telegram.
                     </p>
                 </div>
@@ -129,12 +129,12 @@ export default function SubscribeScreen() {
             <div className="app-scroll app-scroll-compact space-y-4">
                 <div className="app-sheet p-5">
                     <div className="flex items-center gap-3">
-                        <div className="app-icon-chip bg-[#FFF6DF] text-[#B27614]">
+                        <div className="app-icon-chip bg-gold-tint text-gold-ink">
                             <Sparkles size={18} />
                         </div>
                         <div>
                             <p className="app-section-label">Premium includes</p>
-                            <p className="mt-1 text-base font-semibold text-[#172B2F]">Focused exam-prep tools</p>
+                            <p className="mt-1 text-base font-semibold text-ink">Focused exam-prep tools</p>
                         </div>
                     </div>
 
@@ -149,10 +149,10 @@ export default function SubscribeScreen() {
                                 key={benefit}
                                 className="flex items-center gap-3 rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-[#F6FAF7] px-4 py-3"
                             >
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EAF8F1] text-[#2E9E73]">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success-tint text-success-ink">
                                     <Check size={14} />
                                 </div>
-                                <p className="text-sm font-medium leading-snug text-[#172B2F]">{benefit}</p>
+                                <p className="text-sm font-medium leading-snug text-ink">{benefit}</p>
                             </div>
                         ))}
                     </div>
@@ -162,7 +162,7 @@ export default function SubscribeScreen() {
                     <div className="flex items-start justify-between gap-3">
                         <div>
                             <p className="app-section-label">Plans</p>
-                            <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
+                            <p className="mt-2 text-sm leading-relaxed text-subtle">
                                 Pick the access window that fits your study schedule.
                             </p>
                         </div>
@@ -194,13 +194,13 @@ export default function SubscribeScreen() {
                                         aria-pressed={isSelected}
                                         onClick={() => setSelectedPlan(plan.id)}
                                         className={`w-full rounded-[22px] border p-4 text-left transition-colors ${isSelected
-                                            ? "border-[#3F6F6A] bg-[#EAF4F1]"
+                                            ? "border-accent bg-accent-soft"
                                             : "border-[rgba(23,43,47,0.10)] bg-white/85"
                                             }`}
                                     >
                                         <div className="flex min-w-0 flex-col gap-3">
                                             <div className="min-w-0 py-2">
-                                                <p className="break-words text-sm font-semibold leading-snug text-[#172B2F]">
+                                                <p className="break-words text-sm font-semibold leading-snug text-ink">
                                                     {plan.name}
                                                 </p>
                                                 <p className="mt-1 break-words text-sm leading-relaxed text-[#3F5A60]">
@@ -208,18 +208,18 @@ export default function SubscribeScreen() {
                                                 </p>
                                             </div>
                                             <div className="flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3 py-2 px-1">
-                                                <span className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${isSelected
-                                                    ? "bg-[#3F6F6A] text-white"
-                                                    : "bg-[#F4F8F5] text-[#526B70]"
+                                                <span className={`rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] ${isSelected
+                                                    ? "bg-accent text-white"
+                                                    : "bg-mist text-subtle"
                                                     }`}>
                                                     {isSelected ? "Selected" : `${plan.days} days`}
                                                 </span>
                                                 <div className="shrink-0 text-right px-6">
-                                                    <p className="text-lg font-black leading-tight text-[#172B2F]">
+                                                    <p className="text-lg font-black leading-tight text-ink">
                                                         {formatETB(plan.price)}
                                                     </p>
                                                     {isSelected && (
-                                                        <p className="mt-0.5 text-xs font-semibold text-[#526B70]">
+                                                        <p className="mt-0.5 text-xs font-semibold text-subtle">
                                                             {plan.days} days
                                                         </p>
                                                     )}
@@ -245,9 +245,9 @@ export default function SubscribeScreen() {
                                 disabled={method === "cbe" && !paymentOptions.cbe}
                                 onClick={() => setPaymentMethod(method)}
                                 style={paymentMethod === method ? { backgroundColor: "#3F6F6A", border: "1px solid #3F6F6A", color: "#FFFFFF" } : undefined}
-                                className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:border-[#D5E1DD] disabled:bg-[#EEF4F1] disabled:text-[#809398] ${paymentMethod === method
-                                    ? "border-[#3F6F6A] bg-[#3F6F6A] text-white"
-                                    : "border-[rgba(23,43,47,0.10)] bg-white/80 text-[#172B2F]"
+                                className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:border-disabled disabled:bg-[#EEF4F1] disabled:text-[#809398] ${paymentMethod === method
+                                    ? "border-accent bg-accent text-white"
+                                    : "border-[rgba(23,43,47,0.10)] bg-white/80 text-ink"
                                     }`}
                             >
                                 {method === "telebirr" ? "Telebirr" : "CBE"}
@@ -270,7 +270,7 @@ export default function SubscribeScreen() {
                             maxLength={12}
                             pattern="[A-Z0-9]*"
                         />
-                        <span className="mt-2 block text-xs font-medium leading-relaxed text-[#526B70]">
+                        <span className="mt-2 block text-xs font-medium leading-relaxed text-subtle">
                             {paymentReferenceCopy.helper}
                         </span>
                         {paymentReferenceError && (
@@ -292,11 +292,6 @@ export default function SubscribeScreen() {
                     loading={requesting}
                     disabled={requestDisabled}
                     onClick={() => void handleRequest()}
-                    style={{
-                        backgroundColor: requestDisabled ? "#D5E1DD" : "#172B2F",
-                        borderColor: requestDisabled ? "#D5E1DD" : "#172B2F",
-                        color: requestDisabled ? "#344E53" : "#FFFFFF",
-                    }}
                 >
                     {requestButtonLabel}
                 </Button>

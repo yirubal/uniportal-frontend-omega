@@ -62,7 +62,7 @@ export default function ResourceViewerScreen() {
         return (
             <div className="app-screen">
                 <div className="app-scroll pt-12">
-                    <button onClick={() => navigate(-1)} className="mb-4 text-sm font-medium text-[#526B70]">
+                    <button onClick={() => navigate(-1)} className="mb-4 text-sm font-medium text-subtle">
                         Back
                     </button>
                     <ErrorState message={error ?? "Resource not found."} onRetry={detail.reload} />
@@ -82,10 +82,10 @@ export default function ResourceViewerScreen() {
                     <p className="app-section-label">
                         {formatFileType(resource.file_type)}
                     </p>
-                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-[#172B2F]">
+                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-ink">
                         {resource.title}
                     </h1>
-                    <p className="mt-2 text-sm text-[#526B70]">
+                    <p className="mt-2 text-sm text-subtle">
                         {selectedCourse?.code ? `${selectedCourse.code} · ` : ""}Updated {formatDate(resource.created_at)}
                     </p>
                     <div className="mt-3">
@@ -106,7 +106,7 @@ export default function ResourceViewerScreen() {
                         <ResourceSourceBadge source={source} source_display={sourceDisplay} />
                     </div>
 
-                    <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
+                    <p className="mt-4 text-sm leading-relaxed text-subtle">
                         {resource.description ?? "Resource details will appear here once backend content is available."}
                     </p>
 
@@ -135,12 +135,12 @@ export default function ResourceViewerScreen() {
                         </div>
                         <div>
                             <p className="app-section-label">Preview</p>
-                            <p className="mt-1 text-base font-semibold text-[#172B2F]">What this pack usually contains</p>
+                            <p className="mt-1 text-base font-semibold text-ink">What this pack usually contains</p>
                         </div>
                     </div>
 
                     <div className="mt-4 app-panel-muted rounded-[24px] p-4">
-                        <ul className="space-y-2 text-sm leading-relaxed text-[#526B70]">
+                        <ul className="space-y-2 text-sm leading-relaxed text-subtle">
                             <li>Concise topic summaries and worked examples.</li>
                             <li>Exam traps, key terms, and short revision cues.</li>
                             <li>Practice prompts aligned to the course outline.</li>
@@ -151,7 +151,7 @@ export default function ResourceViewerScreen() {
                 {downloadMessage && (
                     <div
                         role={downloadMessage.tone === "error" ? "alert" : "status"}
-                        className={`rounded-[20px] px-4 py-4 text-sm font-semibold ${downloadMessage.tone === "error" ? "bg-[#FFF0ED] text-[#B4473F]" : "bg-[rgba(230,242,237,0.96)] text-[#2E7C62]"}`}
+                        className={`rounded-[20px] px-4 py-4 text-sm font-semibold ${downloadMessage.tone === "error" ? "bg-coral-soft text-[#B4473F]" : "bg-[rgba(230,242,237,0.96)] text-[#2E7C62]"}`}
                     >
                         {downloadMessage.text}
                     </div>
@@ -173,9 +173,9 @@ export default function ResourceViewerScreen() {
                                     className="app-list-item"
                                 >
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-semibold text-[#172B2F]">{item.title}</p>
+                                        <p className="text-sm font-semibold text-ink">{item.title}</p>
                                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                                            <p className="text-xs text-[#70868B]">{formatFileType(item.file_type)}</p>
+                                            <p className="text-xs text-faint">{formatFileType(item.file_type)}</p>
                                             <ResourceSourceBadge
                                                 source={item.source ?? "other"}
                                                 source_display={item.source_display ?? "Other Resource"}
@@ -214,7 +214,7 @@ export default function ResourceViewerScreen() {
                     </div>
                 )}
                 {source !== "official" && (
-                    <p className="mt-2 text-center text-xs font-medium leading-relaxed text-[#70868B]">
+                    <p className="mt-2 text-center text-xs font-medium leading-relaxed text-faint">
                         ℹ️ {sourceDisplay} - not an official Unity University document
                     </p>
                 )}
@@ -227,7 +227,7 @@ function MetaTile({ label, value }: { label: string; value: string }) {
     return (
         <div className="app-panel-muted rounded-[20px] p-4">
             <p className="app-section-label">{label}</p>
-            <p className="mt-2 text-sm font-semibold text-[#172B2F]">{value}</p>
+            <p className="mt-2 text-sm font-semibold text-ink">{value}</p>
         </div>
     );
 }

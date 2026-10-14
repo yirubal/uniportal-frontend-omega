@@ -1,20 +1,27 @@
 import { CheckCircle2, Clock3, X, XCircle } from "lucide-react";
+import { useId, useRef } from "react";
+import { useDialogFocus } from "../../hooks/useDialogFocus";
 import type { PaymentInstructions } from "../../api/quiz";
 import Button from "../ui/Button";
 import { getPaymentInstructionSummary } from "../../utils/subscription";
 
-export default function SubscriptionStatusModal({
-    open,
-    requesting,
-    instructions,
-    onClose,
-}: {
+interface SubscriptionStatusModalProps {
     open: boolean;
     requesting: boolean;
     instructions: PaymentInstructions | null;
     onClose: () => void;
-}) {
-    if (!open) return null;
+}
+
+export default function SubscriptionStatusModal(props: SubscriptionStatusModalProps) {
+    if (!props.open) return null;
+    return <SubscriptionStatusPanel {...props} />;
+}
+
+function SubscriptionStatusPanel({ requesting, instructions, onClose }: SubscriptionStatusModalProps) {
+    const titleId = useId();
+    const panelRef = useRef<HTMLDivElement>(null);
+    // No Escape while a payment request is being submitted (the close buttons are disabled too).
+    useDialogFocus(panelRef, { onClose: requesting ? undefined : onClose });
 
     const status = requesting ? "submitting" : instructions?.status ?? "pending";
     const config = getSubscriptionStatusConfig(status);
@@ -24,13 +31,19 @@ export default function SubscriptionStatusModal({
 
     return (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(10,22,40,0.46)] px-5 pb-[calc(env(safe-area-inset-bottom)+4.5rem)] pt-8">
-            <div className="relative w-full max-w-[20rem] rounded-[24px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-4 shadow-[0_18px_44px_rgba(10,22,40,0.20)] backdrop-blur-xl">
+            <div
+                ref={panelRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={titleId}
+                aria-busy={requesting}
+                className="relative w-full max-w-[20rem] rounded-[24px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-4 shadow-[0_18px_44px_rgba(10,22,40,0.20)] backdrop-blur-xl">
                 <button
                     type="button"
                     aria-label="Close"
                     disabled={requesting}
                     onClick={onClose}
-                    className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#F4F8F5] text-[#526B70]"
+                    className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full bg-mist text-subtle"
                     style={{ backgroundColor: "#F4F8F5", color: "#526B70" }}
                 >
                     <X size={16} />
@@ -42,20 +55,20 @@ export default function SubscriptionStatusModal({
                     <Icon size={22} className={requesting ? "animate-spin" : ""} />
                 </div>
                 <p className="app-section-label mt-4 text-center">{config.label}</p>
-                <h2 className="mt-2 text-center text-lg font-bold text-[#172B2F]">{config.title}</h2>
-                <p className="mt-2 text-center text-xs font-medium leading-relaxed text-[#526B70]">
+                <h2 id={titleId} className="mt-2 text-center text-lg font-bold text-ink">{config.title}</h2>
+                <p className="mt-2 text-center text-xs font-medium leading-relaxed text-subtle">
                     {config.description}
                 </p>
                 {hasInstructionDetails && !requesting && instructions && (
-                    <div className="mt-4 rounded-[18px] border border-[#CFE2DE] bg-[#EAF4F1] px-3.5 py-3">
+                    <div className="mt-4 rounded-[18px] border border-accent-line bg-accent-soft px-3.5 py-3">
                         {instructions.reference && (
                             <>
                                 <p className="app-section-label">Reference</p>
-                                <p className="mt-1 break-words text-sm font-bold text-[#172B2F]">{instructions.reference}</p>
+                                <p className="mt-1 break-words text-sm font-bold text-ink">{instructions.reference}</p>
                             </>
                         )}
                         {summary && (
-                            <p className="mt-1 text-xs font-semibold text-[#354F55]">{summary}</p>
+                            <p className="mt-1 text-xs font-semibold text-ink-soft">{summary}</p>
                         )}
                     </div>
                 )}
@@ -66,11 +79,6 @@ export default function SubscriptionStatusModal({
                         fullWidth
                         disabled={requesting}
                         onClick={onClose}
-                        style={{
-                            backgroundColor: requesting ? "#D5E1DD" : "#172B2F",
-                            borderColor: requesting ? "#D5E1DD" : "#172B2F",
-                            color: requesting ? "#344E53" : "#FFFFFF",
-                        }}
                     >
                         {requesting ? "Submitting..." : "Done"}
                     </Button>

@@ -191,10 +191,10 @@ export default function SelectivePracticeScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={handleBack} label={selectedCourse ? "Courses" : "Hub"} />
                     <p className="app-section-label">Selective practice</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">
                         {selectedCourse ? "Choose chapters" : "Focus your practice"}
                     </h1>
-                    <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
+                    <p className="mt-2 text-sm leading-relaxed text-subtle">
                         {selectedCourse
                             ? `Build a short practice set from ${selectedCourse.name}.`
                             : "Pick a course, then choose the chapters you want to work on."}
@@ -211,15 +211,15 @@ export default function SelectivePracticeScreen() {
 
                 <div className="app-sheet p-4">
                     <div className="flex items-start gap-3">
-                        <div className="app-icon-chip bg-[#EAF4F1] text-[#3F6F6A]">
+                        <div className="app-icon-chip bg-accent-soft text-accent">
                             <Target size={18} />
                         </div>
                         <div className="min-w-0 flex-1">
                             <p className="app-section-label">Step {currentStep} of 2</p>
-                            <p className="mt-2 text-sm font-semibold text-[#172B2F]">
+                            <p className="mt-2 text-sm font-semibold text-ink">
                                 {selectedCourse ? selectedCourse.name : useTailoredStart ? selectedDepartmentName : "Custom course filter"}
                             </p>
-                            <p className="mt-1 text-sm text-[#526B70] [overflow-wrap:anywhere]">
+                            <p className="mt-1 text-sm text-subtle [overflow-wrap:anywhere]">
                                 {selectedCourse ? selectedChapterSummary : profile.profileLabel}
                             </p>
                         </div>
@@ -230,14 +230,14 @@ export default function SelectivePracticeScreen() {
                             <button
                                 type="button"
                                 onClick={() => setCustomizingProfile(true)}
-                                className="flex-1 rounded-full border border-[rgba(23,43,47,0.10)] bg-white/85 px-3.5 py-2 text-xs font-bold text-[#172B2F]"
+                                className="flex-1 rounded-full border border-[rgba(23,43,47,0.10)] bg-white/85 px-3.5 py-2 text-xs font-bold text-ink"
                             >
                                 Change filters
                             </button>
                             <button
                                 type="button"
                                 onClick={() => navigate("/onboarding")}
-                                className="flex-1 rounded-full bg-[#EAF4F1] px-3.5 py-2 text-xs font-bold text-[#234C48]"
+                                className="flex-1 rounded-full bg-accent-soft px-3.5 py-2 text-xs font-bold text-accent-deep"
                             >
                                 Edit profile
                             </button>
@@ -265,7 +265,7 @@ export default function SelectivePracticeScreen() {
                         <div className="mb-3 flex items-center justify-between gap-2">
                             <p className="app-section-label">Courses</p>
                             {canLoadCourses && (
-                                <span className="rounded-full bg-[#F4F8F5] px-2.5 py-1 text-[11px] font-bold text-[#526B70]">
+                                <span className="rounded-full bg-mist px-2.5 py-1 text-[11px] font-bold text-subtle">
                                     {getPeriodLabel(selPeriod, selProgram)}
                                 </span>
                             )}
@@ -300,18 +300,18 @@ export default function SelectivePracticeScreen() {
                                         className="app-list-item"
                                         aria-label={`Select ${course.name}`}
                                     >
-                                        <div className="app-icon-chip bg-[#EAF4F1] text-[#3F6F6A]">
+                                        <div className="app-icon-chip bg-accent-soft text-accent">
                                             <Brain size={18} />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold text-[#172B2F] [overflow-wrap:anywhere]">
+                                            <p className="text-sm font-semibold text-ink [overflow-wrap:anywhere]">
                                                 {course.name}
                                             </p>
-                                            <p className="mt-1 text-xs text-[#70868B]">
+                                            <p className="mt-1 text-xs text-faint">
                                                 {course.code} · {getProgramLabel(course.program)}
                                             </p>
                                         </div>
-                                        <span className="rounded-full bg-[#F4F8F5] px-3 py-2 text-[11px] font-bold text-[#526B70]">
+                                        <span className="rounded-full bg-mist px-3 py-2 text-[11px] font-bold text-subtle">
                                             Chapters
                                         </span>
                                     </button>
@@ -325,7 +325,7 @@ export default function SelectivePracticeScreen() {
                     <section className="mt-5">
                         <div className="mb-3 flex items-center justify-between gap-2">
                             <p className="app-section-label">Chapters</p>
-                            <span className="rounded-full bg-[#EAF4F1] px-2.5 py-1 text-[11px] font-bold text-[#3F6F6A]">
+                            <span className="rounded-full bg-accent-soft px-2.5 py-1 text-[11px] font-bold text-accent">
                                 {selectedChapters.length} selected
                             </span>
                         </div>
@@ -357,11 +357,8 @@ export default function SelectivePracticeScreen() {
                         type="button"
                         disabled={!canStart}
                         onClick={() => void handleStart()}
-                        className="inline-flex min-h-12 w-full items-center justify-center rounded-[16px] border border-[#172B2F] bg-[#172B2F] px-5 py-3.5 text-[15px] font-bold text-white shadow-[0_10px_24px_rgba(23,43,47,0.16)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:border-[#D1D5DB] disabled:bg-[#D1D5DB] disabled:text-[#4B5563] disabled:shadow-none"
+                        className="inline-flex min-h-12 w-full items-center justify-center rounded-[16px] border border-ink bg-ink px-5 py-3.5 text-[15px] font-bold text-white shadow-[0_10px_24px_rgba(23,43,47,0.16)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:border-[#D1D5DB] disabled:bg-[#D1D5DB] disabled:text-[#4B5563] disabled:shadow-none"
                         style={{
-                            backgroundColor: "#172B2F",
-                            borderColor: "#172B2F",
-                            color: "#FFFFFF",
                             opacity: canStart ? 1 : 0.62,
                             boxShadow: canStart ? "0 10px 24px rgba(23,43,47,0.16)" : "none",
                         }}

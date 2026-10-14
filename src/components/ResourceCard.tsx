@@ -49,22 +49,22 @@ export default function ResourceCard({
                         </div>
 
                         <div className="min-w-0 flex-1">
-                            <p className="line-clamp-2 text-[0.94rem] font-semibold leading-snug text-[#172B2F]">
+                            <p className="line-clamp-2 text-[0.94rem] font-semibold leading-snug text-ink">
                                 {resource.title}
                             </p>
 
                             <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
                                 <ResourceSourceBadge source={source} source_display={sourceDisplay} size="xs" />
-                                <span className="text-xs font-medium text-[#72809a]">
+                                <span className="text-xs font-medium text-faint">
                                     · {formatFileType(resource.file_type)}
                                 </span>
                             </div>
 
-                            <p className="mt-1.5 text-xs font-medium text-[#9AA6B8]">
+                            <p className="mt-1.5 text-xs font-medium text-faint">
                                 {formatDate(resource.created_at)} · {resource.downloads_count} downloads
                             </p>
                             {showCourseContext && courseCodes.length > 0 && (
-                                <p className="mt-0.5 text-xs font-medium text-[#9AA6B8]">
+                                <p className="mt-0.5 text-xs font-medium text-faint">
                                     {courseCodes.join(" · ")}
                                 </p>
                             )}
@@ -83,7 +83,7 @@ export default function ResourceCard({
                     aria-label={isLocked ? `Unlock ${resource.title}` : `Download ${resource.title}`}
                     disabled={downloading}
                     onClick={() => (isLocked ? navigate("/subscribe") : void download(resource.id))}
-                    className={`absolute bottom-[1.15rem] right-[1.125rem] flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-95 ${isLocked ? "bg-[rgba(245,229,226,0.96)] text-[#B75F57]" : "bg-[#172B2F] text-white"}`}
+                    className={`absolute bottom-[1.15rem] right-[1.125rem] flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-95 ${isLocked ? "bg-[rgba(245,229,226,0.96)] text-[#B75F57]" : "bg-ink text-white"}`}
                 >
                     {downloading ? <LoaderCircle size={18} className="animate-spin" /> : isLocked ? <Lock size={18} /> : <Download size={18} />}
                 </button>

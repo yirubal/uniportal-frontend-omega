@@ -24,19 +24,19 @@ export default function SplashScreen() {
                 </div>
 
                 <p className="app-section-label mt-6">Unity University</p>
-                <h1 className="app-title mt-2 text-[2rem] font-bold text-[#172B2F]">
+                <h1 className="app-title mt-2 text-[2rem] font-bold text-ink">
                     Student Portal
                 </h1>
-                <p className="mt-3 text-sm leading-relaxed text-[#526B70]">
+                <p className="mt-3 text-sm leading-relaxed text-subtle">
                     A cleaner study hub for lecture resources, exam practice, and academic progress inside Telegram.
                 </p>
 
                 {!isLoading && error ? (
                     <div className="mt-8">
-                        <p className="text-sm leading-relaxed text-[#D95A50]">{error}</p>
+                        <p className="text-sm leading-relaxed text-danger">{error}</p>
                         <button
                             onClick={() => void initAuth()}
-                            className="mt-5 inline-flex rounded-[18px] bg-[#172B2F] px-5 py-3 text-sm font-semibold text-white"
+                            className="mt-5 inline-flex rounded-[18px] bg-ink px-5 py-3 text-sm font-semibold text-white"
                         >
                             Try again
                         </button>
@@ -46,7 +46,7 @@ export default function SplashScreen() {
                         {[0, 1, 2].map((i) => (
                             <span
                                 key={i}
-                                className="inline-block h-2.5 w-2.5 rounded-full bg-[#3F6F6A]"
+                                className="inline-block h-2.5 w-2.5 rounded-full bg-accent"
                                 style={{
                                     animation: "pulse 1.15s ease-in-out infinite",
                                     animationDelay: `${i * 0.18}s`,

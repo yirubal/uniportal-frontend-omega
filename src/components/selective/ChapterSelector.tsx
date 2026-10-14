@@ -21,7 +21,7 @@ export default function ChapterSelector({
                 <p className="min-w-0 text-[15px] font-medium leading-[1.5] text-[#1F2937]">
                     Select one or more chapters to practice.
                 </p>
-                <span className="shrink-0 rounded-[8px] bg-[#EAF4F1] px-3 py-2 text-[13px] font-bold text-[#234C48]">
+                <span className="shrink-0 rounded-[8px] bg-accent-soft px-3 py-2 text-[13px] font-bold text-accent-deep">
                     {selectedChapters.length || "Tap"} selected
                 </span>
             </div>
@@ -40,7 +40,7 @@ export default function ChapterSelector({
                             aria-label={`${chapterDisplay}: ${chapter.title}, ${selected ? "selected" : "not selected"}`}
                             className={`flex min-h-[8.75rem] min-w-0 max-w-full flex-col items-stretch gap-3 overflow-visible rounded-[16px] border-2 p-4 text-left transition-all duration-150 active:scale-[0.985] ${
                                 selected
-                                    ? "border-[#172B2F] bg-[#172B2F] text-white shadow-[0_10px_24px_rgba(23,43,47,0.20)]"
+                                    ? "border-ink bg-ink text-white shadow-[0_10px_24px_rgba(23,43,47,0.20)]"
                                     : "border-[#E0E0E0] bg-white text-[#1F2937] shadow-[0_8px_18px_rgba(23,43,47,0.04)]"
                             }`}
                             style={{
@@ -87,7 +87,7 @@ export default function ChapterSelector({
                                     {chapterDisplay}
                                 </p>
                                 <p className={`mt-2 text-xs font-semibold ${
-                                    selected ? "text-white/75" : "text-[#70868B]"
+                                    selected ? "text-white/75" : "text-faint"
                                 }`}>
                                     {chapter.question_count > 0
                                         ? `${chapter.question_count} questions`
@@ -103,7 +103,7 @@ export default function ChapterSelector({
                 <div className="rounded-[16px] border border-[#E0E0E0] bg-[#F9FAFB] px-4 py-3">
                     <div className="h-2 overflow-hidden rounded-full bg-[#E5E7EB]">
                         <div
-                            className="h-full rounded-full bg-[#0A1628] transition-[width] duration-200"
+                            className="h-full rounded-full bg-navy transition-[width] duration-200"
                             style={{ width: `${selectedPercent}%` }}
                         />
                     </div>

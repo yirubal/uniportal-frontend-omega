@@ -1,3 +1,5 @@
+import { useId, useRef } from "react";
+import { useDialogFocus } from "../hooks/useDialogFocus";
 import Button from "./ui/Button";
 
 interface ConfirmDialogProps {
@@ -10,8 +12,12 @@ interface ConfirmDialogProps {
     onCancel: () => void;
 }
 
-export default function ConfirmDialog({
-    open,
+export default function ConfirmDialog(props: ConfirmDialogProps) {
+    if (!props.open) return null;
+    return <ConfirmDialogPanel {...props} />;
+}
+
+function ConfirmDialogPanel({
     title,
     description,
     confirmLabel = "Leave",
@@ -19,14 +25,26 @@ export default function ConfirmDialog({
     onConfirm,
     onCancel,
 }: ConfirmDialogProps) {
-    if (!open) return null;
+    const titleId = useId();
+    const descriptionId = useId();
+    const panelRef = useRef<HTMLDivElement>(null);
+    const cancelRef = useRef<HTMLButtonElement>(null);
+    // Focus starts on the safe choice, and Escape means "cancel".
+    useDialogFocus(panelRef, { onClose: onCancel, initialFocusRef: cancelRef });
 
     return (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgba(10,22,40,0.46)] p-4 sm:items-center">
-            <div className="w-full max-w-md rounded-[28px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-5 shadow-[0_24px_60px_rgba(10,22,40,0.22)] backdrop-blur-xl">
+            <div
+                ref={panelRef}
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby={titleId}
+                aria-describedby={descriptionId}
+                className="w-full max-w-md rounded-[28px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-5 shadow-[0_24px_60px_rgba(10,22,40,0.22)] backdrop-blur-xl"
+            >
                 <p className="app-section-label">Confirm action</p>
-                <h2 className="mt-2 text-xl font-bold text-[#172B2F]">{title}</h2>
-                <p className="mt-3 text-sm leading-relaxed text-[#526B70]">
+                <h2 id={titleId} className="mt-2 text-xl font-bold text-ink">{title}</h2>
+                <p id={descriptionId} className="mt-3 text-sm leading-relaxed text-subtle">
                     {description}
                 </p>
 
@@ -35,16 +53,11 @@ export default function ConfirmDialog({
                         variant="primary"
                         size="lg"
                         fullWidth
-                        style={{
-                            backgroundColor: "#172B2F",
-                            color: "#FFFFFF",
-                            borderColor: "#172B2F",
-                        }}
                         onClick={onConfirm}
                     >
                         {confirmLabel}
                     </Button>
-                    <Button variant="ghost" size="md" fullWidth onClick={onCancel}>
+                    <Button ref={cancelRef} variant="ghost" size="md" fullWidth onClick={onCancel}>
                         {cancelLabel}
                     </Button>
                 </div>

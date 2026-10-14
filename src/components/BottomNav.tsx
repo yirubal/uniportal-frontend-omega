@@ -30,6 +30,7 @@ export default function BottomNav() {
                         <button
                             type="button"
                             key={tab.path}
+                            aria-current={isActive(tab.path) ? "page" : undefined}
                             onClick={() => {
                                 if (supportsHaptics) {
                                     WebApp.HapticFeedback.selectionChanged();
@@ -40,7 +41,7 @@ export default function BottomNav() {
                 nav-tab relative flex min-w-0 flex-1 appearance-none flex-col items-center justify-center
               gap-1.5 rounded-[22px] px-2 py-4 h-14
               ${isActive(tab.path)
-                                    ? "bg-[rgba(255,255,255,0.96)] text-[#172B2F] border border-[rgba(23,43,47,0.1)] shadow-[0_10px_22px_rgba(23,43,47,0.08)]"
+                                    ? "bg-[rgba(255,255,255,0.96)] text-ink border border-[rgba(23,43,47,0.1)] shadow-[0_10px_22px_rgba(23,43,47,0.08)]"
                                     : "bg-transparent text-[#6F7D96]"
                                 }
             `}
@@ -48,14 +49,14 @@ export default function BottomNav() {
                             <span
                                 className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors duration-200 ${isActive(tab.path)
                                     ? "bg-[#27565A] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
-                                    : "bg-[rgba(233,239,247,0.88)] text-[#60728F]"
+                                    : "bg-[rgba(233,239,247,0.88)] text-steel"
                                     }`}
                             >
                                 <Icon size={17} strokeWidth={2.25} />
                             </span>
                             <span
-                                className={`text-[10px] leading-none
-                ${isActive(tab.path) ? "font-bold text-[#172B2F]" : "font-medium"}`}
+                                className={`text-[11px] leading-none
+                ${isActive(tab.path) ? "font-bold text-ink" : "font-medium"}`}
                             >
                                 {tab.label}
                             </span>

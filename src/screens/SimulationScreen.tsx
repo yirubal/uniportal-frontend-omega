@@ -211,8 +211,8 @@ export default function SimulationScreen() {
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate(backTarget)} label="Back" />
                         <p className="app-section-label">{exitExamMeta?.badgeLabel ?? "Simulation"}</p>
-                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">{exam?.title}</h1>
-                        <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">{exam?.title}</h1>
+                        <p className="mt-2 text-sm leading-relaxed text-subtle">
                             Timed mode with clear pacing, compact instructions, and minimal clutter.
                         </p>
                     </div>
@@ -226,17 +226,17 @@ export default function SimulationScreen() {
 
                     <div className="app-sheet p-5">
                         <p className="app-section-label">Rules</p>
-                        <ul className="mt-4 space-y-2 text-sm leading-relaxed text-[#526B70]">
+                        <ul className="mt-4 space-y-2 text-sm leading-relaxed text-subtle">
                             <li>Answers stay hidden until the attempt is submitted.</li>
                             <li>The timer starts only after you tap the start button below.</li>
                             <li>Unanswered questions lower the final auto-graded score.</li>
                         </ul>
 
-                        <div className="mt-4 rounded-[20px] bg-[#F4F8F5] px-4 py-3">
-                            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#70868B]">
+                        <div className="mt-4 rounded-[20px] bg-mist px-4 py-3">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">
                                 Before you start
                             </p>
-                            <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
+                            <p className="mt-2 text-sm leading-relaxed text-subtle">
                                 Read the rules first, then tap start. The countdown bar and timer chip begin immediately after that.
                             </p>
                         </div>
@@ -245,12 +245,7 @@ export default function SimulationScreen() {
                             type="button"
                             onClick={() => void handleStart()}
                             disabled={starting}
-                            className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-[20px] bg-[#172B2F] px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(23,43,47,0.18)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60"
-                            style={{
-                                backgroundColor: "#172B2F",
-                                color: "#FFFFFF",
-                                border: "1px solid #172B2F",
-                            }}
+                            className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-[20px] border border-ink bg-ink px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(23,43,47,0.18)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {starting ? "Starting..." : startLabel}
                         </button>
@@ -295,20 +290,19 @@ export default function SimulationScreen() {
                     totalQuestions={quiz.questions.length}
                     selectedAnswer={quiz.selectedAnswer}
                     onSelect={quiz.setAnswer}
-                    simulationMode
                     showQuestionType={false}
                 />
 
                 {showNavigator && (
                     <div className="mt-4 app-sheet p-4">
                         <div className="flex flex-wrap gap-2">
-                            <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[11px] font-bold text-[#3F6F6A]">
+                            <span className="rounded-full bg-accent-soft px-3 py-1.5 text-[11px] font-bold text-accent">
                                 {answeredCount} answered
                             </span>
-                            <span className="rounded-full bg-[#FFF6DF] px-3 py-1.5 text-[11px] font-bold text-[#B27614]">
+                            <span className="rounded-full bg-gold-tint px-3 py-1.5 text-[11px] font-bold text-gold-ink">
                                 {reviewCount} review
                             </span>
-                            <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
+                            <span className="rounded-full bg-mist px-3 py-1.5 text-[11px] font-semibold text-steel">
                                 {unansweredCount} unanswered
                             </span>
                         </div>
@@ -320,17 +314,19 @@ export default function SimulationScreen() {
                                 const isMarked = Boolean(quiz.markedForReview[question.id]);
 
                                 const paletteClass = isCurrent
-                                    ? "bg-[#172B2F] text-white"
+                                    ? "bg-ink text-white"
                                     : isMarked
-                                        ? "bg-[#FFF6DF] text-[#8E5A00] border border-[#F1C364]"
+                                        ? "bg-gold-tint text-[#8E5A00] border border-[#F1C364]"
                                         : isAnswered
-                                            ? "bg-[#EAF4F1] text-[#3F6F6A]"
-                                            : "bg-[#F4F8F5] text-[#60728F]";
+                                            ? "bg-accent-soft text-accent"
+                                            : "bg-mist text-steel";
 
                                 return (
                                     <button
                                         type="button"
                                         key={question.id}
+                                        aria-current={isCurrent ? "step" : undefined}
+                                        aria-label={`Question ${index + 1}, ${isMarked ? "marked for review" : isAnswered ? "answered" : "not answered"}`}
                                         onClick={() => {
                                             quiz.jumpToQuestion(index);
                                             setShowNavigator(false);
@@ -348,7 +344,7 @@ export default function SimulationScreen() {
 
             <div className="app-footer space-y-3">
                 {(submitError || timeExpired) && (
-                    <div role="alert" className="rounded-[16px] border border-[#F3C9C3] bg-[#FFF0ED] px-4 py-3 text-sm leading-relaxed text-[#A8443A]">
+                    <div role="alert" className="rounded-[16px] border border-[#F3C9C3] bg-coral-soft px-4 py-3 text-sm leading-relaxed text-[#A8443A]">
                         {timeExpired && <p className="font-semibold">Time is up.</p>}
                         <p>
                             {submitError
@@ -374,11 +370,6 @@ export default function SimulationScreen() {
                     size="lg"
                     fullWidth
                     disabled={submitting}
-                    style={{
-                        backgroundColor: "#172B2F",
-                        color: "#FFFFFF",
-                        borderColor: "#172B2F",
-                    }}
                     onClick={() => {
                         if (isLast || timeExpired) {
                             void handleSubmit();
@@ -440,7 +431,7 @@ function InfoTile({ label, value }: { label: string; value: string | number }) {
     return (
         <div className="app-sheet p-4">
             <p className="app-section-label">{label}</p>
-            <p className="mt-2 text-lg font-black text-[#172B2F]">{value}</p>
+            <p className="mt-2 text-lg font-black text-ink">{value}</p>
         </div>
     );
 }

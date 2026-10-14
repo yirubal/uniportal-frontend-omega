@@ -104,10 +104,10 @@ export default function ResourcesScreen() {
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate("/home")} label="Home" />
                         <p className="app-section-label">Resource library</p>
-                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">
                             {useTailoredStart ? "Your course shelf" : "Choose a course shelf"}
                         </h1>
-                        <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
+                        <p className="mt-2 max-w-sm text-sm leading-relaxed text-subtle">
                             {useTailoredStart
                                 ? "Resources are loaded from the profile you saved during setup."
                                 : "Start with department, program, year, period, and course so the library stays compact and useful."}
@@ -118,17 +118,17 @@ export default function ResourcesScreen() {
                 <div className="app-scroll app-scroll-compact space-y-5">
                     <div className="app-sheet p-5">
                         <div className="flex items-start gap-3">
-                            <div className="rounded-[18px] bg-[#EAF4F1] p-3 text-[#3F6F6A]">
+                            <div className="rounded-[18px] bg-accent-soft p-3 text-accent">
                                 <Sparkles size={18} />
                             </div>
                             <div>
                                 <p className="app-section-label">
                                     {useTailoredStart ? "Saved profile" : "Smart start"}
                                 </p>
-                                <p className="mt-2 text-base font-semibold text-[#172B2F]">
+                                <p className="mt-2 text-base font-semibold text-ink">
                                     {useTailoredStart ? selectedDepartmentName : "Start with the right course context"}
                                 </p>
-                                <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
+                                <p className="mt-1 text-sm leading-relaxed text-subtle">
                                     {useTailoredStart
                                         ? profile.profileLabel
                                         : "This keeps management case notes, accounting worksheets, and future computing resources separated cleanly."}
@@ -140,14 +140,14 @@ export default function ResourcesScreen() {
                                 <button
                                     type="button"
                                     onClick={() => setCustomizingProfile(true)}
-                                    className="flex-1 rounded-full border border-[rgba(23,43,47,0.10)] bg-white/85 px-3.5 py-2 text-xs font-bold text-[#172B2F]"
+                                    className="flex-1 rounded-full border border-[rgba(23,43,47,0.10)] bg-white/85 px-3.5 py-2 text-xs font-bold text-ink"
                                 >
                                     Change filters
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => navigate("/onboarding")}
-                                    className="flex-1 rounded-full bg-[#EAF4F1] px-3.5 py-2 text-xs font-bold text-[#234C48]"
+                                    className="flex-1 rounded-full bg-accent-soft px-3.5 py-2 text-xs font-bold text-accent-deep"
                                 >
                                     Edit profile
                                 </button>
@@ -178,7 +178,7 @@ export default function ResourcesScreen() {
                                 <div className="mb-3 flex items-center justify-between gap-2">
                                     <p className="app-section-label">Program</p>
                                     {selProgram && (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF6DF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#B27614]">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-gold-tint px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-gold-ink">
                                             <Check size={12} />
                                             {getProgramLabel(selProgram)}
                                         </span>
@@ -190,9 +190,9 @@ export default function ResourcesScreen() {
                                             type="button"
                                             key={program.value}
                                             onClick={() => setSelProgram(program.value)}
-                                            className={`app-sheet flex min-h-[5rem] flex-1 items-center justify-center rounded-[20px] px-4 py-3 text-center ${selProgram === program.value ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                            className={`app-sheet flex min-h-[5rem] flex-1 items-center justify-center rounded-[20px] px-4 py-3 text-center ${selProgram === program.value ? "ring-2 ring-accent/20" : ""}`}
                                         >
-                                            <p className="text-sm font-bold text-[#172B2F]">{program.label}</p>
+                                            <p className="text-sm font-bold text-ink">{program.label}</p>
                                         </button>
                                     ))}
                                 </div>
@@ -202,7 +202,7 @@ export default function ResourcesScreen() {
                                 <div className="mb-3 flex items-center justify-between gap-2">
                                     <p className="app-section-label">Year</p>
                                     {selYear && (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF4F1] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#3F6F6A]">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-accent">
                                             <Check size={12} />
                                             Year {selYear}
                                         </span>
@@ -214,10 +214,10 @@ export default function ResourcesScreen() {
                                             type="button"
                                             key={year}
                                             onClick={() => setSelYear(year)}
-                                            className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selYear === year ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                            className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selYear === year ? "ring-2 ring-accent/20" : ""}`}
                                         >
-                                            <p className="app-title text-[1.8rem] font-bold text-[#172B2F]">{year}</p>
-                                            <p className="mt-1 text-sm text-[#526B70]">
+                                            <p className="app-title text-[1.8rem] font-bold text-ink">{year}</p>
+                                            <p className="mt-1 text-sm text-subtle">
                                                 {selYear === year ? "Selected" : `Year ${year}`}
                                             </p>
                                         </button>
@@ -229,7 +229,7 @@ export default function ResourcesScreen() {
                                 <div className="mb-3 flex items-center justify-between gap-2">
                                     <p className="app-section-label">Period</p>
                                     {selPeriod && (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF8F1] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2E9E73]">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-success-tint px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-success-ink">
                                             <Check size={12} />
                                             {getPeriodLabel(selPeriod, selProgram)}
                                         </span>
@@ -241,10 +241,10 @@ export default function ResourcesScreen() {
                                             type="button"
                                             key={period.value}
                                             onClick={() => setSelPeriod(period.value)}
-                                            className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selPeriod === period.value ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                            className={`app-sheet flex min-h-[6.5rem] flex-col items-center justify-center rounded-[20px] px-4 py-3 text-center ${selPeriod === period.value ? "ring-2 ring-accent/20" : ""}`}
                                         >
-                                            <p className="app-title text-[1.3rem] font-bold text-[#172B2F]">{period.label}</p>
-                                            <p className="mt-1 text-sm text-[#526B70]">
+                                            <p className="app-title text-[1.3rem] font-bold text-ink">{period.label}</p>
+                                            <p className="mt-1 text-sm text-subtle">
                                                 {selPeriod === period.value ? "Selected" : period.label}
                                             </p>
                                         </button>
@@ -259,7 +259,7 @@ export default function ResourcesScreen() {
                             <div className="mb-3 flex items-center justify-between gap-2">
                                 <p className="app-section-label">Courses</p>
                                 {canLoadCourseShelf && (
-                                    <span className="rounded-full bg-[#F4F8F5] px-2.5 py-1 text-[11px] font-bold text-[#526B70]">
+                                    <span className="rounded-full bg-mist px-2.5 py-1 text-[11px] font-bold text-subtle">
                                         {getPeriodLabel(selPeriod, selProgram)}
                                     </span>
                                 )}
@@ -296,12 +296,12 @@ export default function ResourcesScreen() {
                                             className="app-panel flex min-h-[5rem] w-full items-center justify-between gap-3 overflow-hidden rounded-[16px] px-5 py-3 text-left transition-transform duration-200 active:scale-[0.985]"
                                         >
                                             <div className="min-w-0 flex-1 pr-3">
-                                                <p className="text-base font-semibold text-[#172B2F]">{course.name}</p>
-                                                <p className="mt-1 text-sm text-[#70868B]">
+                                                <p className="text-base font-semibold text-ink">{course.name}</p>
+                                                <p className="mt-1 text-sm text-faint">
                                                     {course.code} · {getProgramLabel(selProgram)} · {getPeriodLabel(selPeriod, selProgram)}
                                                 </p>
                                             </div>
-                                            <div className="rounded-full bg-[#172B2F] px-3 py-2 text-xs font-bold text-white">
+                                            <div className="rounded-full bg-ink px-3 py-2 text-xs font-bold text-white">
                                                 Open
                                             </div>
                                         </button>
@@ -312,7 +312,7 @@ export default function ResourcesScreen() {
                     )}
 
                     {filter.coursesError && <ErrorState message={filter.coursesError} onRetry={filter.reloadCourses} />}
-                    {error && <p className="text-center text-sm text-[#D95A50]">{error}</p>}
+                    {error && <p className="text-center text-sm text-danger">{error}</p>}
                 </div>
             </div>
         );

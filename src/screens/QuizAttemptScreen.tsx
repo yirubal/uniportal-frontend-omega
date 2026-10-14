@@ -149,7 +149,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                             label={selectiveMode ? "Chapters" : quiz.practiceContentType === "past_exam" ? "Past exams" : "Quiz list"}
                         />
                         <p className="app-section-label">{selectiveMode ? "Selective practice" : meta.sectionLabel}</p>
-                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">
                             Unable to start {selectiveMode ? "selective practice" : quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}
                         </h1>
                     </div>
@@ -178,7 +178,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                         onClick={() => setShowLeaveModal(true)}
                         label="Leave"
                         trailing={(
-                            <span className="rounded-full bg-[#172B2F] px-3 py-2 text-xs font-bold text-white">
+                            <span className="rounded-full bg-ink px-3 py-2 text-xs font-bold text-white">
                                 {quiz.currentIndex + 1}/{quiz.questions.length}
                             </span>
                         )}
@@ -188,14 +188,14 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                         <div className="flex items-center justify-between gap-3">
                             <div>
                                 <p className="app-section-label">{selectiveMode ? "Selective practice" : meta.attemptLabel}</p>
-                                <p className="mt-2 text-sm font-semibold text-[#172B2F]">
+                                <p className="mt-2 text-sm font-semibold text-ink">
                                     {selectiveMode ? quiz.courseName ?? "Selective Practice" : quiz.selectedQuizTitle ?? meta.attemptFallbackTitle}
                                 </p>
                                 <div className="mt-3 flex flex-wrap gap-2">
-                                    <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#3F6F6A]">
+                                    <span className="rounded-full bg-accent-soft px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
                                         {answeredCount}/{quiz.questions.length} answered
                                     </span>
-                                    <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
+                                    <span className="rounded-full bg-mist px-3 py-1.5 text-[11px] font-semibold text-steel">
                                         {selectiveMode
                                             ? `${quiz.selectedTopics.length} chapters`
                                             : quiz.practiceContentType === "past_exam"
@@ -204,7 +204,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                                     </span>
                                 </div>
                             </div>
-                            <div className={`app-icon-chip ${quiz.practiceContentType === "past_exam" ? "bg-[#FFF6DF] text-[#B27614]" : "bg-[#EAF4F1] text-[#3F6F6A]"}`}>
+                            <div className={`app-icon-chip ${quiz.practiceContentType === "past_exam" ? "bg-gold-tint text-gold-ink" : "bg-accent-soft text-accent"}`}>
                                 {quiz.practiceContentType === "past_exam" ? <FileText size={18} /> : <Brain size={18} />}
                             </div>
                         </div>
@@ -225,7 +225,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
 
             <div className="app-footer space-y-3">
                 {submitError && (
-                    <div role="alert" className="rounded-[16px] border border-[#F3C9C3] bg-[#FFF0ED] px-4 py-3 text-sm leading-relaxed text-[#A8443A]">
+                    <div role="alert" className="rounded-[16px] border border-[#F3C9C3] bg-coral-soft px-4 py-3 text-sm leading-relaxed text-[#A8443A]">
                         Your answers were not submitted: {submitError} Tap submit to try again.
                     </div>
                 )}
@@ -234,11 +234,6 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                     size="lg"
                     fullWidth
                     disabled={(!currentQuestionAnswered && !(isLast && submitError)) || autoAdvancing || submitting}
-                    style={{
-                        backgroundColor: "#172B2F",
-                        color: "#FFFFFF",
-                        borderColor: "#172B2F",
-                    }}
                     onClick={() => {
                         if (currentQuestion.question_type === "matching" && !Object.prototype.hasOwnProperty.call(quiz.answers, currentQuestion.id)) {
                             quiz.setAnswer("");

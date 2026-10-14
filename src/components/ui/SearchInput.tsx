@@ -10,7 +10,7 @@ interface SearchInputProps {
 export default function SearchInput({ value, onChange, placeholder }: SearchInputProps) {
     return (
         <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#70868B]" size={16} aria-hidden="true" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-faint" size={16} aria-hidden="true" />
             <input
                 type="text"
                 aria-label={placeholder}

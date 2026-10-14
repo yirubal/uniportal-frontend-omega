@@ -148,25 +148,25 @@ These are bugs students hit, or that give them wrong information.
 
 ## Phase 7 — Design system & accessibility
 
-- [ ] 🟠 **Use the theme tokens.** `@theme` defines the palette, yet the code has about 720 hardcoded hex values and almost no token classes. Move to `bg-ink`, `text-text-secondary` and similar. ChannelGateScreen is almost entirely inline styles with JS press handlers.
-- [ ] 🟠 **Remove the inline button style overrides.** _Root cause found and fixed during the Phase 6 smoke test: an unlayered `button { background: none; border: none; padding: 0 }` reset in `index.css` beat every Tailwind utility, so no button's `bg-*`, `border` or padding classes applied. It now lives in `@layer base`._ The inline `style={{ backgroundColor: "#172B2F" }}` workarounds can go. Originally: add a `dark` Button variant to replace the repeated inline `style={{ backgroundColor: "#172B2F" }}` overrides (Results, ConfirmDialog, QuizAttempt, Simulation, ExamSchedule, Subscribe, Subscription, Home, LockedOverlay). Align `QuestionCard.getOptionStyle` with the palette and remove its dead ternary.
-- [ ] 🟠 **Create one accessible `Dialog` component**:
+- [x] 🟠 **Use the theme tokens.** _Done: 13 palette tokens added with the exact existing values and 488 class usages migrated. Screenshots of 16 screens were pixel-identical before and after. About 110 one-off colours remain as arbitrary values. ChannelGate now uses classes._ `@theme` defines the palette, yet the code has about 720 hardcoded hex values and almost no token classes. Move to `bg-ink`, `text-text-secondary` and similar. ChannelGateScreen is almost entirely inline styles with JS press handlers.
+- [x] 🟠 **Remove the inline button style overrides.** _Root cause found and fixed during the Phase 6 smoke test: an unlayered `button { background: none; border: none; padding: 0 }` reset in `index.css` beat every Tailwind utility, so no button's `bg-*`, `border` or padding classes applied. It now lives in `@layer base`._ The inline `style={{ backgroundColor: "#172B2F" }}` workarounds can go. Originally: add a `dark` Button variant to replace the repeated inline `style={{ backgroundColor: "#172B2F" }}` overrides (Results, ConfirmDialog, QuizAttempt, Simulation, ExamSchedule, Subscribe, Subscription, Home, LockedOverlay). Align `QuestionCard.getOptionStyle` with the palette and remove its dead ternary.
+- [x] 🟠 **Create one accessible `Dialog` component**:
   - `role="dialog"`, `aria-modal` and `aria-labelledby`
   - initial focus, a focus trap, Escape to close and focus return
 
   Use it for ConfirmDialog, the Subscribe status modal and AnswerReviewModal. The review modal's global key handler also blocks ArrowUp/Down scrolling.
-- [ ] 🟠 **Focus and contrast.**
+- [x] 🟠 **Focus and contrast.**
   - Add a global `:focus-visible` ring; `.nav-tab` and TopBackButton remove the outline.
   - Fix colors that fail WCAG AA: `#9AA6B8` and `#8B9CA0` on white.
   - Raise text at 9–10px (badges, BottomNav) to at least 11–12px.
-- [ ] 🟢 **Semantics.**
+- [x] 🟢 **Semantics.**
   - `aria-current` on BottomNav and the question navigator
   - `role="radio"` and `aria-checked` on MCQ options
   - labels for the fill-blank and essay inputs, and a `<label>` for the department select
   - `role="timer"` with a low-time announcement
   - a text alternative for the Performance chart bars
   - render the ChannelGate toast only while it is shown (now an always-present `role="status"`)
-- [ ] 🟢 **`index.html` and fonts.**
+- [ ] 🟢 **`index.html` and fonts.** _Title, description, icon, `theme-color` and `viewport-fit=cover` are done. Still open: whether to load Plus Jakarta Sans and Sora (they change all typography, so this needs a decision)._
   - Load Plus Jakarta Sans and Sora; they are declared but never loaded.
   - Set a real `<title>` and favicon.
   - Add `theme-color` and `viewport-fit=cover`, since the CSS uses safe-area insets.

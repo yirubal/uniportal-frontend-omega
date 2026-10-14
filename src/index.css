@@ -19,7 +19,7 @@
     --color-border: rgba(23, 43, 47, 0.1);
     --color-text-primary: #172b2f;
     --color-text-secondary: #526b70;
-    --color-text-muted: #70868b;
+    --color-text-muted: #5e7479;
     --color-success: #3c8f71;
     --color-success-light: #edf8f3;
     --color-error: #c86056;
@@ -28,6 +28,22 @@
     --color-warning-light: #fff5de;
     --color-purple: #7654d6;
     --color-purple-light: #f1edff;
+
+    /* App palette as used across screens: prefer these over hardcoded hex in classes. */
+    --color-subtle: #526b70;
+    /* Muted text: #5e7479 keeps 4.9:1 on white (WCAG AA); the old #70868b was 3.8:1. */
+    --color-faint: #5e7479;
+    --color-accent-line: #cfe2de;
+    --color-accent-deep: #234c48;
+    --color-mist: #f4f8f5;
+    --color-gold-tint: #fff6df;
+    --color-gold-ink: #b27614;
+    --color-danger: #d95a50;
+    --color-success-ink: #2e9e73;
+    --color-success-tint: #eaf8f1;
+    --color-steel: #60728f;
+    --color-navy: #0a1628;
+    --color-disabled: #d5e1dd;
 
     --radius-sm: 10px;
     --radius-md: 16px;
@@ -550,4 +566,12 @@ img {
 .app-card-interactive:active {
     transform: scale(0.985);
     color: inherit;
+}
+
+/* Keyboard focus ring: only on :focus-visible, so taps don't show it. Unlayered and last so component
+   rules that remove outlines (e.g. .nav-tab, focus:outline-none) can't hide it. Inputs keep their own
+   focus border because :focus-visible also matches when an input is tapped. */
+:is(a, button, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }

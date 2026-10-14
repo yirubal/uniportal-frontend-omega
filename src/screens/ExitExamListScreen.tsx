@@ -72,10 +72,10 @@ export default function ExitExamListScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/exit-exam")} label="Exams" />
                     <p className="app-section-label">Exit exams</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">
                         {meta.title}
                     </h1>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-subtle">
                         {profile.hasCompleteProfile
                             ? `${meta.description} Showing papers from your saved ${profile.profileLabel.toLowerCase()} profile.`
                             : meta.description}
@@ -104,7 +104,7 @@ export default function ExitExamListScreen() {
                                 <p className="app-section-label">Topic clusters</p>
                                 <div className="mt-4 flex flex-wrap gap-2">
                                     {topics.map((topic) => (
-                                        <span key={topic.topic} className="rounded-full bg-[#EAF4F1] px-3 py-2 text-[12px] font-semibold text-[#4D6691]">
+                                        <span key={topic.topic} className="rounded-full bg-accent-soft px-3 py-2 text-[12px] font-semibold text-[#4D6691]">
                                             {topic.topic} · {topic.count}
                                         </span>
                                     ))}
@@ -127,21 +127,21 @@ export default function ExitExamListScreen() {
                                     }}
                                     className="app-list-item"
                                 >
-                                    <div className="app-icon-chip bg-[#EAF8F1] text-[#2E9E73]">
+                                    <div className="app-icon-chip bg-success-tint text-success-ink">
                                         <FileCheck2 size={18} />
                                     </div>
 
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <span className="rounded-full bg-[#EAF8F1] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#2E9E73]">
+                                            <span className="rounded-full bg-success-tint px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-success-ink">
                                                 {meta.badgeLabel}
                                             </span>
-                                            <span className="rounded-full bg-[#FFF6DF] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B27614]">
+                                            <span className="rounded-full bg-gold-tint px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-gold-ink">
                                                 {exam.year}
                                             </span>
                                         </div>
-                                        <p className="mt-3 text-sm font-semibold leading-snug text-[#172B2F]">{exam.title}</p>
-                                        <div className="mt-2 flex flex-wrap gap-3 text-xs font-medium text-[#70868B]">
+                                        <p className="mt-3 text-sm font-semibold leading-snug text-ink">{exam.title}</p>
+                                        <div className="mt-2 flex flex-wrap gap-3 text-xs font-medium text-faint">
                                             <span>{exam.total_questions} questions</span>
                                             <span>{formatDuration(exam.duration_minutes)}</span>
                                             <span>Timed simulation</span>
@@ -149,10 +149,10 @@ export default function ExitExamListScreen() {
                                     </div>
 
                                     <div className="flex flex-col items-end gap-2">
-                                        <span className="rounded-full bg-[#172B2F] px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                                        <span className="rounded-full bg-ink px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white">
                                             Rules
                                         </span>
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F4F8F5] text-[#172B2F]">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-mist text-ink">
                                             <TimerReset size={18} />
                                         </div>
                                     </div>

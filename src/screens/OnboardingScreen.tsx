@@ -131,15 +131,15 @@ export default function OnboardingScreen() {
         return (
             <div className="app-screen items-center justify-center px-5">
                 <div className="absolute inset-0 bg-[rgba(8,18,34,0.62)] backdrop-blur-sm" />
-                <div className="relative z-10 w-full max-w-sm rounded-[32px] border border-[rgba(23,43,47,0.08)] bg-[#FFFFFF] px-6 py-8 text-center shadow-[0_28px_70px_rgba(10,22,40,0.28)] animate-scale-in">
-                    <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-[#EAF8F1] text-[#2E9E73] shadow-[0_10px_28px_rgba(46,158,115,0.16)]">
+                <div className="relative z-10 w-full max-w-sm rounded-[32px] border border-[rgba(23,43,47,0.08)] bg-white px-6 py-8 text-center shadow-[0_28px_70px_rgba(10,22,40,0.28)] animate-scale-in">
+                    <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-success-tint text-success-ink shadow-[0_10px_28px_rgba(46,158,115,0.16)]">
                         <CheckCircle2 size={34} />
                     </div>
                     <p className="app-section-label mt-5 text-[#4E5F7C]">Setup complete</p>
-                    <h1 className="mt-2 text-[1.7rem] font-bold text-[#172B2F]">
+                    <h1 className="mt-2 text-[1.7rem] font-bold text-ink">
                         Your study path is ready
                     </h1>
-                    <p className="mt-3 text-sm leading-relaxed text-[#526B70]">
+                    <p className="mt-3 text-sm leading-relaxed text-subtle">
                         Department, program, year, and period were saved successfully. The app can now load the right courses for you.
                     </p>
                     <Button
@@ -177,10 +177,10 @@ export default function OnboardingScreen() {
                         label={step > 0 ? "Previous" : "Back"}
                     />
                     <p className="app-section-label">Student setup</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">
                         Personalize your study path
                     </h1>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-subtle">
                         Four quick choices so the mini app stays focused on the right courses.
                     </p>
                 </div>
@@ -194,10 +194,10 @@ export default function OnboardingScreen() {
                         </div>
                         <div className="min-w-0 flex-1">
                             <p className="app-section-label">Step {step + 1} of 4</p>
-                            <p className="mt-2 text-base font-semibold text-[#172B2F]">
+                            <p className="mt-2 text-base font-semibold text-ink">
                                 {activeStep.title}
                             </p>
-                            <p className="mt-1 text-sm text-[#526B70]">{activeStep.hint}</p>
+                            <p className="mt-1 text-sm text-subtle">{activeStep.hint}</p>
                         </div>
                     </div>
 
@@ -205,7 +205,7 @@ export default function OnboardingScreen() {
                         {STEP_LABELS.map((item, index) => (
                             <div
                                 key={item.title}
-                                className={`h-2 rounded-full transition-all duration-300 ${index === step ? "flex-[1.6] bg-[#3F6F6A]" : index < step ? "flex-1 bg-[#BFD8D3]" : "flex-1 bg-[#DDE8E5]"}`}
+                                className={`h-2 rounded-full transition-all duration-300 ${index === step ? "flex-[1.6] bg-accent" : index < step ? "flex-1 bg-[#BFD8D3]" : "flex-1 bg-[#DDE8E5]"}`}
                             />
                         ))}
                     </div>
@@ -229,16 +229,16 @@ export default function OnboardingScreen() {
                                             setSelectedDeptId(dept.id);
                                             goToNextStep();
                                         }}
-                                        className={`app-list-item ${selectedDept?.id === dept.id ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                        className={`app-list-item ${selectedDept?.id === dept.id ? "ring-2 ring-accent/20" : ""}`}
                                     >
                                         <div className="app-icon-chip">
                                             <Building2 size={18} />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold text-[#172B2F]">{dept.name}</p>
-                                            <p className="mt-1 text-xs text-[#70868B]">{dept.code}</p>
+                                            <p className="text-sm font-semibold text-ink">{dept.name}</p>
+                                            <p className="mt-1 text-xs text-faint">{dept.code}</p>
                                         </div>
-                                        <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedDept?.id === dept.id ? "tone-blue" : "bg-[#EFF3F8] text-[#70868B]"}`}>
+                                        <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedDept?.id === dept.id ? "tone-blue" : "bg-[#EFF3F8] text-faint"}`}>
                                             {selectedDept?.id === dept.id ? "Selected" : "Choose"}
                                         </div>
                                     </button>
@@ -257,15 +257,15 @@ export default function OnboardingScreen() {
                                         setSelectedProgram(program.value);
                                         goToNextStep();
                                     }}
-                                    className={`app-list-item items-center ${selectedProgram === program.value ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                                    className={`app-list-item items-center ${selectedProgram === program.value ? "ring-2 ring-accent/20" : ""}`}
                                 >
-                                    <div className="app-icon-chip bg-[#EAF4F1] text-[#3F6F6A]">
+                                    <div className="app-icon-chip bg-accent-soft text-accent">
                                         <Rows3 size={18} />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-semibold text-[#172B2F]">{program.label}</p>
+                                        <p className="text-sm font-semibold text-ink">{program.label}</p>
                                     </div>
-                                    <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedProgram === program.value ? "tone-blue" : "bg-[#EFF3F8] text-[#70868B]"}`}>
+                                    <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedProgram === program.value ? "tone-blue" : "bg-[#EFF3F8] text-faint"}`}>
                                         {selectedProgram === program.value ? "Selected" : "Choose"}
                                     </div>
                                 </button>
@@ -284,14 +284,14 @@ export default function OnboardingScreen() {
                                         setSelectedYear(year);
                                         goToNextStep();
                                     }}
-                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedYear === year ? "bg-[#F8FBFF] ring-2 ring-[#3F6F6A]/20 shadow-[0_18px_36px_rgba(63,111,106,0.10)]" : ""}`}
+                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedYear === year ? "bg-[#F8FBFF] ring-2 ring-accent/20 shadow-[0_18px_36px_rgba(63,111,106,0.10)]" : ""}`}
                                 >
-                                    <div className="app-icon-chip bg-[#EAF4F1] text-[#3F6F6A]">
+                                    <div className="app-icon-chip bg-accent-soft text-accent">
                                         <GraduationCap size={18} />
                                     </div>
                                     <p className="app-section-label pt-1">Academic year</p>
-                                    <p className="app-title text-[2rem] font-bold text-[#172B2F]">{year}</p>
-                                    <p className="text-sm text-[#526B70]">Year {year}</p>
+                                    <p className="app-title text-[2rem] font-bold text-ink">{year}</p>
+                                    <p className="text-sm text-subtle">Year {year}</p>
                                 </button>
                             ))}
                         </div>
@@ -307,14 +307,14 @@ export default function OnboardingScreen() {
                                         setError(null);
                                         setSelectedPeriod(period.value);
                                     }}
-                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedPeriod === period.value ? "bg-[#F8FBFF] ring-2 ring-[#3F6F6A]/20 shadow-[0_18px_36px_rgba(63,111,106,0.10)]" : ""}`}
+                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedPeriod === period.value ? "bg-[#F8FBFF] ring-2 ring-accent/20 shadow-[0_18px_36px_rgba(63,111,106,0.10)]" : ""}`}
                                 >
-                                    <div className="app-icon-chip bg-[#EAF4F1] text-[#3F6F6A]">
+                                    <div className="app-icon-chip bg-accent-soft text-accent">
                                         <Layers3 size={18} />
                                     </div>
                                     <p className="app-section-label pt-1">Current period</p>
-                                    <p className="app-title text-[1.6rem] font-bold text-[#172B2F]">{period.label}</p>
-                                    <p className="text-sm text-[#526B70]">
+                                    <p className="app-title text-[1.6rem] font-bold text-ink">{period.label}</p>
+                                    <p className="text-sm text-subtle">
                                         {selectedProgram ? getPeriodLabel(period.value, selectedProgram) : period.label}
                                     </p>
                                 </button>
@@ -324,7 +324,7 @@ export default function OnboardingScreen() {
                 </div>
 
                 {error && (
-                    <p className="mt-4 text-center text-sm text-[#D95A50]">{error}</p>
+                    <p className="mt-4 text-center text-sm text-danger">{error}</p>
                 )}
             </div>
 

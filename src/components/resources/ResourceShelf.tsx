@@ -80,7 +80,7 @@ export default function ResourceShelf({ course, loading, error, onRetry, onBack 
                 <div className="relative z-10">
                     <TopBackButton onClick={onBack} />
                     <p className="app-section-label">{course?.code}</p>
-                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-[#172B2F]">{course?.name ?? "Resources"}</h1>
+                    <h1 className="app-title mt-2 text-[1.55rem] font-bold text-ink">{course?.name ?? "Resources"}</h1>
                 </div>
             </div>
 
@@ -99,7 +99,7 @@ export default function ResourceShelf({ course, loading, error, onRetry, onBack 
                             <div className="min-w-0 flex-1">
                                 <div className="min-w-0">
                                     <p
-                                        className="line-clamp-2 overflow-hidden text-base font-semibold leading-snug text-[#172B2F]"
+                                        className="line-clamp-2 overflow-hidden text-base font-semibold leading-snug text-ink"
                                         style={{
                                             display: "-webkit-box",
                                             WebkitLineClamp: 2,
@@ -118,7 +118,7 @@ export default function ResourceShelf({ course, loading, error, onRetry, onBack 
                                     </div>
                                 </div>
                                 <p
-                                    className="mt-2 line-clamp-2 overflow-hidden text-sm leading-relaxed text-[#526B70]"
+                                    className="mt-2 line-clamp-2 overflow-hidden text-sm leading-relaxed text-subtle"
                                     style={{
                                         display: "-webkit-box",
                                         WebkitLineClamp: 2,
@@ -129,9 +129,9 @@ export default function ResourceShelf({ course, loading, error, onRetry, onBack 
                                     {featuredResource.description}
                                 </p>
                             </div>
-                            <div className="flex min-h-[4rem] w-[4.75rem] flex-shrink-0 flex-col items-center justify-start self-start rounded-[18px] bg-[#FFF6DF] px-2.5 py-2.5 text-[#B27614]">
+                            <div className="flex min-h-[4rem] w-[4.75rem] flex-shrink-0 flex-col items-center justify-start self-start rounded-[18px] bg-gold-tint px-2.5 py-2.5 text-gold-ink">
                                 <span className="w-full truncate text-center text-base font-black leading-none">{featuredResource.downloads_count}</span>
-                                <span className="mt-1 text-center text-[9px] font-bold uppercase tracking-[0.08em]">Downloads</span>
+                                <span className="mt-1 text-center text-[11px] font-bold uppercase tracking-[0.08em]">Downloads</span>
                             </div>
                         </div>
                     </div>
@@ -192,7 +192,7 @@ export default function ResourceShelf({ course, loading, error, onRetry, onBack 
                                     {!!resource.tags?.length && (
                                         <div className="ml-2 mt-2 flex flex-wrap gap-2">
                                             {resource.tags.slice(0, 3).map((tag) => (
-                                                <span key={`${resource.id}-${tag}`} className="rounded-full bg-[#EAF4F1] px-3 py-1 text-[11px] font-semibold text-[#4D6691]">
+                                                <span key={`${resource.id}-${tag}`} className="rounded-full bg-accent-soft px-3 py-1 text-[11px] font-semibold text-[#4D6691]">
                                                     {tag}
                                                 </span>
                                             ))}

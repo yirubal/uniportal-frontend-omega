@@ -50,13 +50,13 @@ export default function SelectorGroup<T>({
                             key={getKey(item)}
                             onClick={() => onSelect(item)}
                             style={{ paddingInline: "1.25rem" }}
-                            className={`app-panel flex min-h-[5rem] w-full items-center justify-between gap-3 overflow-hidden rounded-[16px] px-5 py-3 text-left ${value === getKey(item) ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
+                            className={`app-panel flex min-h-[5rem] w-full items-center justify-between gap-3 overflow-hidden rounded-[16px] px-5 py-3 text-left ${value === getKey(item) ? "ring-2 ring-accent/20" : ""}`}
                         >
                             <div className="min-w-0 flex-1 pr-3">
-                                <p className="text-base font-semibold leading-snug text-[#172B2F]">{getLabel(item)}</p>
-                                <p className="mt-1 text-sm text-[#70868B]">{getMeta(item)}</p>
+                                <p className="text-base font-semibold leading-snug text-ink">{getLabel(item)}</p>
+                                <p className="mt-1 text-sm text-faint">{getMeta(item)}</p>
                             </div>
-                            <div className={`flex-shrink-0 self-center rounded-full px-3 py-2 text-xs font-bold ${value === getKey(item) ? "tone-blue" : "bg-[#F4F8F5] text-[#70868B]"}`}>
+                            <div className={`flex-shrink-0 self-center rounded-full px-3 py-2 text-xs font-bold ${value === getKey(item) ? "tone-blue" : "bg-mist text-faint"}`}>
                                 {value === getKey(item) ? "Selected" : "Choose"}
                             </div>
                         </button>

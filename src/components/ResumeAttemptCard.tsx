@@ -34,13 +34,13 @@ export default function ResumeAttemptCard({ modes }: { modes?: QuizMode[] }) {
     return (
         <div className="app-sheet mb-4 p-4">
             <div className="flex items-start gap-3">
-                <div className="app-icon-chip bg-[#EAF4F1] text-[#3F6F6A]">
+                <div className="app-icon-chip bg-accent-soft text-accent">
                     <PlayCircle size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className="app-section-label">Unfinished {kindLabel.toLowerCase()}</p>
-                    <p className="mt-1 truncate text-sm font-semibold text-[#172B2F]">{title ?? kindLabel}</p>
-                    <p className="mt-1 text-xs text-[#526B70]">
+                    <p className="mt-1 truncate text-sm font-semibold text-ink">{title ?? kindLabel}</p>
+                    <p className="mt-1 text-xs text-subtle">
                         {answeredCount}/{questions.length} answered
                         {secondsLeft !== null && (secondsLeft > 0
                             ? ` · ${formatTimeRemaining(secondsLeft)} left`

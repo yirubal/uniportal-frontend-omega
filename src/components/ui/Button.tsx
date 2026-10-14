@@ -7,6 +7,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     loading?: boolean;
     fullWidth?: boolean;
     children: React.ReactNode;
+    /** React 19 passes ref as a prop; it reaches the <button> through ...props. */
+    ref?: React.Ref<HTMLButtonElement>;
 }
 
 export default function Button({
@@ -26,13 +28,13 @@ export default function Button({
 
     const variants = {
         primary:
-            "border border-[#172B2F] bg-[#172B2F] text-white shadow-[0_10px_24px_rgba(23,43,47,0.10)] disabled:border-[#D5E1DD] disabled:bg-[#D5E1DD] disabled:text-[#344E53]",
+            "border border-ink bg-ink text-white shadow-[0_10px_24px_rgba(23,43,47,0.10)] disabled:border-disabled disabled:bg-disabled disabled:text-[#344E53]",
         secondary:
-            "border border-[#CFE2DE] bg-[#EAF4F1] text-[#234C48] disabled:border-[#DCE5E1] disabled:bg-[#EEF3F0] disabled:text-[#5E7479]",
+            "border border-accent-line bg-accent-soft text-accent-deep disabled:border-[#DCE5E1] disabled:bg-background disabled:text-[#5E7479]",
         ghost:
-            "border border-[rgba(23,43,47,0.08)] bg-[rgba(244,247,252,0.92)] text-[#172B2F] shadow-none disabled:bg-[#EEF3F0] disabled:text-[#5E7479]",
+            "border border-[rgba(23,43,47,0.08)] bg-[rgba(244,247,252,0.92)] text-ink shadow-none disabled:bg-background disabled:text-[#5E7479]",
         danger:
-            "border border-[#D95A50] bg-[#D95A50] text-white disabled:border-[#E9CBC7] disabled:bg-[#E9CBC7] disabled:text-[#7C4B47]",
+            "border border-danger bg-danger text-white disabled:border-[#E9CBC7] disabled:bg-[#E9CBC7] disabled:text-[#7C4B47]",
     };
 
     const sizes = {

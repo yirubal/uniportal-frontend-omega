@@ -10,7 +10,6 @@ interface QuestionCardProps {
     selectedAnswer: string | null;
     /** Receives the question id too, so a debounced text answer is saved to the right question. */
     onSelect: (answer: string, questionId: number) => void;
-    simulationMode?: boolean;
     showQuestionType?: boolean;
 }
 
@@ -31,7 +30,6 @@ function QuestionCard({
     totalQuestions,
     selectedAnswer,
     onSelect,
-    simulationMode = false,
     showQuestionType = true,
 }: QuestionCardProps) {
     const { haptic } = useTelegram();
@@ -74,11 +72,11 @@ function QuestionCard({
     return (
         <div className="flex flex-col gap-4">
             <div className="mb-1 flex items-center justify-between">
-                <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
+                <span className="rounded-full bg-mist px-3 py-1.5 text-[11px] font-semibold text-steel">
                     Question {questionNumber} of {totalQuestions}
                 </span>
                 {hasSavedAnswer && (
-                    <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[11px] font-bold text-[#3F6F6A]">
+                    <span className="rounded-full bg-accent-soft px-3 py-1.5 text-[11px] font-bold text-accent">
                         {questionType === "matching" ? "Ready to continue" : "Answer saved"}
                     </span>
                 )}
@@ -86,7 +84,7 @@ function QuestionCard({
 
             <div className="h-2 overflow-hidden rounded-full bg-[rgba(23,43,47,0.08)]">
                 <div
-                    className="h-full rounded-full bg-[#172B2F] transition-all duration-200"
+                    className="h-full rounded-full bg-ink transition-all duration-200"
                     style={{ width: `${progressPercent}%` }}
                 />
             </div>
@@ -100,12 +98,12 @@ function QuestionCard({
                             </p>
                         )}
                         {question.difficulty && (
-                            <span className="rounded-full bg-[#FFF6DF] px-3 py-1.5 text-[11px] font-semibold capitalize text-[#B27614]">
+                            <span className="rounded-full bg-gold-tint px-3 py-1.5 text-[11px] font-semibold capitalize text-gold-ink">
                                 {question.difficulty}
                             </span>
                         )}
                         {question.year_source && (
-                            <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
+                            <span className="rounded-full bg-mist px-3 py-1.5 text-[11px] font-semibold text-steel">
                                 {question.year_source}
                             </span>
                         )}
@@ -118,8 +116,8 @@ function QuestionCard({
                                 setShowHint((current) => !current);
                             }}
                             className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${showHint
-                                ? "bg-[#172B2F] text-white"
-                                : "bg-[#EAF4F1] text-[#3F6F6A]"
+                                ? "bg-ink text-white"
+                                : "bg-accent-soft text-accent"
                                 }`}
                         >
                             {showHint ? "Hide hint" : "Show hint"}
@@ -133,20 +131,22 @@ function QuestionCard({
 
                 {question.hint && showHint && (
                     <div className="mt-4 rounded-[20px] border border-[rgba(23,43,47,0.06)] bg-[rgba(244,247,252,0.92)] px-4 py-3">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#70868B]">Hint</p>
-                        <p className="mt-2 text-sm leading-relaxed text-[#526B70]">{question.hint}</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Hint</p>
+                        <p className="mt-2 text-sm leading-relaxed text-subtle">{question.hint}</p>
                     </div>
                 )}
             </div>
 
             {(questionType === "mcq" || questionType === "true_false") && (
-                <div className="flex flex-col gap-3.5">
+                <div className="flex flex-col gap-3.5" role="radiogroup" aria-label="Answer options">
                     {optionEntries.map(([option, label]) => {
-                        const style = getOptionStyle(option, selectedAnswer, simulationMode);
+                        const style = getOptionStyle(option, selectedAnswer);
 
                         return (
                             <button
                                 type="button"
+                                role="radio"
+                                aria-checked={option === selectedAnswer}
                                 key={option}
                                 onClick={() => {
                                     haptic.medium();
@@ -184,6 +184,7 @@ function QuestionCard({
                 <div className="app-sheet p-5">
                     <input
                         type="text"
+                        aria-label="Your answer"
                         value={draftAnswer}
                         onChange={(event) => handleTextChange(event.target.value)}
                         // Tapping Next/Submit blurs the field first, so the answer is saved before they run.
@@ -191,7 +192,7 @@ function QuestionCard({
                         placeholder="Type your answer"
                         className="app-input min-h-12"
                     />
-                    <p className="mt-3 text-xs text-[#526B70]">Your answer is saved as you type.</p>
+                    <p className="mt-3 text-xs text-subtle">Your answer is saved as you type.</p>
                 </div>
             )}
 
@@ -208,18 +209,18 @@ function QuestionCard({
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="min-w-0">
-                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">
+                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-faint">
                                                 Term
                                             </p>
-                                            <p className="mt-2 text-sm font-semibold text-[#172B2F]">
+                                            <p className="mt-2 text-sm font-semibold text-ink">
                                                 {pair.left}
                                             </p>
                                         </div>
                                         <div className="min-w-0 text-right">
-                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">
+                                            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-faint">
                                                 Match
                                             </p>
-                                            <p className="mt-2 text-sm text-[#526B70]">
+                                            <p className="mt-2 text-sm text-subtle">
                                                 {pair.right || label}
                                             </p>
                                         </div>
@@ -229,7 +230,7 @@ function QuestionCard({
                         })}
                     </div>
 
-                    <div className="mt-4 rounded-[18px] bg-[#F4F8F5] px-4 py-3 text-sm text-[#526B70]">
+                    <div className="mt-4 rounded-[18px] bg-mist px-4 py-3 text-sm text-subtle">
                         This matching item is read-only. No answer is required before continuing.
                     </div>
                 </div>
@@ -238,6 +239,7 @@ function QuestionCard({
             {questionType === "essay" && (
                 <div className="app-sheet p-5">
                     <textarea
+                        aria-label="Your answer"
                         value={draftAnswer}
                         onChange={(event) => handleTextChange(event.target.value)}
                         // Tapping Next/Submit blurs the field first, so the answer is saved before they run.
@@ -246,41 +248,31 @@ function QuestionCard({
                         placeholder="Write your answer"
                         className="app-input min-h-[140px] resize-none"
                     />
-                    <p className="mt-3 text-xs text-[#526B70]">Your answer is saved as you type.</p>
+                    <p className="mt-3 text-xs text-subtle">Your answer is saved as you type.</p>
                 </div>
             )}
         </div>
     );
 }
 
-function getOptionStyle(option: string, selectedAnswer: string | null, simulationMode: boolean) {
-    if (selectedAnswer === null) {
-        return {
-            border: "#E0E0E0",
-            bg: "#FFFFFF",
-            text: "#1F2937",
-            labelBg: "#F3F4F6",
-            labelText: "#374151",
-        };
-    }
+// Answer options use the navy selected state from the project brief, on white cards with dark text.
+const OPTION_STYLE = {
+    border: "#E0E0E0",
+    bg: "#FFFFFF",
+    text: "#1F2937",
+    labelBg: "#F3F4F6",
+    labelText: "#374151",
+};
+const SELECTED_OPTION_STYLE = {
+    border: "#0A1628",
+    bg: "#F5F7FA",
+    text: "#0A1628",
+    labelBg: "#0A1628",
+    labelText: "#FFFFFF",
+};
 
-    if (option === selectedAnswer) {
-        return {
-            border: "#0A1628",
-            bg: simulationMode ? "#F5F7FA" : "#F5F7FA",
-            text: "#0A1628",
-            labelBg: "#0A1628",
-            labelText: "#FFFFFF",
-        };
-    }
-
-    return {
-        border: "#E0E0E0",
-        bg: "#FFFFFF",
-        text: "#1F2937",
-        labelBg: "#F3F4F6",
-        labelText: "#374151",
-    };
+function getOptionStyle(option: string, selectedAnswer: string | null) {
+    return option === selectedAnswer ? SELECTED_OPTION_STYLE : OPTION_STYLE;
 }
 
 function formatQuestionType(questionType: string) {

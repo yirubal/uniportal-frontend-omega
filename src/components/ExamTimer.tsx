@@ -32,14 +32,20 @@ export function ExamTimerChip({ deadline }: { deadline: number }) {
     const isLowTime = secondsLeft > 0 && secondsLeft <= LOW_TIME_SECONDS;
     const isCriticalTime = secondsLeft > 0 && secondsLeft <= CRITICAL_TIME_SECONDS;
 
+    // Screen readers aren't told every second; this text changes only at the 5- and 1-minute marks.
+    const milestone = isCriticalTime ? "1 minute left" : isLowTime ? "5 minutes left" : "";
+
     return (
-        <span
-            role="timer"
-            aria-label={`${formatTimeRemaining(secondsLeft)} left`}
-            className={`rounded-full px-3 py-2 text-xs font-bold tabular-nums transition-all ${isLowTime ? "bg-[#FFF0ED] text-[#D95A50]" : "bg-[#172B2F] text-white"} ${isCriticalTime ? "animate-pulse shadow-[0_0_0_6px_rgba(217,90,80,0.12)]" : ""}`}
-        >
-            {formatTimeRemaining(secondsLeft)}
-        </span>
+        <>
+            <span className="sr-only" aria-live="assertive">{milestone}</span>
+            <span
+                role="timer"
+                aria-label={`${formatTimeRemaining(secondsLeft)} left`}
+                className={`rounded-full px-3 py-2 text-xs font-bold tabular-nums transition-all ${isLowTime ? "bg-coral-soft text-danger" : "bg-ink text-white"} ${isCriticalTime ? "animate-pulse shadow-[0_0_0_6px_rgba(217,90,80,0.12)]" : ""}`}
+            >
+                {formatTimeRemaining(secondsLeft)}
+            </span>
+        </>
     );
 }
 
@@ -53,13 +59,13 @@ export function ExamTimerBar({ deadline, totalSeconds }: { deadline: number; tot
         <div className="mt-3 app-sheet p-4">
             <div className="flex items-center justify-between gap-3">
                 <p className="app-section-label">Timer</p>
-                <span className={`text-xs font-bold uppercase tracking-[0.14em] ${isLowTime ? "text-[#D95A50]" : "text-[#60728F]"}`}>
+                <span className={`text-xs font-bold uppercase tracking-[0.14em] ${isLowTime ? "text-danger" : "text-steel"}`}>
                     {progress.toFixed(0)}% left
                 </span>
             </div>
             <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[rgba(23,43,47,0.08)]">
                 <div
-                    className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${isLowTime ? "bg-[#D95A50]" : "bg-[#172B2F]"} ${isCriticalTime ? "animate-pulse" : ""}`}
+                    className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${isLowTime ? "bg-danger" : "bg-ink"} ${isCriticalTime ? "animate-pulse" : ""}`}
                     style={{ width: `${progress}%` }}
                 />
             </div>

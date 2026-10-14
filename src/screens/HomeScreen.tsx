@@ -18,7 +18,7 @@ const QUICK_ACTIONS = [
         label: "Resource Library",
         desc: "Browse notes, worksheets, and exam papers by course.",
         meta: "Study materials",
-        tint: "bg-[#EAF4F1] text-[#3F6F6A]",
+        tint: "bg-accent-soft text-accent",
     },
     {
         path: "/quiz",
@@ -26,7 +26,7 @@ const QUICK_ACTIONS = [
         label: "Practice Hub",
         desc: "Choose quick quizzes or past exam papers from your current courses.",
         meta: "Quiz + past exam",
-        tint: "bg-[#FFF6DF] text-[#B27614]",
+        tint: "bg-gold-tint text-gold-ink",
     },
     {
         path: "/exit-exam",
@@ -34,7 +34,7 @@ const QUICK_ACTIONS = [
         label: "Exit Exams",
         desc: "Choose timed exit exams, past years papers, or model exam practice.",
         meta: "Timed mode",
-        tint: "bg-[#EAF8F1] text-[#2E9E73]",
+        tint: "bg-success-tint text-success-ink",
     },
     {
         path: "/performance",
@@ -97,13 +97,13 @@ export default function HomeScreen() {
             <div className="app-topbar">
                 <div className="relative z-10 flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#70868B]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-faint">
                             {greeting}
                         </p>
-                        <h1 className="app-title mt-1 text-[1.55rem] font-bold text-[#172B2F]">
+                        <h1 className="app-title mt-1 text-[1.55rem] font-bold text-ink">
                             {student?.first_name ?? student?.name ?? "Student"}
                         </h1>
-                        <p className="mt-1 text-sm text-[#526B70]">
+                        <p className="mt-1 text-sm text-subtle">
                             Unity University student portal
                         </p>
                     </div>
@@ -120,21 +120,21 @@ export default function HomeScreen() {
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                             <p className="app-section-label">Current profile</p>
-                            <p className="mt-1 text-sm text-[#526B70]">
+                            <p className="mt-1 text-sm text-subtle">
                                 Department-based content and exam prep
                             </p>
                             <div className="mt-3 flex flex-wrap gap-2">
                                 {profileBadges.map((badge) => (
                                     <span
                                         key={badge}
-                                        className="inline-flex items-center justify-center rounded-full bg-[#F4F8F5] px-3 py-2 text-xs font-semibold text-[#172B2F]"
+                                        className="inline-flex items-center justify-center rounded-full bg-mist px-3 py-2 text-xs font-semibold text-ink"
                                     >
                                         {badge}
                                     </span>
                                 ))}
                             </div>
                         </div>
-                        <div className="shrink-0 rounded-full bg-[#F4F8F5] px-3 py-2 text-xs font-semibold text-[#526B70]">
+                        <div className="shrink-0 rounded-full bg-mist px-3 py-2 text-xs font-semibold text-subtle">
                             {hasPendingSubscriptionRequest ? "Payment request under review" : currentRequestStatus === "rejected" ? "Payment not confirmed" : displayIsPremium ? formatDaysRemaining(daysRemaining) : "Upgrade available"}
                         </div>
                     </div>
@@ -143,8 +143,8 @@ export default function HomeScreen() {
                         {!displayIsPremium && (
                             <button
                                 onClick={() => navigate("/subscribe")}
-                                className="inline-flex items-center gap-2 rounded-full bg-[#172B2F] !px-4 py-3 text-sm font-semibold text-white sm:!px-12"
-                                style={{ backgroundColor: "#172B2F", color: "#FFFFFF", paddingInline: "2.5rem" }}
+                                className="inline-flex items-center gap-2 rounded-full bg-ink !px-4 py-3 text-sm font-semibold text-white sm:!px-12"
+                                style={{ paddingInline: "2.5rem" }}
                             >
                                 {hasPendingSubscriptionRequest ? "View request status" : "Unlock premium tools"}
                             </button>
@@ -173,7 +173,7 @@ export default function HomeScreen() {
                 <div className="mt-5">
                     <div className="mb-3 px-1">
                         <p className="app-section-label">Quick access</p>
-                        <h2 className="mt-2 text-lg font-bold text-[#172B2F]">
+                        <h2 className="mt-2 text-lg font-bold text-ink">
                             Continue where you need to work
                         </h2>
                     </div>
@@ -198,19 +198,19 @@ export default function HomeScreen() {
 
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <p className="truncate text-sm font-semibold text-[#172B2F]">
+                                            <p className="truncate text-sm font-semibold text-ink">
                                                 {action.label}
                                             </p>
-                                            <span className="inline-flex items-center justify-center rounded-full bg-[#F4F8F5] px-2.5 py-1 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#70868B]">
+                                            <span className="inline-flex items-center justify-center rounded-full bg-mist px-2.5 py-1 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-faint">
                                                 {action.meta}
                                             </span>
                                         </div>
-                                        <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
+                                        <p className="mt-1 text-sm leading-relaxed text-subtle">
                                             {action.desc}
                                         </p>
                                     </div>
 
-                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F4F8F5] text-[#172B2F]">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mist text-ink">
                                         <ArrowRight size={16} />
                                     </div>
                                 </button>
@@ -223,18 +223,18 @@ export default function HomeScreen() {
                     <p className="app-section-label">This week</p>
                     <div className="mt-3 grid gap-3">
                         <div className="rounded-[20px] bg-[#F6FAF7] px-4 py-3">
-                            <p className="text-sm font-semibold text-[#172B2F]">
+                            <p className="text-sm font-semibold text-ink">
                                 Keep resource browsing course-first
                             </p>
-                            <p className="mt-1 text-sm text-[#526B70]">
+                            <p className="mt-1 text-sm text-subtle">
                                 Library and quizzes work best after department, program, year, and period are selected.
                             </p>
                         </div>
                         <div className="rounded-[20px] bg-[#F6FAF7] px-4 py-3">
-                            <p className="text-sm font-semibold text-[#172B2F]">
+                            <p className="text-sm font-semibold text-ink">
                                 Use practice for speed, simulations for pressure
                             </p>
-                            <p className="mt-1 text-sm text-[#526B70]">
+                            <p className="mt-1 text-sm text-subtle">
                                 The app now supports real backend-driven quiz summaries and exit exam flows.
                             </p>
                         </div>

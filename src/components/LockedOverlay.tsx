@@ -22,7 +22,7 @@ export default function LockedOverlay({
                 </div>
 
                 <p className="app-section-label mb-2">Premium Access</p>
-                <h2 className="app-title text-[1.45rem] font-bold text-[#172B2F]">
+                <h2 className="app-title text-[1.45rem] font-bold text-ink">
                     {feature} is part of the premium study suite
                 </h2>
 
@@ -40,7 +40,7 @@ export default function LockedOverlay({
                 ].map((benefit) => (
                     <div key={benefit} className="flex items-center gap-3 py-1.5">
                         <span className="text-[#2E7C62] text-base">✓</span>
-                        <span className="text-sm text-[#172B2F]">{benefit}</span>
+                        <span className="text-sm text-ink">{benefit}</span>
                     </div>
                 ))}
                 </div>
@@ -50,11 +50,6 @@ export default function LockedOverlay({
                     size="lg"
                     fullWidth
                     className="mt-6"
-                    style={{
-                        backgroundColor: "#172B2F",
-                        borderColor: "#172B2F",
-                        color: "#FFFFFF",
-                    }}
                     onClick={() => navigate("/subscribe")}
                 >
                     Upgrade from {price}

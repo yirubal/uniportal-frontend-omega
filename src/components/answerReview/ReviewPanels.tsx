@@ -1,5 +1,6 @@
 import { AlertTriangle, Check, ChevronLeft, ChevronRight, Lightbulb, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useDialogFocus } from "../../hooks/useDialogFocus";
 import { normalizeAnswer, type ReviewQuestion, type ReviewStatus } from "../../utils/answerReview";
 import { STATUS_META } from "./reviewStatus";
 
@@ -12,31 +13,35 @@ export function ReviewShell({
     onClose: () => void;
     progressLabel: string;
 }) {
+    const panelRef = useRef<HTMLDivElement>(null);
+    useDialogFocus(panelRef, { onClose });
+
     return (
         <div
             className="fixed inset-0 z-[90] flex items-start justify-center bg-[rgba(8,18,34,0.52)] px-3 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-sm sm:px-5 sm:pt-5"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="answer-review-title"
             onClick={onClose}
         >
             <div
+                ref={panelRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="answer-review-title"
                 className="flex h-[92dvh] max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-[24px] border border-[rgba(23,43,47,0.08)] bg-[#F8FBF9] shadow-[0_24px_70px_rgba(10,22,40,0.26)] sm:h-[86dvh] sm:max-h-[86dvh]"
                 onClick={(event) => event.stopPropagation()}
             >
                 <header className="flex shrink-0 items-start justify-between gap-4 border-b border-[rgba(23,43,47,0.08)] px-4 py-4 sm:px-5">
                     <div className="min-w-0">
                         <p className="app-section-label">Question feedback</p>
-                        <h2 id="answer-review-title" className="mt-1 text-xl font-black leading-tight text-[#172B2F]">
+                        <h2 id="answer-review-title" className="mt-1 text-xl font-black leading-tight text-ink">
                             Answer Review
                         </h2>
-                        <p className="mt-1 text-sm font-semibold text-[#526B70]">{progressLabel}</p>
+                        <p className="mt-1 text-sm font-semibold text-subtle">{progressLabel}</p>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
                         aria-label="Close answer review"
-                        className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-full bg-[#EAF4F1] text-[#172B2F] transition-colors hover:bg-[#DDECE8] focus:outline-none focus:ring-2 focus:ring-[#3F6F6A] focus:ring-offset-2"
+                        className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-full bg-accent-soft text-ink transition-colors hover:bg-[#DDECE8] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
                     >
                         <X size={19} />
                     </button>
@@ -109,9 +114,9 @@ const QuestionListItem = function QuestionListItem({
             onClick={onClick}
             aria-pressed={isSelected}
             aria-label={`Question ${number}: ${meta.label}`}
-            className={`flex min-h-14 w-full items-center justify-between gap-3 rounded-[14px] border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-[#3F6F6A] focus:ring-offset-2 ${
+            className={`flex min-h-14 w-full items-center justify-between gap-3 rounded-[14px] border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${
                 isSelected
-                    ? "border-[#172B2F] bg-white text-[#172B2F] shadow-[0_10px_24px_rgba(23,43,47,0.08)]"
+                    ? "border-ink bg-white text-ink shadow-[0_10px_24px_rgba(23,43,47,0.08)]"
                     : meta.listClass
             }`}
         >
@@ -156,7 +161,7 @@ export function QuestionDetailPanel({
 
             <section className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-white px-4 py-4 shadow-[0_8px_18px_rgba(23,43,47,0.04)]">
                 <p className="app-section-label">Question</p>
-                <h3 className="mt-3 text-base font-bold leading-relaxed text-[#172B2F] [overflow-wrap:anywhere]">
+                <h3 className="mt-3 text-base font-bold leading-relaxed text-ink [overflow-wrap:anywhere]">
                     {question.questionText}
                 </h3>
             </section>
@@ -222,7 +227,7 @@ function OptionReviewItem({
             ? "bg-[#EF4444] text-white"
             : isSelected
                 ? "bg-[#F59E0B] text-white"
-                : "bg-[#EAF4F1] text-[#526B70]";
+                : "bg-accent-soft text-subtle";
 
     return (
         <div
@@ -234,7 +239,7 @@ function OptionReviewItem({
                 {letter.toUpperCase()}
             </span>
             <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-semibold leading-relaxed text-[#172B2F] [overflow-wrap:anywhere]">{text}</p>
+                <p className="text-[15px] font-semibold leading-relaxed text-ink [overflow-wrap:anywhere]">{text}</p>
                 <div className="mt-2 flex min-w-0 flex-wrap gap-2">
                     {isCorrect && (
                         <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-[#D1FAE5] px-2.5 py-1 text-[11px] font-bold text-[#065F46] [overflow-wrap:anywhere]">
@@ -264,13 +269,13 @@ function FreeTextAnswer({ question }: { question: ReviewQuestion }) {
     return (
         <section className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-white px-4 py-4">
             <p className="app-section-label">Student answer</p>
-            <p className="mt-3 text-[15px] font-semibold leading-relaxed text-[#172B2F] [overflow-wrap:anywhere]">
+            <p className="mt-3 text-[15px] font-semibold leading-relaxed text-ink [overflow-wrap:anywhere]">
                 {question.selectedOption?.trim() || "No answer submitted"}
             </p>
             {question.correctOption && (
                 <>
                     <p className="app-section-label mt-5">Expected answer</p>
-                    <p className="mt-3 text-[15px] font-semibold leading-relaxed text-[#172B2F] [overflow-wrap:anywhere]">
+                    <p className="mt-3 text-[15px] font-semibold leading-relaxed text-ink [overflow-wrap:anywhere]">
                         {question.correctOption}
                     </p>
                 </>
@@ -312,13 +317,13 @@ function ExplanationBox({ explanation }: { explanation: string }) {
 
 function TopicTags({ tags }: { tags: string[] }) {
     return (
-        <section aria-label="Topics covered" className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-[#EAF4F1] px-4 py-4">
+        <section aria-label="Topics covered" className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-accent-soft px-4 py-4">
             <p className="app-section-label">Topics covered</p>
             <div className="mt-3 flex min-w-0 flex-wrap gap-2">
                 {tags.map((tag) => (
                     <span
                         key={tag}
-                        className="max-w-full rounded-[10px] border border-[#CFE2DE] bg-white px-3 py-2 text-xs font-bold text-[#315F59] [overflow-wrap:anywhere]"
+                        className="max-w-full rounded-[10px] border border-accent-line bg-white px-3 py-2 text-xs font-bold text-[#315F59] [overflow-wrap:anywhere]"
                     >
                         {tag}
                     </span>
@@ -346,7 +351,7 @@ function NavigationButtons({
                 onClick={onPrevious}
                 disabled={isFirstQuestion}
                 aria-label="Previous question"
-                className="inline-flex min-h-12 min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden rounded-[14px] border border-[rgba(23,43,47,0.08)] bg-[rgba(244,247,252,0.92)] px-2.5 py-3 text-sm font-black text-[#172B2F] transition-colors hover:bg-[#EEF3F0] disabled:cursor-not-allowed disabled:bg-[#EEF3F0] disabled:text-[#809398] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#3F6F6A] focus:ring-offset-0 sm:gap-2 sm:px-3"
+                className="inline-flex min-h-12 min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden rounded-[14px] border border-[rgba(23,43,47,0.08)] bg-[rgba(244,247,252,0.92)] px-2.5 py-3 text-sm font-black text-ink transition-colors hover:bg-background disabled:cursor-not-allowed disabled:bg-background disabled:text-[#809398] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent focus:ring-offset-0 sm:gap-2 sm:px-3"
             >
                 <ChevronLeft size={16} aria-hidden="true" />
                 Previous
@@ -356,7 +361,7 @@ function NavigationButtons({
                 onClick={onNext}
                 disabled={isLastQuestion}
                 aria-label="Next question"
-                className="inline-flex min-h-12 min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden rounded-[14px] border border-[#CFE2DE] bg-[#EAF4F1] px-2.5 py-3 text-sm font-black text-[#234C48] transition-colors hover:bg-[#DDECE8] disabled:cursor-not-allowed disabled:border-[#DCE5E1] disabled:bg-[#EEF3F0] disabled:text-[#5E7479] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#3F6F6A] focus:ring-offset-0 sm:gap-2 sm:px-3"
+                className="inline-flex min-h-12 min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden rounded-[14px] border border-accent-line bg-accent-soft px-2.5 py-3 text-sm font-black text-accent-deep transition-colors hover:bg-[#DDECE8] disabled:cursor-not-allowed disabled:border-[#DCE5E1] disabled:bg-background disabled:text-[#5E7479] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent focus:ring-offset-0 sm:gap-2 sm:px-3"
             >
                 Next
                 <ChevronRight size={16} aria-hidden="true" />

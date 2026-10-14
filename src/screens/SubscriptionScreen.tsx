@@ -70,8 +70,8 @@ export default function SubscriptionScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
                     <p className="app-section-label">Subscription</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">Your access plan</h1>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">Your access plan</h1>
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-subtle">
                         Check your current plan and choose when to request premium access.
                     </p>
                 </div>
@@ -82,8 +82,8 @@ export default function SubscriptionScreen() {
                     <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
                             <p className="app-section-label">Current plan</p>
-                            <h2 className="mt-2 text-xl font-black text-[#172B2F]">{statusLabel}</h2>
-                            <p className="mt-2 text-sm font-medium leading-relaxed text-[#526B70]">{statusDetail}</p>
+                            <h2 className="mt-2 text-xl font-black text-ink">{statusLabel}</h2>
+                            <p className="mt-2 text-sm font-medium leading-relaxed text-subtle">{statusDetail}</p>
                         </div>
                         <div className={`rounded-full px-3 py-2 text-xs font-bold ${displayIsPremium ? "tone-green" : "tone-gold"}`}>
                             {displayIsPremium ? "Premium" : "Free"}
@@ -96,11 +96,6 @@ export default function SubscriptionScreen() {
                             size="lg"
                             fullWidth
                             onClick={() => navigate("/subscribe")}
-                            style={{
-                                backgroundColor: "#172B2F",
-                                borderColor: "#172B2F",
-                                color: "#FFFFFF",
-                            }}
                         >
                             <CreditCard size={17} />
                             {hasPendingSubscriptionRequest ? "View request status" : "Request premium access"}
@@ -160,22 +155,22 @@ function PlanCard({
     selected: boolean;
 }) {
     return (
-        <div className={`rounded-[22px] border p-4 ${selected ? "border-[#3F6F6A] bg-[#EAF4F1]" : "border-[rgba(23,43,47,0.10)] bg-white/85"}`}>
+        <div className={`rounded-[22px] border p-4 ${selected ? "border-accent bg-accent-soft" : "border-[rgba(23,43,47,0.10)] bg-white/85"}`}>
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-base font-black text-[#172B2F]">{name}</h3>
+                        <h3 className="text-base font-black text-ink">{name}</h3>
                         {selected && (
-                            <span className="inline-flex items-center rounded-full bg-[#3F6F6A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                            <span className="inline-flex items-center rounded-full bg-accent px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white">
                                 Current
                             </span>
                         )}
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-[#526B70]">{description}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-subtle">{description}</p>
                 </div>
                 <div className="shrink-0 text-right">
-                    <p className="text-lg font-black text-[#172B2F]">{priceLabel}</p>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#70868B]">{durationLabel}</p>
+                    <p className="text-lg font-black text-ink">{priceLabel}</p>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-faint">{durationLabel}</p>
                 </div>
             </div>
 

@@ -64,7 +64,7 @@ export default function PerformanceScreen() {
                     <div className="relative z-10">
                         <TopBackButton onClick={() => navigate("/home")} label="Home" />
                         <p className="app-section-label">Performance</p>
-                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">Track your growth over time</h1>
+                        <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">Track your growth over time</h1>
                     </div>
                 </div>
                 <div className="app-scroll app-scroll-compact">
@@ -149,8 +149,8 @@ export default function PerformanceScreen() {
                 <div className="relative z-10">
                     <TopBackButton onClick={() => navigate("/home")} label="Home" />
                     <p className="app-section-label">Performance</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">Academic pulse</h1>
-                    <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">Academic pulse</h1>
+                    <p className="mt-2 text-sm leading-relaxed text-subtle">
                         Keep the analytics dense, readable, and focused on what to revise next.
                     </p>
                 </div>
@@ -168,26 +168,32 @@ export default function PerformanceScreen() {
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <p className="app-section-label">Score over time</p>
-                            <p className="mt-2 text-base font-semibold text-[#172B2F]">Recent sessions</p>
+                            <p className="mt-2 text-base font-semibold text-ink">Recent sessions</p>
                         </div>
-                        <span className="rounded-full bg-[#EAF8F1] px-3 py-2 text-xs font-bold text-[#2E9E73]">
+                        <span className="rounded-full bg-success-tint px-3 py-2 text-xs font-bold text-success-ink">
                             {performance.score_over_time.length} sessions
                         </span>
                     </div>
 
                     {performance.score_over_time.length === 0 ? (
-                        <div className="mt-6 rounded-[22px] bg-[#F4F8F5] px-4 py-5 text-sm font-medium text-[#526B70]">
+                        <div className="mt-6 rounded-[22px] bg-mist px-4 py-5 text-sm font-medium text-subtle">
                             Submit an exam or quiz attempt to start building your score trend.
                         </div>
                     ) : (
-                        <div className="mt-6 flex h-44 items-end gap-2">
-                            {performance.score_over_time.map((point) => (
-                                <div key={`${point.date}-${point.score}`} className="flex flex-1 flex-col items-center gap-2">
+                        <div
+                            className="mt-6 flex h-44 items-end gap-2"
+                            role="img"
+                            aria-label={`Score trend: ${performance.score_over_time
+                                .map((point) => `${formatChartDate(point.date)} ${point.score}%`)
+                                .join(", ")}`}
+                        >
+                            {performance.score_over_time.map((point, index) => (
+                                <div key={`${point.date}-${index}`} aria-hidden="true" className="flex flex-1 flex-col items-center gap-2">
                                     <div className="relative w-full overflow-hidden rounded-t-[18px] bg-[#E6ECF7]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }}>
                                         <div className="absolute inset-x-0 bottom-0 rounded-t-[18px] bg-[linear-gradient(180deg,#5D8F88_0%,#172B2F_100%)]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }} />
                                     </div>
-                                    <span className="text-[10px] font-semibold text-[#70868B]">
-                                        {new Date(point.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                    <span className="text-[11px] font-semibold text-faint">
+                                        {formatChartDate(point.date)}
                                     </span>
                                 </div>
                             ))}
@@ -198,19 +204,19 @@ export default function PerformanceScreen() {
                 <div className="app-sheet p-5">
                     <p className="app-section-label">Weak topics</p>
                     {performance.weak_topics.length === 0 ? (
-                        <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
+                        <p className="mt-4 text-sm leading-relaxed text-subtle">
                             No weak topics have been detected from your submitted attempts yet.
                         </p>
                     ) : (
                         <div className="mt-4 flex flex-wrap gap-2">
                             {performance.weak_topics.map((topic) => (
-                                <span key={topic} className="rounded-full bg-[#FFF6DF] px-3 py-2 text-[12px] font-semibold text-[#B27614]">
+                                <span key={topic} className="rounded-full bg-gold-tint px-3 py-2 text-[12px] font-semibold text-gold-ink">
                                     {topic}
                                 </span>
                             ))}
                         </div>
                     )}
-                    <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
+                    <p className="mt-4 text-sm leading-relaxed text-subtle">
                         These need attention first. Pair topic-based practice with matching resources to improve recall.
                     </p>
                 </div>
@@ -218,12 +224,12 @@ export default function PerformanceScreen() {
                 <div className="app-sheet p-5">
                     <p className="app-section-label">Paper breakdown</p>
                     {retryError && (
-                        <div className="mt-4 rounded-[18px] bg-[#FFF0ED] px-4 py-3 text-sm font-semibold text-[#B75F57]">
+                        <div className="mt-4 rounded-[18px] bg-coral-soft px-4 py-3 text-sm font-semibold text-[#B75F57]">
                             {retryError}
                         </div>
                     )}
                     {performance.attempts_by_course.length === 0 ? (
-                        <p className="mt-4 text-sm leading-relaxed text-[#526B70]">
+                        <p className="mt-4 text-sm leading-relaxed text-subtle">
                             Your submitted papers will appear here after the backend records attempt history.
                         </p>
                     ) : (
@@ -242,15 +248,15 @@ export default function PerformanceScreen() {
                                     >
                                         <div className="flex items-start justify-between gap-3">
                                             <div className="min-w-0 flex-1">
-                                                <p className="break-words text-sm font-semibold leading-snug text-[#172B2F]">{course.course_name}</p>
-                                                <p className="mt-1 text-xs text-[#70868B]">{course.attempts} attempts</p>
+                                                <p className="break-words text-sm font-semibold leading-snug text-ink">{course.course_name}</p>
+                                                <p className="mt-1 text-xs text-faint">{course.attempts} attempts</p>
                                             </div>
-                                            <span className="shrink-0 text-lg font-black text-[#172B2F]">{course.average}%</span>
+                                            <span className="shrink-0 text-lg font-black text-ink">{course.average}%</span>
                                         </div>
                                         <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E1E7F2]">
                                             <div className="h-full rounded-full bg-[linear-gradient(90deg,#5D8F88_0%,#172B2F_100%)]" style={{ width: `${Math.max(0, Math.min(100, course.average))}%` }} />
                                         </div>
-                                        <div className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-[16px] bg-[#172B2F] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-white">
+                                        <div className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-[16px] bg-ink px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-white">
                                             <RotateCcw size={14} />
                                             {isRetrying ? "Opening..." : "Retake paper"}
                                         </div>
@@ -277,7 +283,7 @@ function KpiCard({
     return (
         <div className={`app-stat-card min-w-0 overflow-hidden rounded-[24px] ${tone}`}>
             <p className="max-w-full break-words text-[1.2rem] font-black leading-tight [overflow-wrap:anywhere]">{value}</p>
-            <p className="mt-1 max-w-full break-words text-[10px] font-semibold uppercase tracking-[0.08em] [overflow-wrap:anywhere]">{label}</p>
+            <p className="mt-1 max-w-full break-words text-[11px] font-semibold uppercase tracking-[0.08em] [overflow-wrap:anywhere]">{label}</p>
         </div>
     );
 }
@@ -288,4 +294,8 @@ function isExitExamType(examType: ExamPaper["exam_type"]) {
 
 function normalizeTitle(title: string) {
     return title.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function formatChartDate(date: string) {
+    return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }

@@ -35,18 +35,15 @@ export default function AnswerReviewModal({
     }, [totalQuestions]);
 
     useEffect(() => {
+        // Left/Right move between questions. Up/Down are left alone so the explanation can scroll;
+        // Escape and Tab are handled by the dialog shell (useDialogFocus).
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Escape") {
-                onClose();
-                return;
-            }
-
-            if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+            if (event.key === "ArrowRight") {
                 event.preventDefault();
                 goToNext();
             }
 
-            if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+            if (event.key === "ArrowLeft") {
                 event.preventDefault();
                 goToPrevious();
             }
@@ -54,7 +51,7 @@ export default function AnswerReviewModal({
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [goToNext, goToPrevious, onClose]);
+    }, [goToNext, goToPrevious]);
 
     if (!totalQuestions) {
         return (
@@ -63,8 +60,8 @@ export default function AnswerReviewModal({
                 progressLabel="No questions available"
             >
                 <div className="flex min-h-[18rem] flex-col items-center justify-center rounded-[22px] bg-white px-5 text-center">
-                    <p className="text-base font-bold text-[#172B2F]">No answer details available</p>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
+                    <p className="text-base font-bold text-ink">No answer details available</p>
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-subtle">
                         This attempt did not keep question-level review data.
                     </p>
                 </div>

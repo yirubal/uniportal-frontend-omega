@@ -14,11 +14,11 @@ function PaymentOption({
 }) {
     return (
         <div className="rounded-[20px] border border-[rgba(23,43,47,0.10)] bg-white/85 px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#526B70]">{label}</p>
-            <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">{accountLabel}</p>
-            <p className="mt-1 break-words text-sm font-bold text-[#172B2F]">{accountValue}</p>
-            <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">Account holder</p>
-            <p className="mt-1 break-words text-xs font-semibold text-[#354F55]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-subtle">{label}</p>
+            <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-faint">{accountLabel}</p>
+            <p className="mt-1 break-words text-sm font-bold text-ink">{accountValue}</p>
+            <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.12em] text-faint">Account holder</p>
+            <p className="mt-1 break-words text-xs font-semibold text-ink-soft">
                 {holderName ?? "Account holder name not loaded"}
             </p>
         </div>
@@ -46,14 +46,14 @@ export function PaymentDestinationCard({
             };
 
     return (
-        <div className="mt-4 rounded-[22px] border border-[#CFE2DE] bg-[#EAF4F1] p-4">
+        <div className="mt-4 rounded-[22px] border border-accent-line bg-accent-soft p-4">
             <p className="app-section-label">{destination.label}</p>
-            <p className="mt-2 break-words text-lg font-black leading-tight text-[#172B2F]">
+            <p className="mt-2 break-words text-lg font-black leading-tight text-ink">
                 {destination.primary}
             </p>
             <div className="mt-3 rounded-[16px] bg-white/65 px-3 py-2">
-                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#70868B]">Account holder</p>
-                <p className="mt-1 break-words text-sm font-semibold leading-relaxed text-[#354F55]">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-faint">Account holder</p>
+                <p className="mt-1 break-words text-sm font-semibold leading-relaxed text-ink-soft">
                     {destination.holderName ?? "Account holder name not loaded"}
                 </p>
             </div>
@@ -77,25 +77,25 @@ export function SubscriptionInstructionsCard({ instructions }: { instructions: P
                 {instructions.status === "pending" ? "Pending request" : "Payment instructions"}
             </p>
             {(instructions.instructions || fallbackMessage) && (
-                <p className="mt-3 text-sm font-semibold leading-relaxed text-[#172B2F]">
+                <p className="mt-3 text-sm font-semibold leading-relaxed text-ink">
                     {instructions.instructions ?? fallbackMessage}
                 </p>
             )}
             {hasReferenceDetails && (
-                <div className="mt-4 rounded-[22px] border border-[#CFE2DE] bg-[#EAF4F1] p-4">
+                <div className="mt-4 rounded-[22px] border border-accent-line bg-accent-soft p-4">
                     {instructions.reference && (
                         <>
                             <p className="app-section-label">Reference</p>
-                            <p className="mt-2 break-words text-lg font-bold text-[#172B2F]">{instructions.reference}</p>
+                            <p className="mt-2 break-words text-lg font-bold text-ink">{instructions.reference}</p>
                         </>
                     )}
                     {summary && (
-                        <p className="mt-1 text-sm font-semibold text-[#172B2F]">
+                        <p className="mt-1 text-sm font-semibold text-ink">
                             {summary}
                         </p>
                     )}
                     {instructions.note && (
-                        <p className="mt-3 text-sm leading-relaxed text-[#526B70]">{instructions.note}</p>
+                        <p className="mt-3 text-sm leading-relaxed text-subtle">{instructions.note}</p>
                     )}
                 </div>
             )}

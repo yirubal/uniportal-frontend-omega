@@ -125,10 +125,10 @@ export default function ExamSchedule() {
                 <div className="relative z-10">
                     <TopBackButton onClick={handleBack} label={searchAgainLabel} />
                     <p className="app-section-label">Exam schedule</p>
-                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-[#172B2F]">
+                    <h1 className="app-title mt-2 text-[1.65rem] font-bold text-ink">
                         Find your exam room
                     </h1>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-[#526B70]">
+                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-subtle">
                         {schedule
                             ? schedule.term
                             : activeTerm?.active
@@ -144,11 +144,11 @@ export default function ExamSchedule() {
                         <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
                                 <p className="app-section-label">Exam schedule</p>
-                                <h2 className="mt-2 text-xl font-black text-[#172B2F]">
+                                <h2 className="mt-2 text-xl font-black text-ink">
                                     {termLoading ? "Checking current term..." : activeTermLabel}
                                 </h2>
                             </div>
-                            <div className="app-icon-chip bg-[#EAF4F1] text-[#3F6F6A]">
+                            <div className="app-icon-chip bg-accent-soft text-accent">
                                 <ClipboardList size={20} />
                             </div>
                         </div>
@@ -157,10 +157,10 @@ export default function ExamSchedule() {
 
                         {showTermNotice && (
                             <div className="mt-5 rounded-[20px] border border-[#F4D6D1] bg-[#FFF7F5] px-4 py-3">
-                                <p className="text-sm font-bold text-[#172B2F]">
+                                <p className="text-sm font-bold text-ink">
                                     Could not confirm the active term.
                                 </p>
-                                <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
+                                <p className="mt-1 text-sm leading-relaxed text-subtle">
                                     You can still search your exam room. The lookup request will check the schedule directly.
                                 </p>
                                 <Button
@@ -168,12 +168,7 @@ export default function ExamSchedule() {
                                     onClick={loadActiveTerm}
                                     size="sm"
                                     className="mt-3"
-                                    style={{
-                                        backgroundColor: "#172B2F",
-                                        borderColor: "#172B2F",
-                                        color: "#FFFFFF",
-                                        paddingInline: "1rem",
-                                    }}
+                                    style={{ paddingInline: "1rem" }}
                                 >
                                     Retry term check
                                 </Button>
@@ -182,10 +177,10 @@ export default function ExamSchedule() {
 
                         <form className="mt-5 space-y-4" onSubmit={handleSearch}>
                             <div>
-                                <p className="text-base font-black text-[#172B2F]">
+                                <p className="text-base font-black text-ink">
                                     Find Your Exam Room
                                 </p>
-                                <p className="mt-2 text-sm leading-relaxed text-[#526B70]">
+                                <p className="mt-2 text-sm leading-relaxed text-subtle">
                                     Enter your Student ID or Full Name as registered at the university.
                                 </p>
                             </div>
@@ -197,7 +192,7 @@ export default function ExamSchedule() {
                                     value={query}
                                     onChange={(event) => setQuery(event.target.value)}
                                     placeholder="Student ID or Full Name"
-                                    className="w-full rounded-[20px] border border-[rgba(23,43,47,0.10)] bg-white/90 px-4 py-3.5 text-sm font-medium text-[#172B2F] outline-none transition-colors placeholder:text-[#8B9CA0] focus:border-[#3F6F6A]"
+                                    className="w-full rounded-[20px] border border-[rgba(23,43,47,0.10)] bg-white/90 px-4 py-3.5 text-sm font-medium text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
                                     autoComplete="off"
                                 />
                             </label>
@@ -208,12 +203,7 @@ export default function ExamSchedule() {
                                 fullWidth
                                 loading={lookupLoading}
                                 disabled={!query.trim()}
-                                style={{
-                                    backgroundColor: "#172B2F",
-                                    borderColor: "#172B2F",
-                                    color: "#FFFFFF",
-                                    paddingInline: "1rem",
-                                }}
+                                style={{ paddingInline: "1rem" }}
                             >
                                 <Search size={18} />
                                 Find My Exams
@@ -221,7 +211,7 @@ export default function ExamSchedule() {
                         </form>
 
                         <div className="mt-4 rounded-[20px] bg-[#F7FAF8] px-4 py-3">
-                            <p className="text-sm leading-relaxed text-[#526B70]">
+                            <p className="text-sm leading-relaxed text-subtle">
                                 Can&apos;t find your name? Try your registered name exactly as it appears on your ID card.
                             </p>
                         </div>
@@ -244,7 +234,7 @@ export default function ExamSchedule() {
 
                 {schedule && !lookupLoading && (
                     <>
-                        <p className="mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm font-medium text-[#70868B]">
+                        <p className="mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm font-medium text-faint">
                             <span>{schedule.student_name}</span>
                             {schedule.student_id && (
                                 <>
@@ -258,8 +248,8 @@ export default function ExamSchedule() {
 
                         {groupedExams.map((group) => (
                             <section key={group.date} className="mt-5 first:mt-0">
-                                <div className="mb-3 flex items-center gap-2 text-sm font-bold text-[#172B2F]">
-                                    <CalendarDays size={16} className="text-[#3F6F6A]" />
+                                <div className="mb-3 flex items-center gap-2 text-sm font-bold text-ink">
+                                    <CalendarDays size={16} className="text-accent" />
                                     <h2>{group.date}</h2>
                                 </div>
 
@@ -270,21 +260,21 @@ export default function ExamSchedule() {
                                             className="min-w-0 overflow-hidden rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm"
                                         >
                                             <div className="flex items-center justify-between gap-3">
-                                                <div className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-[#70868B]">
+                                                <div className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-faint">
                                                     <Clock3 size={14} className="shrink-0" />
                                                     <span className="truncate">{exam.start_time} – {exam.end_time}</span>
                                                 </div>
 
-                                                <div className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#172B2F] px-3 py-1 text-base font-bold leading-none text-white">
+                                                <div className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-ink px-3 py-1 text-base font-bold leading-none text-white">
                                                     <DoorOpen size={15} />
                                                     <span>{exam.room_code}</span>
                                                 </div>
                                             </div>
 
-                                            <p className="mt-2 line-clamp-2 break-words text-sm font-semibold leading-snug text-[#172B2F]">
+                                            <p className="mt-2 line-clamp-2 break-words text-sm font-semibold leading-snug text-ink">
                                                 {exam.course_name}
                                             </p>
-                                            <p className="mt-1 min-w-0 truncate text-xs font-medium text-[#8B9CA0]">
+                                            <p className="mt-1 min-w-0 truncate text-xs font-medium text-faint">
                                                 {exam.course_code} · {exam.department}
                                             </p>
                                         </div>
@@ -298,13 +288,13 @@ export default function ExamSchedule() {
                 {lookupError && !lookupLoading && (
                     <section className="app-sheet p-5">
                         <div className="app-state border border-[#F4D6D1] bg-[#FFF7F5] py-10 shadow-none">
-                            <span className="app-state-icon mb-4 bg-[#FFF0ED] text-[#D95A50]">
+                            <span className="app-state-icon mb-4 bg-coral-soft text-danger">
                                 <AlertCircle size={28} />
                             </span>
-                            <p className="max-w-xs text-base font-black text-[#172B2F]">
+                            <p className="max-w-xs text-base font-black text-ink">
                                 {lookupErrorTitle}
                             </p>
-                            <p className="mt-3 max-w-xs text-sm leading-relaxed text-[#526B70]">
+                            <p className="mt-3 max-w-xs text-sm leading-relaxed text-subtle">
                                 {isNotFoundError
                                     ? "Make sure you entered your correct Student ID or full name exactly as registered."
                                     : lookupError}
@@ -314,11 +304,6 @@ export default function ExamSchedule() {
                                 size="sm"
                                 className="mt-6 !px-5"
                                 onClick={resetSearch}
-                                style={{
-                                    backgroundColor: "#172B2F",
-                                    borderColor: "#172B2F",
-                                    color: "#FFFFFF",
-                                }}
                             >
                                 Try Again Later
                             </Button>
@@ -327,20 +312,20 @@ export default function ExamSchedule() {
                 )}
 
                 {schedule ? (
-                    <p className="mt-6 px-4 text-center text-xs leading-relaxed text-[#8B9CA0]">
+                    <p className="mt-6 px-4 text-center text-xs leading-relaxed text-faint">
                         Arrive at least 15 minutes early. Mobile phones are not allowed in exam rooms.
                     </p>
                 ) : (
-                    <section className="app-sheet border border-[#CFE2DE] bg-[#F7FCFA] p-5">
+                    <section className="app-sheet border border-accent-line bg-[#F7FCFA] p-5">
                         <div className="flex items-start gap-3">
-                            <div className="app-icon-chip h-10 w-10 rounded-[16px] bg-[#EAF4F1] text-[#3F6F6A]">
+                            <div className="app-icon-chip h-10 w-10 rounded-[16px] bg-accent-soft text-accent">
                                 <AlertCircle size={18} />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm font-black text-[#172B2F]">
+                                <p className="text-sm font-black text-ink">
                                     Arrive at least 15 minutes early.
                                 </p>
-                                <p className="mt-1 text-sm leading-relaxed text-[#526B70]">
+                                <p className="mt-1 text-sm leading-relaxed text-subtle">
                                     Mobile phones are not allowed in exam rooms.
                                 </p>
                             </div>
