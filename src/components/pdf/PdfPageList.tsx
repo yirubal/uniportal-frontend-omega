@@ -2,7 +2,6 @@ import { ChevronDown, ChevronUp, Minus, Plus, ScanLine } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import workerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
-import Watermark from "../Watermark";
 
 // Legacy build (see vite.config.js alias): the modern pdf.js build needs APIs that older Telegram WebViews lack.
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -35,21 +34,24 @@ const clampZoom = (value: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value
 
 interface PdfPageListProps {
     data: Uint8Array;
-    watermarkText: string;
-    watermarkSubtext: string;
     onLoadError: (error: Error) => void;
 }
 
-export default function PdfPageList({ data, watermarkText, watermarkSubtext, onLoadError }: PdfPageListProps) {
+export default function PdfPageList({ data, onLoadError }: PdfPageListProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState(0);
     const [numPages, setNumPages] = useState(0);
     const [aspects, setAspects] = useState<Record<number, number>>({});
     const [zoom, setZoom] = useState(1);
+    const zoomRef = useRef(zoom);
+    useEffect(() => {
+        zoomRef.current = zoom;
+    }, [zoom]);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageInput, setPageInput] = useState<string | null>(null);
-    const scrollRatioRef = useRef<number | null>(null);
+    // Reading position captured before a zoom: page index, position inside that page, horizontal centre.
+    const zoomAnchorRef = useRef<{ page: number; withinPage: number; centerX: number } | null>(null);
 
     // pdf.js transfers the buffer to its worker; pass a stable copy so re-renders never hand it a detached one.
     const file = useMemo(() => ({ data: data.slice() }), [data]);
@@ -111,21 +113,45 @@ export default function PdfPageList({ data, watermarkText, watermarkSubtext, onL
         };
     }, [updateCurrentPage]);
 
-    const changeZoom = useCallback((next: number) => {
+    // Anchor to the page being read (and the spot inside it), not to a ratio of the total height: page
+    // gaps and padding don't scale with zoom, so a ratio drifts and the view visibly jumps.
+    const layoutRef = useRef(layout);
+    useEffect(() => {
+        layoutRef.current = layout;
+    }, [layout]);
+
+    const captureZoomAnchor = useCallback(() => {
         const element = scrollRef.current;
-        if (element && element.scrollHeight > 0) {
-            // Remember the reading position so zooming doesn't jump to another page.
-            scrollRatioRef.current = (element.scrollTop + element.clientHeight * 0.3) / element.scrollHeight;
-        }
-        setZoom(clampZoom(next));
+        const { tops, heights } = layoutRef.current;
+        if (!element || tops.length === 0) return;
+
+        const line = element.scrollTop + element.clientHeight * 0.3;
+        let page = 0;
+        while (page + 1 < tops.length && tops[page + 1] <= line) page += 1;
+        zoomAnchorRef.current = {
+            page,
+            withinPage: heights[page] ? (line - tops[page]) / heights[page] : 0,
+            centerX: element.scrollWidth > 0 ? (element.scrollLeft + element.clientWidth / 2) / element.scrollWidth : 0.5,
+        };
     }, []);
 
+    const changeZoom = useCallback((next: number) => {
+        captureZoomAnchor();
+        setZoom(clampZoom(next));
+    }, [captureZoomAnchor]);
+
+    // Runs before paint, so the new layout appears already at the reading position (no visible jump).
     useLayoutEffect(() => {
         const element = scrollRef.current;
-        if (!element || scrollRatioRef.current === null) return;
-        element.scrollTop = scrollRatioRef.current * element.scrollHeight - element.clientHeight * 0.3;
-        scrollRatioRef.current = null;
-    }, [layout.totalHeight]);
+        const anchor = zoomAnchorRef.current;
+        if (contentRef.current) contentRef.current.style.transform = ""; // end of a pinch preview, same frame
+        if (!element || !anchor || layout.tops.length === 0) return;
+
+        const page = Math.min(anchor.page, layout.tops.length - 1);
+        element.scrollTop = layout.tops[page] + anchor.withinPage * layout.heights[page] - element.clientHeight * 0.3;
+        element.scrollLeft = anchor.centerX * element.scrollWidth - element.clientWidth / 2;
+        zoomAnchorRef.current = null;
+    }, [layout]);
 
     // Pinch to zoom: preview with a CSS transform while the fingers move, re-render pages once at the end.
     useEffect(() => {
@@ -154,14 +180,14 @@ export default function PdfPageList({ data, watermarkText, watermarkSubtext, onL
         const handleEnd = () => {
             if (!startDistance) return;
             startDistance = 0;
-            content.style.transform = "";
-            setZoom((current) => {
-                const next = clampZoom(Math.round(current * scale * 4) / 4);
-                if (next !== current && element.scrollHeight > 0) {
-                    scrollRatioRef.current = (element.scrollTop + element.clientHeight * 0.3) / element.scrollHeight;
-                }
-                return next;
-            });
+            const next = clampZoom(Math.round(zoomRef.current * scale * 4) / 4);
+            if (next === zoomRef.current) {
+                content.style.transform = "";
+                return;
+            }
+            // The preview transform stays until the re-rendered layout is in place (cleared in the layout effect).
+            captureZoomAnchor();
+            setZoom(next);
         };
 
         element.addEventListener("touchstart", handleStart, { passive: true });
@@ -174,7 +200,7 @@ export default function PdfPageList({ data, watermarkText, watermarkSubtext, onL
             element.removeEventListener("touchend", handleEnd);
             element.removeEventListener("touchcancel", handleEnd);
         };
-    }, []);
+    }, [captureZoomAnchor]);
 
     const scrollToPage = (page: number) => {
         const element = scrollRef.current;
@@ -194,7 +220,9 @@ export default function PdfPageList({ data, watermarkText, watermarkSubtext, onL
             <div
                 ref={scrollRef}
                 className="min-h-0 flex-1 overflow-auto overscroll-contain bg-[#E4EAE7]"
-                style={{ WebkitTouchCallout: "none", userSelect: "none", WebkitUserSelect: "none" }}
+                // scrollBehavior: index.css makes every scroll smooth; the zoom position restore must be instant,
+                // otherwise the page visibly slides away and back after each zoom.
+                style={{ WebkitTouchCallout: "none", userSelect: "none", WebkitUserSelect: "none", scrollBehavior: "auto" }}
                 onContextMenu={(event) => event.preventDefault()}
                 onDoubleClick={() => changeZoom(zoom > 1 ? 1 : 2)}
             >
@@ -240,7 +268,6 @@ export default function PdfPageList({ data, watermarkText, watermarkSubtext, onL
                                     ) : (
                                         <PagePlaceholder pageNumber={pageNumber} />
                                     )}
-                                    <Watermark text={watermarkText} subtext={watermarkSubtext} />
                                 </div>
                             );
                         })}

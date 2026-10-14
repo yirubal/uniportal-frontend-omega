@@ -19,7 +19,7 @@ import { RouteFallback } from "./components/RouteFallback";
 import SlowRequestLoader from "./components/SlowRequestLoader";
 
 // Splash, Home and the channel gate are part of the first load; every other screen is fetched on demand.
-// The PDF reader in particular pulls in pdf.js, so it only loads when a document is opened.
+// The document viewer in particular pulls in pdf.js and other file libraries, loaded only when a file is opened.
 const OnboardingScreen = lazy(() => import("./screens/OnboardingScreen"));
 const ResourcesScreen = lazy(() => import("./screens/ResourcesScreen"));
 const ResourceViewerScreen = lazy(() => import("./screens/ResourceViewerScreen"));
@@ -36,7 +36,7 @@ const PerformanceScreen = lazy(() => import("./screens/PerformanceScreen"));
 const SubscriptionScreen = lazy(() => import("./screens/SubscriptionScreen"));
 const SubscribeScreen = lazy(() => import("./screens/SubscribeScreen"));
 const ExamSchedule = lazy(() => import("./screens/ExamSchedule"));
-const PdfReaderScreen = lazy(() => import("./screens/PdfReaderScreen"));
+const DocumentViewerScreen = lazy(() => import("./screens/DocumentViewerScreen"));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isLoading } = useAuthStore(
@@ -131,7 +131,7 @@ function AppRoutes() {
                         path="/resources/:id/read"
                         element={
                             <ProtectedRoute>
-                                <PdfReaderScreen />
+                                <DocumentViewerScreen />
                             </ProtectedRoute>
                         }
                     />

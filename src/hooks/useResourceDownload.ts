@@ -1,7 +1,6 @@
 import WebApp from "@twa-dev/sdk";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getWatermarkText } from "../api/auth";
 import { requestDownload } from "../api/content";
 import { getErrorMessage } from "../utils/errors";
 
@@ -40,7 +39,7 @@ function deliverFile(url: string, fileName: string): Promise<"started" | "declin
 }
 
 /**
- * Downloads a resource: requests a watermarked, signed URL from the backend and hands it to Telegram.
+ * Downloads a resource: requests a signed URL from the backend and hands it to Telegram.
  * Shared by the resource card and the detail screen so both get the same version gating and errors.
  */
 export function useResourceDownload() {
@@ -56,8 +55,7 @@ export function useResourceDownload() {
         setMessage(null);
 
         try {
-            const watermark = await getWatermarkText().catch(() => undefined);
-            const response = await requestDownload(resourceId, watermark);
+            const response = await requestDownload(resourceId);
             const isWebUrl = /^https?:\/\//i.test(response.url);
             // Dev mocks return a data: URL; anything else that isn't http(s) is a broken link.
             if (!isWebUrl && !(import.meta.env.DEV && response.url.startsWith("data:"))) {

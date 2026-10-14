@@ -121,26 +121,20 @@ export interface DownloadResponse {
     url: string;
     filename: string;
     expires_in: number;
-    watermark?: string;
 }
 
 export const requestDownload = async (
-    resourceId: number,
-    watermark?: string
+    resourceId: number
 ): Promise<DownloadResponse> =>
     withDevFallback(
         "download response",
         async () => {
-            const response = await client.post<DownloadResponse>(
-                `/api/resources/${resourceId}/download/`,
-                watermark ? { watermark } : undefined
-            );
+            const response = await client.post<DownloadResponse>(`/api/resources/${resourceId}/download/`);
             return response.data;
         },
-        (mocks) => ({
-            url: mocks.makeMockPdfDataUrl(`Mock resource ${resourceId}`),
-            filename: `resource_${resourceId}.pdf`,
-            expires_in: 300,
-            watermark,
-        })
+        async (mocks) => {
+            const resource = mocks.MOCK_RESOURCES.find((item) => item.id === resourceId);
+            const file = await mocks.makeMockFile(resource?.file_extension ?? "pdf", resource?.title ?? `Mock resource ${resourceId}`);
+            return { ...file, expires_in: 900 };
+        }
     );

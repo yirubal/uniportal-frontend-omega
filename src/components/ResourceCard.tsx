@@ -49,7 +49,7 @@ export default function ResourceCard({
                         </div>
 
                         <div className="min-w-0 flex-1">
-                            <p className="line-clamp-2 text-[0.94rem] font-semibold leading-snug text-ink">
+                            <p className="line-clamp-2 text-[0.94rem] font-semibold leading-snug text-ink [overflow-wrap:anywhere]">
                                 {resource.title}
                             </p>
 

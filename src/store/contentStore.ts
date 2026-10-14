@@ -33,10 +33,13 @@ export interface Resource {
     downloads_count: number;
     created_at: string;
     is_locked: boolean;
-    author?: string;
-    pages?: number;
-    file_size_mb?: number;
-    estimated_minutes?: number;
+    /** Short-lived signed link that opens the file inline (does not count as a download). */
+    file_url?: string | null;
+    file_url_expires_in?: number;
+    /** File metadata from the backend; absent until the backend provides it, so never show placeholders. */
+    file_size?: number | null;
+    page_count?: number | null;
+    file_extension?: string | null;
     tags?: string[];
 }
 

@@ -1,4 +1,4 @@
-import { BookOpen, Download, Lock, Sparkles } from "lucide-react";
+import { BookOpen, Download, Lock } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,9 +9,22 @@ import { ResourceSourceBadge } from "../components/ResourceSourceBadge";
 import TopBackButton from "../components/TopBackButton";
 import { useAccess } from "../hooks/useAccess";
 import { useAsyncData } from "../hooks/useAsyncData";
+import { formatFileSize, getExtension, VIEWABLE_EXTENSIONS } from "../utils/fileFormat";
 import { useResourceDownload } from "../hooks/useResourceDownload";
 import { useContentStore } from "../store/contentStore";
 import { formatDate, formatFileType } from "../utils/format";
+
+const FORMAT_NAMES: Record<string, string> = {
+    pdf: "PDF",
+    doc: "Word",
+    docx: "Word",
+    ppt: "PowerPoint",
+    pptx: "PowerPoint",
+    xls: "Excel",
+    xlsx: "Excel",
+    csv: "CSV",
+    txt: "Text",
+};
 
 export default function ResourceViewerScreen() {
     const navigate = useNavigate();
@@ -73,6 +86,16 @@ export default function ResourceViewerScreen() {
 
     const source = resource.source ?? "other";
     const sourceDisplay = resource.source_display ?? "Other Resource";
+    const extension = resource.file_extension ?? getExtension(resource.file_url);
+    // Unknown extension (older API): offer the viewer and let it decide from the file itself.
+    const canOpenInApp = !extension || VIEWABLE_EXTENSIONS.has(extension);
+    const detailTiles = [
+        extension && { label: "Format", value: FORMAT_NAMES[extension] ?? extension.toUpperCase() },
+        resource.page_count && { label: extension === "pptx" || extension === "ppt" ? "Slides" : "Pages", value: String(resource.page_count) },
+        resource.file_size && { label: "File size", value: formatFileSize(resource.file_size) },
+        { label: "Source", value: sourceDisplay },
+        resource.course_codes?.length && { label: resource.course_codes.length > 1 ? "Courses" : "Course", value: resource.course_codes.join(" · ") },
+    ].filter((tile): tile is { label: string; value: string } => Boolean(tile));
 
     return (
         <div className="app-screen">
@@ -106,15 +129,17 @@ export default function ResourceViewerScreen() {
                         <ResourceSourceBadge source={source} source_display={sourceDisplay} />
                     </div>
 
-                    <p className="mt-4 text-sm leading-relaxed text-subtle">
-                        {resource.description ?? "No description has been added for this resource yet."}
-                    </p>
+                    {resource.description?.trim() && (
+                        <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-subtle [overflow-wrap:anywhere]">
+                            {resource.description.trim()}
+                        </p>
+                    )}
 
+                    {/* Only facts the backend actually knows: no placeholders or invented authors. */}
                     <div className="mt-5 app-grid-2">
-                        <MetaTile label="Pages" value={resource.pages ? String(resource.pages) : "N/A"} />
-                        <MetaTile label="File size" value={resource.file_size_mb ? `${resource.file_size_mb} MB` : "N/A"} />
-                        <MetaTile label="Read time" value={resource.estimated_minutes ? `${resource.estimated_minutes} min` : "N/A"} />
-                        <MetaTile label="Author" value={resource.author ?? "UniPortal Team"} />
+                        {detailTiles.map((tile) => (
+                            <MetaTile key={tile.label} label={tile.label} value={tile.value} />
+                        ))}
                     </div>
 
                     {!!resource.tags?.length && (
@@ -126,26 +151,6 @@ export default function ResourceViewerScreen() {
                             ))}
                         </div>
                     )}
-                </div>
-
-                <div className="app-sheet p-5">
-                    <div className="flex items-center gap-3">
-                        <div className="app-icon-chip">
-                            <Sparkles size={18} />
-                        </div>
-                        <div>
-                            <p className="app-section-label">Preview</p>
-                            <p className="mt-1 text-base font-semibold text-ink">What this pack usually contains</p>
-                        </div>
-                    </div>
-
-                    <div className="mt-4 app-panel-muted rounded-[24px] p-4">
-                        <ul className="space-y-2 text-sm leading-relaxed text-subtle">
-                            <li>Concise topic summaries and worked examples.</li>
-                            <li>Exam traps, key terms, and short revision cues.</li>
-                            <li>Practice prompts aligned to the course outline.</li>
-                        </ul>
-                    </div>
                 </div>
 
                 {downloadMessage && (
@@ -170,10 +175,11 @@ export default function ResourceViewerScreen() {
                                 <button
                                     key={item.id}
                                     onClick={() => navigate(`/resources/${item.id}`)}
-                                    className="app-list-item"
+                                    className="app-list-item min-w-0 overflow-hidden"
                                 >
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-semibold text-ink">{item.title}</p>
+                                        {/* Titles are often file names with no spaces: let them wrap anywhere. */}
+                                        <p className="line-clamp-2 text-sm font-semibold text-ink [overflow-wrap:anywhere]">{item.title}</p>
                                         <div className="mt-2 flex flex-wrap items-center gap-2">
                                             <p className="text-xs text-faint">{formatFileType(item.file_type)}</p>
                                             <ResourceSourceBadge
@@ -195,11 +201,17 @@ export default function ResourceViewerScreen() {
                         <Lock size={16} />
                         Unlock premium resource
                     </Button>
+                ) : !canOpenInApp ? (
+                    // PowerPoint and old Office formats have no in-app viewer: downloading is the action.
+                    <Button variant="primary" size="lg" fullWidth loading={downloading} onClick={() => void download(resource.id)}>
+                        <Download size={16} />
+                        Download {extension?.toUpperCase()} file
+                    </Button>
                 ) : (
                     <div className="grid grid-cols-[1fr_auto] gap-3">
                         <Button variant="primary" size="lg" fullWidth onClick={() => navigate(`/resources/${resource.id}/read`)}>
                             <BookOpen size={16} />
-                            Read in app
+                            Open in app
                         </Button>
                         <Button
                             variant="secondary"

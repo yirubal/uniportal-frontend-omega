@@ -39,6 +39,9 @@ export const MOCK_COURSES: Course[] = [
 export const MOCK_RESOURCES: Resource[] = [
     {
         id: 1,
+        file_extension: "pdf",
+        file_size: 3250585,
+        page_count: 54,
         title: "DSA Sprint Notes",
         description: "A condensed revision pack for arrays, stacks, queues, trees, heaps, and graph traversal patterns.",
         file_type: "lecture_note",
@@ -51,14 +54,13 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 432,
         created_at: "2026-03-09T10:00:00Z",
         is_locked: false,
-        author: "UniPortal Academic Team",
-        pages: 54,
-        file_size_mb: 3.1,
-        estimated_minutes: 42,
         tags: ["revision", "algorithms", "midterm"],
     },
     {
         id: 2,
+        file_extension: "docx",
+        file_size: 1258291,
+        page_count: 18,
         title: "DSA Practice Worksheet Set A",
         description: "Progressive exercises on recursion, time complexity, linked lists, and binary search trees.",
         file_type: "worksheet",
@@ -71,14 +73,13 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 278,
         created_at: "2026-03-04T08:30:00Z",
         is_locked: false,
-        author: "UniPortal Tutors",
-        pages: 18,
-        file_size_mb: 1.2,
-        estimated_minutes: 30,
         tags: ["practice", "worksheet", "data structures"],
     },
     {
         id: 3,
+        file_extension: "pdf",
+        file_size: 2516582,
+        page_count: 26,
         title: "2025 DSA Final Review Paper",
         description: "Curated past-style exam with worked solutions and examiner-style marking notes.",
         file_type: "past_exam",
@@ -91,14 +92,13 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 189,
         created_at: "2026-02-27T06:15:00Z",
         is_locked: false,
-        author: "Assessment Lab",
-        pages: 26,
-        file_size_mb: 2.4,
-        estimated_minutes: 55,
         tags: ["past exam", "final", "solutions"],
     },
     {
         id: 4,
+        file_extension: "pptx",
+        file_size: 1887436,
+        page_count: 22,
         title: "Operating Systems Memory Management Cheatsheet",
         description: "Fast reference for paging, segmentation, virtual memory, and replacement algorithms.",
         file_type: "lecture_note",
@@ -111,14 +111,13 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 341,
         created_at: "2026-03-08T09:00:00Z",
         is_locked: false,
-        author: "Systems Faculty",
-        pages: 22,
-        file_size_mb: 1.8,
-        estimated_minutes: 20,
         tags: ["memory", "cheatsheet", "exam-prep"],
     },
     {
         id: 5,
+        file_extension: "pdf",
+        file_size: 1153433,
+        page_count: 16,
         title: "Operating Systems Process Scheduling Worksheet",
         description: "Hands-on scheduling drills covering FCFS, SJF, RR, starvation, and throughput analysis.",
         file_type: "worksheet",
@@ -131,14 +130,12 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 146,
         created_at: "2026-02-22T12:00:00Z",
         is_locked: false,
-        author: "Systems Faculty",
-        pages: 16,
-        file_size_mb: 1.1,
-        estimated_minutes: 25,
         tags: ["scheduling", "practice", "cpu"],
     },
     {
         id: 6,
+        file_extension: "xlsx",
+        file_size: 1677721,
         title: "Database Systems SQL Drill Pack",
         description: "Query practice covering joins, aggregation, normalization, transactions, and indexing.",
         file_type: "worksheet",
@@ -151,14 +148,12 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 221,
         created_at: "2026-03-01T07:45:00Z",
         is_locked: false,
-        author: "Database Unit",
-        pages: 20,
-        file_size_mb: 1.6,
-        estimated_minutes: 35,
         tags: ["sql", "worksheet", "practice"],
     },
     {
         id: 7,
+        file_extension: "txt",
+        file_size: 2306867,
         title: "Computer Networks Layer-by-Layer Summary",
         description: "High-yield overview of OSI and TCP/IP layers with diagrams and protocol examples.",
         file_type: "lecture_note",
@@ -171,14 +166,12 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 254,
         created_at: "2026-03-10T11:20:00Z",
         is_locked: false,
-        author: "Networks Desk",
-        pages: 31,
-        file_size_mb: 2.2,
-        estimated_minutes: 26,
         tags: ["networking", "protocols", "summary"],
     },
     {
         id: 8,
+        file_extension: "csv",
+        file_size: 2936012,
         title: "Software Engineering Requirements Template",
         description: "Sample SRS template with use cases, traceability matrix, and review checklist.",
         file_type: "lecture_note",
@@ -191,14 +184,12 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 91,
         created_at: "2026-02-19T10:00:00Z",
         is_locked: false,
-        author: "Project Studio",
-        pages: 37,
-        file_size_mb: 2.8,
-        estimated_minutes: 28,
         tags: ["requirements", "template", "project"],
     },
     {
         id: 9,
+        file_extension: "png",
+        file_size: 1048576,
         title: "AI Search Algorithms Quick Drill",
         description: "Mini-question bank on BFS, DFS, A*, admissibility, and heuristic design.",
         file_type: "worksheet",
@@ -211,14 +202,13 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 118,
         created_at: "2026-03-05T14:20:00Z",
         is_locked: false,
-        author: "AI Lab",
-        pages: 14,
-        file_size_mb: 1.0,
-        estimated_minutes: 18,
         tags: ["search", "heuristics", "ai"],
     },
     {
         id: 10,
+        file_extension: "pdf",
+        file_size: 3984588,
+        page_count: 44,
         title: "2024 Computer Science Exit Exam Pack",
         description: "Timed exit exam paper with answer review cues and competency map by topic.",
         file_type: "exit_exam",
@@ -231,10 +221,6 @@ export const MOCK_RESOURCES: Resource[] = [
         downloads_count: 204,
         created_at: "2026-02-25T16:10:00Z",
         is_locked: false,
-        author: "National Exam Prep Desk",
-        pages: 44,
-        file_size_mb: 3.8,
-        estimated_minutes: 120,
         tags: ["exit exam", "competency", "timed"],
     },
 ];
@@ -1303,4 +1289,71 @@ export function makeMockPdfDataUrl(title: string, pageCount = 6): string {
     pdf += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
 
     return `data:application/pdf;base64,${btoa(pdf)}`;
+}
+
+const OOXML_RELS = `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`;
+
+/** Builds a small sample file of the given type so each in-app viewer can be tried with dev mocks. */
+export async function makeMockFile(extension: string, title: string): Promise<{ url: string; filename: string }> {
+    const safeName = title.replace(/[^\w-]+/g, "_");
+    const escapeXml = (text: string) => text.replace(/[<>&"]/g, (char) => `&#${char.charCodeAt(0)};`);
+    const zipUrl = async (files: Record<string, string>, mime: string) => {
+        const { default: JSZip } = await import("jszip");
+        const zip = new JSZip();
+        for (const [name, content] of Object.entries(files)) zip.file(name, content);
+        return `data:${mime};base64,${await zip.generateAsync({ type: "base64" })}`;
+    };
+
+    switch (extension) {
+        case "docx":
+            return {
+                filename: `${safeName}.docx`,
+                url: await zipUrl({
+                    "[Content_Types].xml": `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`,
+                    "_rels/.rels": `${OOXML_RELS}<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`,
+                    "word/document.xml": `<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>`
+                        + `<w:p><w:r><w:rPr><w:b/><w:sz w:val="36"/></w:rPr><w:t>${escapeXml(title)}</w:t></w:r></w:p>`
+                        + Array.from({ length: 12 }, (_, i) => `<w:p><w:r><w:t xml:space="preserve">Exercise ${i + 1}: sample worksheet text for the in-app Word viewer.</w:t></w:r></w:p>`).join("")
+                        + `</w:body></w:document>`,
+                }, "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+            };
+        case "xlsx": {
+            const rows = [["Query", "Table", "Rows"], ...Array.from({ length: 12 }, (_, i) => [`SELECT example ${i + 1}`, i % 2 ? "students" : "courses", String((i + 1) * 7)])];
+            const strings = rows.flat();
+            const cells = rows.map((row, r) => `<row r="${r + 1}">${row.map((_, c) => `<c r="${String.fromCharCode(65 + c)}${r + 1}" t="s"><v>${r * 3 + c}</v></c>`).join("")}</row>`).join("");
+            return {
+                filename: `${safeName}.xlsx`,
+                url: await zipUrl({
+                    "[Content_Types].xml": `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/></Types>`,
+                    "_rels/.rels": `${OOXML_RELS}<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+                    "xl/workbook.xml": `<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="SQL drills" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+                    "xl/_rels/workbook.xml.rels": `${OOXML_RELS}<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>`,
+                    "xl/sharedStrings.xml": `<?xml version="1.0" encoding="UTF-8"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${strings.length}" uniqueCount="${strings.length}">${strings.map((text) => `<si><t>${escapeXml(text)}</t></si>`).join("")}</sst>`,
+                    "xl/worksheets/sheet1.xml": `<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${cells}</sheetData></worksheet>`,
+                }, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+            };
+        }
+        case "pptx":
+            return {
+                filename: `${safeName}.pptx`,
+                url: await zipUrl({
+                    "[Content_Types].xml": `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>`,
+                    "ppt/presentation.xml": `<?xml version="1.0" encoding="UTF-8"?><p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>`,
+                }, "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+            };
+        case "txt":
+            return {
+                filename: `${safeName}.txt`,
+                url: `data:text/plain;charset=utf-8,${encodeURIComponent(`${title}\n\n` + Array.from({ length: 30 }, (_, i) => `Line ${i + 1}: sample plain-text study notes.`).join("\n"))}`,
+            };
+        case "csv":
+            return {
+                filename: `${safeName}.csv`,
+                url: `data:text/csv;charset=utf-8,${encodeURIComponent('Requirement,Priority,Notes\n"Login with Telegram",High,"Uses initData, signed"\nOffline reading,Medium,"Cached, ""best effort"""\nExport grades,Low,\n')}`,
+            };
+        case "png":
+            return { filename: "uniportal-logo.webp", url: `${window.location.origin}/uniportal-logo.webp` };
+        default:
+            return { filename: `${safeName}.pdf`, url: makeMockPdfDataUrl(title) };
+    }
 }

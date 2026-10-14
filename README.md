@@ -23,7 +23,7 @@ This repo is the frontend only. The API is a separate Django + DRF project (`uni
 | Routing   | React Router v7 |
 | HTTP      | Axios (plus native `fetch` for the Telegram login call) |
 | Telegram  | `@twa-dev/sdk` |
-| Other     | `react-pdf` (legacy pdf.js build, for the in-app reader), `lucide-react` |
+| Other     | `react-pdf` (legacy pdf.js build), `docx-preview`, `read-excel-file` (in-app file viewer), `lucide-react` |
 
 ---
 
@@ -131,7 +131,8 @@ routing        "/" -> /onboarding (profile not set) or /home
 ### Attempts and the PDF reader
 
 - The active quiz/exam attempt is saved to `localStorage` (`quizStore`, zustand `persist`): it survives reloads and closing the Mini App, expires after 24 h, and is only offered back (the "Unfinished attempt" card) to the student who started it. Timed exams store a deadline, so the clock can't drift while Telegram is in the background.
-- `/resources/:id/read` is the in-app PDF reader (lazy-loaded). It downloads the whole file from the signed `/download/` URL, so **that URL must allow CORS from the Mini App origin**, renders only the pages near the reading position, and draws a watermark (name and ID from `/api/students/me/watermark/`) on every page. pdf.js fonts, character maps and decoders are served from our own origin by the `pdfjs-assets` plugin in `vite.config.js`.
+- `/resources/:id/read` is the in-app file viewer (lazy-loaded; each format's library loads only when needed): PDF (pdf.js, pages rendered near the reading position, zoom), Word `.docx` (docx-preview), Excel `.xlsx` (read-excel-file) and CSV as tables, plain text, and images. PowerPoint and legacy `.doc/.ppt/.xls` show a Download button instead. It opens the resource's inline `file_url` (so reading doesn't count as a download) and downloads the whole file, so **that URL must allow CORS from the Mini App origin** (on R2 this is the bucket's CORS policy). pdf.js fonts, character maps and decoders are served from our own origin by the `pdfjs-assets` plugin in `vite.config.js`.
+- The resource detail panel shows only facts from the API (`file_extension`, `page_count`, `file_size`, `source_display`, `course_codes`, `description`). Nothing is invented when a value is missing.
 
 ### Styling
 
@@ -156,7 +157,7 @@ A student is Premium only when `subscription_status === "premium"` **and** `subs
 | `/onboarding` | Profile setup |
 | `/home` | Dashboard, profile and subscription status, quick links |
 | `/resources`, `/resources/:id` | Resource library, resource detail and download |
-| `/resources/:id/read` | In-app PDF reader with watermark |
+| `/resources/:id/read` | In-app file viewer (PDF, Word, Excel/CSV, text, images) |
 | `/quiz` | Practice Hub: quiz, past exam, selective practice |
 | `/quiz/setup` → `/quiz/list` → `/quiz/take/:quizId` | Practice flow |
 | `/quiz/selective` → `/quiz/selective/take` | Chapter-based selective practice |
