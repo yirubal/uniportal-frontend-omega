@@ -107,7 +107,7 @@ export default function ResourceViewerScreen() {
                     </div>
 
                     <p className="mt-4 text-sm leading-relaxed text-subtle">
-                        {resource.description ?? "Resource details will appear here once backend content is available."}
+                        {resource.description ?? "No description has been added for this resource yet."}
                     </p>
 
                     <div className="mt-5 app-grid-2">

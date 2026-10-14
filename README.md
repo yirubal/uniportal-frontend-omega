@@ -23,7 +23,7 @@ This repo is the frontend only. The API is a separate Django + DRF project (`uni
 | Routing   | React Router v7 |
 | HTTP      | Axios (plus native `fetch` for the Telegram login call) |
 | Telegram  | `@twa-dev/sdk` |
-| Other     | `react-pdf`, `lucide-react` |
+| Other     | `react-pdf` (legacy pdf.js build, for the in-app reader), `lucide-react` |
 
 ---
 
@@ -77,7 +77,7 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 - A normal browser has no Telegram `initData`, so in dev the app logs in with the backend's dev-mode login: `POST /api/auth/telegram/` with `dev_mode: true` and test user `telegram_id: 999999`. The backend must have dev-mode login enabled.
 - The backend must allow your dev origin in CORS (for example `http://localhost:5173`).
 
-> **Dev-only fallbacks.** In development, many API helpers silently return mock data when a real request fails. This applies to departments, courses, resources, exam lists and questions. If a screen shows data you don't recognise, check the browser console for `[dev] Using mock ...` messages. Also note that attempts history and performance are always mocked on `localhost` / `127.0.0.1` in dev. None of these fallbacks exist in production builds.
+> **Dev-only fallbacks.** With mocks off, a dev build falls back to mock data only when the backend is **unreachable** (no HTTP response); the console then logs `[dev] Backend unreachable, using mock ...`. HTTP errors (401, 403/upgrade, 404, 500) always reach the screens so they are never masked. All of this lives in `src/api/devFallback.ts` (`withDevFallback`). None of it exists in production builds; the mock module is not in the bundle.
 
 ### 5. Testing inside Telegram (optional)
 
@@ -123,9 +123,22 @@ routing        "/" -> /onboarding (profile not set) or /home
 - The Telegram login request uses native `fetch` and sends `initData` exactly as Telegram provides it. **Do not change this.** Any change to that string breaks the backend's signature check.
 - `src/api/client.ts` is the shared Axios instance. It:
   - adds `Authorization: Bearer <token>` to every request
-  - clears auth on `401` (a request can opt out with `skipAuthClear`)
+  - on `401` expires the session: the app logs in again once, then Splash offers "Try again" (a request can opt out with `skipAuthClear`)
   - shows a global "slow request" loader after 700 ms (a request can opt out with `skipGlobalLoader`, used for silent background refreshes)
-  - turns every error into `{ status, message, upgrade_required }`
+  - times out after 15 s and accepts an `AbortSignal` (screens cancel requests they no longer need)
+  - turns every error into an `ApiError`: `{ status, message, upgrade_required, network, aborted }`
+
+### Attempts and the PDF reader
+
+- The active quiz/exam attempt is saved to `localStorage` (`quizStore`, zustand `persist`): it survives reloads and closing the Mini App, expires after 24 h, and is only offered back (the "Unfinished attempt" card) to the student who started it. Timed exams store a deadline, so the clock can't drift while Telegram is in the background.
+- `/resources/:id/read` is the in-app PDF reader (lazy-loaded). It downloads the whole file from the signed `/download/` URL, so **that URL must allow CORS from the Mini App origin**, renders only the pages near the reading position, and draws a watermark (name and ID from `/api/students/me/watermark/`) on every page. pdf.js fonts, character maps and decoders are served from our own origin by the `pdfjs-assets` plugin in `vite.config.js`.
+
+### Styling
+
+- Use the palette tokens from `@theme` in `src/index.css` (`bg-ink`, `text-subtle`, `text-faint`, `bg-mist`, `bg-accent-soft`, `text-danger`, ...) instead of hardcoded hex classes.
+- Global element resets in `index.css` must live in `@layer base`. Unlayered CSS beats every Tailwind utility; that is how a `button` reset once disabled all button background and padding classes.
+- Use `Button` variants (`primary`, `secondary`, `ghost`, `danger`) rather than inline colour styles. Dialogs use `useDialogFocus` for focus handling and Escape.
+- System fonts on purpose: no web fonts are loaded.
 
 ### Student profile
 
@@ -143,6 +156,7 @@ A student is Premium only when `subscription_status === "premium"` **and** `subs
 | `/onboarding` | Profile setup |
 | `/home` | Dashboard, profile and subscription status, quick links |
 | `/resources`, `/resources/:id` | Resource library, resource detail and download |
+| `/resources/:id/read` | In-app PDF reader with watermark |
 | `/quiz` | Practice Hub: quiz, past exam, selective practice |
 | `/quiz/setup` → `/quiz/list` → `/quiz/take/:quizId` | Practice flow |
 | `/quiz/selective` → `/quiz/selective/take` | Chapter-based selective practice |
@@ -158,11 +172,13 @@ A student is Premium only when `subscription_status === "premium"` **and** `subs
 src/
 ├── api/          Backend calls (auth, content, quiz, exams) + client.ts + devMocks.ts
 ├── store/        Zustand stores: auth, content (picker/resources), quiz (setup + attempt), network
-├── hooks/        useAuth, useAccess, useTelegram, useTelegramChrome, useStudentProfile
-├── screens/      One file per route
-├── components/   Shared UI (QuestionCard, ResourceCard, AnswerReviewModal, BottomNav, ...)
-│   └── ui/       Primitives: Button, Badge, Card, Skeleton, EmptyState, ErrorState
-├── utils/        Formatting, periods, practice/exit-exam/question helpers, watermark
+├── hooks/        Auth/access, Telegram, and shared screen logic: useCourseFilter, useAsyncData,
+│                 useSubscriptionStatus, useAttemptSubmit, useResourceDownload, useDialogFocus
+├── screens/      One file per route (all lazy-loaded except Splash, Home and the channel gate)
+├── components/   Shared UI (QuestionCard, ResourceCard, ExamTimer, ResumeAttemptCard, ...)
+│   ├── ui/       Primitives: Button, Skeleton, EmptyState, ErrorState, SearchInput
+│   └── <area>/   Pieces of larger screens: pdf, resources, selective, subscribe, answerReview
+├── utils/        Formatting, periods, subscription, errors, practice/exit-exam/question helpers
 └── types/        Shared types (exam schedule)
 ```
 

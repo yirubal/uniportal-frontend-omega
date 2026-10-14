@@ -1,4 +1,4 @@
-import { Building2, CheckCircle2, GraduationCap, Layers3, Rows3, Wifi } from "lucide-react";
+import { Building2, CheckCircle2, GraduationCap, Layers3, Route, Rows3 } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -22,9 +22,9 @@ import {
 
 const STEP_LABELS = [
     { title: "Department", hint: "Pick the academic lane the app should prioritize.", icon: Building2 },
-    { title: "Program", hint: "Program controls whether the app shows semesters or terms.", icon: Wifi },
+    { title: "Program", hint: "Regular, extension or distance. This decides whether you see semesters or terms.", icon: Route },
     { title: "Year", hint: "Your year keeps quizzes and resources relevant.", icon: GraduationCap },
-    { title: "Period", hint: "The label changes by program, but the backend still stores a numeric period.", icon: Layers3 },
+    { title: "Period", hint: "The semester or term you are studying now.", icon: Layers3 },
 ];
 
 type TelegramWindow = Window & {

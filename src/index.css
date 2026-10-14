@@ -54,8 +54,9 @@
     --shadow-sm: 0 14px 30px rgba(23, 43, 47, 0.06);
     --shadow-md: 0 20px 45px rgba(23, 43, 47, 0.1);
     --shadow-lg: 0 24px 60px rgba(23, 43, 47, 0.14);
-    --font-sans: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif;
-    --font-display: "Sora", "Plus Jakarta Sans", "Avenir Next", sans-serif;
+    /* System fonts on purpose: no web-font download on slow connections (decided 2026-10-14). */
+    --font-sans: "Avenir Next", "Segoe UI", sans-serif;
+    --font-display: "Avenir Next", "Segoe UI", sans-serif;
 }
 
 *,

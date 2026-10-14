@@ -327,6 +327,20 @@ This file is the durable handoff for future Codex sessions working in this repos
   - dev mocks now expose mock selective-practice chapters and keep mock filtering compatible with formatted chapter labels
   - verification after this pass: `npm run lint` and `npm run build` both passed
 
+### 2026-10-14 (review and improvement phases)
+
+- Full code review recorded in `improvements.md` (Phases 0-8); worked through phase by phase, each phase committed on `dev` and pushed straight to `origin/main` (no remote `dev` branch).
+- Phase 0: ESLint now actually lints TS (`typescript-eslint`), `npm run typecheck` added, all tsc errors fixed, `noUnusedLocals` on, hook rules (`set-state-in-effect`, `purity`) are errors.
+- Phase 1-2: no fake 0% result on failed submit; deadline-based exam timer; 401 re-auths once; deduped `initAuth`; `withDevFallback` (mocks only when forced or backend unreachable); 15 s timeouts; `AbortSignal` support; single premium helper.
+- Phase 3: attempts persist in `localStorage` (24 h, per student) with a Resume card; refetch-based retries; finish confirmation; "Retake this quiz" retakes the same paper.
+- PDF reader: `/resources/:id/read` with react-pdf (legacy pdf.js build), virtualised pages, zoom, tiled SVG watermark; pdf.js assets self-hosted via the `pdfjs-assets` Vite plugin.
+- Phase 4-5: resource cards open the detail screen; `useResourceDownload` (version-gated Telegram download); route code splitting (main bundle 533 KB to 383 KB); store selectors; timer isolated in `ExamTimer`.
+- Phase 6: shared hooks `useCourseFilter`, `useAsyncData`, `useSubscriptionStatus`, `useAttemptSubmit`; large screens split into `components/<area>/`. Product rule kept: a pending/rejected payment request shows the student as Free.
+- Smoke-tested in headless Chromium. Found and fixed: transition-related result loss (React Router v7 navigations run in transitions, so the old screen stays mounted while a lazy screen loads), and an unlayered `button` reset that disabled all button Tailwind classes.
+- Phase 7: palette tokens (pixel-identical migration), accessible dialogs (`useDialogFocus`), focus ring, contrast fixes, ARIA semantics, `index.html` meta. System fonts kept by decision.
+- Phase 8: developer copy removed from the UI, real plan price in `LockedOverlay`, docs updated.
+- Backend follow-ups: CORS on signed download URLs for the reader; reads currently call `/download/` (may count as downloads); `paper_id` should always be returned in performance data.
+
 ## Next Work
 
 - Continue all new implementation on `dev`.

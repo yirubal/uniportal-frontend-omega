@@ -1,18 +1,24 @@
 import { useNavigate } from "react-router-dom";
+import { getPlans } from "../api/quiz";
+import { useAsyncData } from "../hooks/useAsyncData";
+import { formatETB } from "../utils/format";
 import Button from "./ui/Button";
 
 interface LockedOverlayProps {
     feature: string;
     description?: string;
-    price?: string;
 }
 
 export default function LockedOverlay({
     feature,
     description,
-    price = "ETB 99",
 }: LockedOverlayProps) {
     const navigate = useNavigate();
+    // Real starting price from the plans API; plain label while it loads or if it fails.
+    const plans = useAsyncData("subscription-plans", (signal) =>
+        getPlans({ skipGlobalLoader: true, skipAuthClear: true, signal })
+    );
+    const cheapest = plans.data?.length ? Math.min(...plans.data.map((plan) => plan.price)) : null;
 
     return (
         <div className="px-1 pt-2">
@@ -52,7 +58,7 @@ export default function LockedOverlay({
                     className="mt-6"
                     onClick={() => navigate("/subscribe")}
                 >
-                    Upgrade from {price}
+                    {cheapest !== null ? `Upgrade from ${formatETB(cheapest)}` : "See premium plans"}
                 </Button>
             </div>
         </div>

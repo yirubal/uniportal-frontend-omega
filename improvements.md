@@ -120,7 +120,7 @@ These are bugs students hit, or that give them wrong information.
 - [x] 🟠 **Split routes.** All 19 screens load eagerly into one 522 KB chunk (151 KB gzip). Use `React.lazy` plus `Suspense` per route, starting with the exam, simulation, subscribe and review-modal screens.
 - [x] 🟠 **Store selectors.** `useQuizStore()`, `useContentStore()` and `useAuthStore()` are called with no selector (in QuizAttempt, Simulation, Resources, useAccess, useStudentProfile, App), so these components re-render on every store change. Use selectors or `useShallow`. In ResourcesScreen, the `loadResources` memo depends on the whole store, so it never actually memoizes.
 - [x] 🟠 **Simulation re-renders every second.** The timer re-renders the whole screen, including the navigator grid and `QuestionCard`. Move the timer into its own component, wrap `QuestionCard` in `memo` with a stable `onSelect`, and debounce the fill-blank and essay inputs, which currently write to the store on every keystroke.
-- [ ] 🟢 **Image size.** The splash image is 92 KB but displayed at 96px. Resize it and convert to WebP. _Not done: no image tool is installed here (Pillow, ImageMagick, cwebp). Export a 192×192 WebP (2× for retina) and replace `public/IMG_20260430_200017_724.jpg`._
+- [x] 🟢 **Image size.** The splash image is 92 KB but displayed at 96px. Resize it and convert to WebP. _Done: `public/uniportal-logo.webp`, 192×192 (2× for retina), 11.7 KB, resized in headless Chrome. Also used as the favicon._
 
 ---
 
@@ -166,7 +166,7 @@ These are bugs students hit, or that give them wrong information.
   - `role="timer"` with a low-time announcement
   - a text alternative for the Performance chart bars
   - render the ChannelGate toast only while it is shown (now an always-present `role="status"`)
-- [ ] 🟢 **`index.html` and fonts.** _Title, description, icon, `theme-color` and `viewport-fit=cover` are done. Still open: whether to load Plus Jakarta Sans and Sora (they change all typography, so this needs a decision)._
+- [x] 🟢 **`index.html` and fonts.** _Title, description, icon, `theme-color` and `viewport-fit=cover` are done. Fonts: decided to keep system fonts, and the unused font names were removed from the CSS._
   - Load Plus Jakarta Sans and Sora; they are declared but never loaded.
   - Set a real `<title>` and favicon.
   - Add `theme-color` and `viewport-fit=cover`, since the CSS uses safe-area insets.
@@ -175,13 +175,13 @@ These are bugs students hit, or that give them wrong information.
 
 ## Phase 8 — Copy & polish
 
-- [ ] 🟢 **Developer copy shown to students.** Replace "backend still stores a numeric period" (Onboarding), "real backend-driven quiz summaries" (Home) and "once backend content is available" (ResourceViewer).
-- [ ] 🟢 **Hardcoded values.**
+- [x] 🟢 **Developer copy shown to students.** Replace "backend still stores a numeric period" (Onboarding), "real backend-driven quiz summaries" (Home) and "once backend content is available" (ResourceViewer).
+- [x] 🟢 **Hardcoded values.**
   - LockedOverlay's default price "ETB 99" should come from `/api/subscription/plans/`.
   - ChannelGate hardcodes `@unityuniversityportal` instead of deriving it from `channelUrl`.
-  - The Program step uses a `Wifi` icon.
-- [ ] 🟢 **ExamSchedule button label.** "Try Again Later" actually resets the search; rename it "Search again".
-- [ ] 🟢 **Update docs.** Update `CODEX_CONTEXT.md` and `README.md` as phases land. README says lint passes, but lint currently checks nothing.
+  - The Program step uses a `Wifi` icon. _(now `Route`; the `Wifi` icon in SlowRequestLoader is intentional)_
+- [x] 🟢 **ExamSchedule button label.** "Try Again Later" actually resets the search; rename it "Search again".
+- [x] 🟢 **Update docs.** Update `CODEX_CONTEXT.md` and `README.md` as phases land. README says lint passes, but lint currently checks nothing.
 
 ---
 

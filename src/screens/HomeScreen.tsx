@@ -235,7 +235,7 @@ export default function HomeScreen() {
                                 Use practice for speed, simulations for pressure
                             </p>
                             <p className="mt-1 text-sm text-subtle">
-                                The app now supports real backend-driven quiz summaries and exit exam flows.
+                                Quizzes give instant feedback; timed exit exams build exam-day pacing.
                             </p>
                         </div>
                     </div>

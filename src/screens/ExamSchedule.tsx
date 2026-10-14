@@ -115,7 +115,7 @@ export default function ExamSchedule() {
                 : lookupStatus === 403
                     ? "Access blocked"
                     : lookupStatus === 404
-                        ? "Exam schedule endpoint returned no result"
+                        ? `No exam found for "${searchedQuery}"`
                         : "Could not load exam schedule";
     const searchAgainLabel = schedule || lookupError ? "Search Again" : "Back";
 
@@ -305,7 +305,7 @@ export default function ExamSchedule() {
                                 className="mt-6 !px-5"
                                 onClick={resetSearch}
                             >
-                                Try Again Later
+                                Search again
                             </Button>
                         </div>
                     </section>
