@@ -1,5 +1,5 @@
 import { Brain, FileText } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getExamQuestions, submitAttempt } from "../api/quiz";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -7,7 +7,8 @@ import QuestionCard from "../components/QuestionCard";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
-import { AttemptSummary, useQuizStore } from "../store/quizStore";
+import { useQuizStore } from "../store/quizStore";
+import { getErrorMessage } from "../utils/errors";
 import { getPracticeContentMeta } from "../utils/practice";
 import { buildSubmissionAnswers, isOptionQuestion, isQuestionAnswered } from "../utils/questions";
 
@@ -21,6 +22,8 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const submittingRef = useRef(false);
     const [autoAdvancing, setAutoAdvancing] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
 
@@ -85,14 +88,16 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
     }, [quizExamPaperId, quizQuestionsLength, quizMode, quizId, selectiveMode]);
 
     const handleSubmit = useCallback(async () => {
-        if ((!quizId && !selectiveMode) || submitting) return;
+        // Ref guard: state-based guards can be stale between a tap and the auto-advance submit.
+        if ((!quizId && !selectiveMode) || submittingRef.current) return;
 
         // Read live store values inside the callback — do NOT capture quiz in deps to avoid cascade re-renders
         const { questions, answers, completeQuiz } = useQuizStore.getState();
 
+        submittingRef.current = true;
         setSubmitting(true);
         setAutoAdvancing(false);
-        setError(null);
+        setSubmitError(null);
 
         try {
             const submissionAnswers = buildSubmissionAnswers(questions, answers);
@@ -107,25 +112,15 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
             });
 
             completeQuiz(result);
-        } catch {
-            const { questions: qs } = useQuizStore.getState();
-            const fallbackSummary: AttemptSummary = {
-                score: 0,
-                percentage: 0,
-                gradable_total: qs.length,
-                pending_count: qs.filter((question) =>
-                    ["essay", "matching"].includes(question.question_type ?? "")
-                ).length,
-                topic_breakdown: {},
-                weak_topics: [],
-            };
-
-            completeQuiz(fallbackSummary);
+        } catch (submitFailure) {
+            // Keep the student on the attempt: the answers were not saved, so showing a result would be wrong.
+            setSubmitError(getErrorMessage(submitFailure, "Failed to submit your answers."));
         } finally {
+            submittingRef.current = false;
             setSubmitting(false);
         }
     // No quiz object in deps — reads store via getState() to avoid the full-store re-subscription problem
-    }, [attemptMode, quizId, selectiveMode, submitting]);
+    }, [attemptMode, quizId, selectiveMode]);
 
     useEffect(() => {
         if (quiz.isComplete) {
@@ -142,7 +137,9 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
             !currentQuestion ||
             !currentQuestionAnswered ||
             !isOptionQuestion(currentQuestion) ||
-            submitting
+            submitting ||
+            // After a failed submit, wait for a manual retry instead of auto-submitting again.
+            submitError
         ) return;
 
         const isLast = quizCurrentIndex + 1 >= quizQuestionsLength;
@@ -171,6 +168,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
         quizQuestionsLength,
         quizPracticeContentType,
         submitting,
+        submitError,
     ]);
 
     if (loading) {
@@ -260,11 +258,16 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
             </div>
 
             <div className="app-footer space-y-3">
+                {submitError && (
+                    <div role="alert" className="rounded-[16px] border border-[#F3C9C3] bg-[#FFF0ED] px-4 py-3 text-sm leading-relaxed text-[#A8443A]">
+                        Your answers were not submitted: {submitError} Tap submit to try again.
+                    </div>
+                )}
                 <Button
                     variant="primary"
                     size="lg"
                     fullWidth
-                    disabled={!currentQuestionAnswered || autoAdvancing}
+                    disabled={(!currentQuestionAnswered && !(isLast && submitError)) || autoAdvancing || submitting}
                     style={{
                         backgroundColor: "#172B2F",
                         color: "#FFFFFF",

@@ -10,27 +10,33 @@ import { ErrorState, Skeleton } from "../components/ui";
 import { useQuizStore } from "../store/quizStore";
 import { getExitExamCategory, getExitExamMeta } from "../utils/exitExams";
 import { formatDuration, formatTimeRemaining } from "../utils/format";
+import { getErrorMessage } from "../utils/errors";
 import { buildSubmissionAnswers, isQuestionAnswered } from "../utils/questions";
 
 export default function SimulationScreen() {
     const navigate = useNavigate();
     const { examId } = useParams();
     const quiz = useQuizStore();
-    // Stable action refs — keep the timer effect dep list slim
-    const setTimeRemainingRef = useRef(quiz.setTimeRemaining);
     const handleSubmitCallRef = useRef<() => void>(() => {});
-    useEffect(() => { setTimeRemainingRef.current = quiz.setTimeRemaining; }, [quiz.setTimeRemaining]);
     // Note: handleSubmitCallRef.current is assigned after handleSubmit is declared below
+    const submittingRef = useRef(false);
+    const autoSubmittedRef = useRef(false);
 
     const [exam, setExam] = useState<ExamPaper | null>(null);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const [showNavigator, setShowNavigator] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
 
-    const isQuizActive = quiz.questions.length > 0 && !quiz.isComplete;
+    // Only treat the stored attempt as active when it belongs to the exam in the URL.
+    const isQuizActive =
+        quiz.questions.length > 0 &&
+        !quiz.isComplete &&
+        quiz.mode === "simulation" &&
+        quiz.examPaperId === Number(examId);
     const isQuizComplete = quiz.isComplete;
 
     useEffect(() => {
@@ -55,22 +61,41 @@ export default function SimulationScreen() {
     }, [isQuizComplete, navigate]);
 
     // Timer effect — only depends on isQuizActive, NOT the full quiz object or timeRemaining.
-    // Reads current time via useQuizStore.getState() inside the interval to avoid stale closures.
+    // Time left is derived from the stored deadline, so throttled or paused intervals
+    // (Telegram minimized, hidden tab) can't stretch the exam beyond its real duration.
     useEffect(() => {
         if (!isQuizActive) return;
 
         const tick = () => {
-            const current = useQuizStore.getState().timeRemaining;
-            if (current === null) return;
-            if (current <= 0) {
-                handleSubmitCallRef.current();
-                return;
+            const { deadline, setTimeRemaining } = useQuizStore.getState();
+            if (deadline === null) return;
+
+            const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+            setTimeRemaining(remaining);
+
+            if (remaining <= 0) {
+                window.clearInterval(timer);
+                // Submit once on expiry; a failed submit is retried manually, not every tick.
+                if (!autoSubmittedRef.current) {
+                    autoSubmittedRef.current = true;
+                    handleSubmitCallRef.current();
+                }
             }
-            setTimeRemainingRef.current(Math.max(0, current - 1));
         };
 
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") tick();
+        };
+
+        autoSubmittedRef.current = false;
         const timer = window.setInterval(tick, 1000);
-        return () => window.clearInterval(timer);
+        tick();
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            window.clearInterval(timer);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     }, [isQuizActive]);
 
     const answeredCount = useMemo(
@@ -92,6 +117,7 @@ export default function SimulationScreen() {
         : 0;
     const isLowTime = timeRemaining > 0 && timeRemaining <= 300;
     const isCriticalTime = timeRemaining > 0 && timeRemaining <= 60;
+    const timeExpired = isQuizActive && quiz.deadline !== null && timeRemaining <= 0;
 
     const handleStart = async () => {
         if (!exam) return;
@@ -110,12 +136,15 @@ export default function SimulationScreen() {
     };
 
     const handleSubmit = useCallback(async () => {
-        if (!exam || submitting) return;
+        // Ref guard: state-based guards can be stale between rapid taps and the expiry auto-submit.
+        if (!exam || submittingRef.current) return;
 
         // Read live store values via getState() — do NOT put quiz (full object) in deps
         const { questions, answers, completeQuiz } = useQuizStore.getState();
 
+        submittingRef.current = true;
         setSubmitting(true);
+        setSubmitError(null);
 
         try {
             const result = await submitAttempt({
@@ -127,13 +156,14 @@ export default function SimulationScreen() {
             });
 
             completeQuiz(result);
-        } catch {
-            setError("Failed to submit the simulation.");
+        } catch (submitFailure) {
+            setSubmitError(getErrorMessage(submitFailure, "Failed to submit the simulation."));
         } finally {
+            submittingRef.current = false;
             setSubmitting(false);
         }
     // No quiz object in deps — reads store via getState() to avoid full-store re-subscription problem
-    }, [exam, submitting]);
+    }, [exam]);
 
     // Keep the call ref up to date after handleSubmit is declared (avoids used-before-declared error)
     useEffect(() => { handleSubmitCallRef.current = () => { void handleSubmit(); }; }, [handleSubmit]);
@@ -316,6 +346,17 @@ export default function SimulationScreen() {
             </div>
 
             <div className="app-footer space-y-3">
+                {(submitError || timeExpired) && (
+                    <div role="alert" className="rounded-[16px] border border-[#F3C9C3] bg-[#FFF0ED] px-4 py-3 text-sm leading-relaxed text-[#A8443A]">
+                        {timeExpired && <p className="font-semibold">Time is up.</p>}
+                        <p>
+                            {submitError
+                                ? `Your answers were not submitted: ${submitError} Tap submit to try again.`
+                                : "Submitting your answers..."}
+                        </p>
+                    </div>
+                )}
+                {!timeExpired && (
                 <div className="grid grid-cols-2 gap-3">
                     <Button variant="secondary" size="md" fullWidth onClick={() => setShowNavigator((current) => !current)}>
                         <LayoutGrid size={16} />
@@ -326,28 +367,38 @@ export default function SimulationScreen() {
                         {currentMarkedForReview ? "Reviewed" : "Review"}
                     </Button>
                 </div>
+                )}
                 <Button
                     variant="primary"
                     size="lg"
                     fullWidth
+                    disabled={submitting}
                     style={{
                         backgroundColor: "#172B2F",
                         color: "#FFFFFF",
                         borderColor: "#172B2F",
                     }}
                     onClick={() => {
-                        if (isLast) {
+                        if (isLast || timeExpired) {
                             void handleSubmit();
                             return;
                         }
                         quiz.nextQuestion();
                     }}
                 >
-                    {isLast ? "Submit simulation" : "Next question"}
+                    {submitting
+                        ? "Submitting..."
+                        : timeExpired
+                            ? "Submit answers"
+                            : isLast
+                                ? "Submit simulation"
+                                : "Next question"}
                 </Button>
-                <Button variant="ghost" size="md" fullWidth loading={submitting} onClick={() => void handleSubmit()}>
-                    Finish now
-                </Button>
+                {!timeExpired && (
+                    <Button variant="ghost" size="md" fullWidth loading={submitting} onClick={() => void handleSubmit()}>
+                        Finish now
+                    </Button>
+                )}
             </div>
 
             <ConfirmDialog

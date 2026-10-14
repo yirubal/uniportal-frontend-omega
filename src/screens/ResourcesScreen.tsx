@@ -58,16 +58,27 @@ export default function ResourcesScreen() {
     const [search, setSearch] = useState("");
     const useTailoredStart = profile.hasCompleteProfile && !customizingProfile;
     const canLoadCourseShelf = Boolean(selDept && selProgram && selYear && selPeriod);
+    // Tailored start can't resolve the saved department (load failed, or it's no longer listed).
+    const tailoredDepartmentMissing = useTailoredStart && !loadingDepts && !selDept;
     const selectedDepartmentName = selDept?.name ?? "Your department";
 
-    useEffect(() => {
+    const [departmentsError, setDepartmentsError] = useState(false);
+
+    const loadDepartments = useCallback(() => {
+        setLoadingDepts(true);
+        setDepartmentsError(false);
+
         getDepartments()
             .then((items) => {
                 setDepartments(items);
             })
-            .catch(() => setError("Failed to load departments."))
+            .catch(() => setDepartmentsError(true))
             .finally(() => setLoadingDepts(false));
     }, []);
+
+    useEffect(() => {
+        loadDepartments();
+    }, [loadDepartments]);
 
     useEffect(() => {
         if (!profile.hasCompleteProfile || customizingProfile) return;
@@ -95,18 +106,34 @@ export default function ResourcesScreen() {
         }
     }, [selPeriod, selProgram]);
 
+    const selDeptId = selDept?.id;
+
     useEffect(() => {
-        if (!selDept || !selProgram || !selYear || !selPeriod) return;
+        if (!selDeptId || !selProgram || !selYear || !selPeriod) return;
+
+        // Ignore responses from an older filter combination that resolve after a newer one.
+        let active = true;
 
         setLoadingCourses(true);
+        setError(null);
         setCourses([]);
         setSelCourse(null);
 
-        getCourses(selDept.id, selProgram, selYear, selPeriod)
-            .then(setCourses)
-            .catch(() => setError("Failed to load courses."))
-            .finally(() => setLoadingCourses(false));
-    }, [selDept?.id, selProgram, selYear, selPeriod]);
+        getCourses(selDeptId, selProgram, selYear, selPeriod)
+            .then((items) => {
+                if (active) setCourses(items);
+            })
+            .catch(() => {
+                if (active) setError("Failed to load courses.");
+            })
+            .finally(() => {
+                if (active) setLoadingCourses(false);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [selDeptId, selProgram, selYear, selPeriod]);
 
     const loadResources = useCallback(async (course: Course) => {
         setLoadingResources(true);
@@ -231,6 +258,9 @@ export default function ResourcesScreen() {
 
                     {!useTailoredStart && (
                         <>
+                            {departmentsError && (
+                                <ErrorState message="Failed to load departments." onRetry={loadDepartments} />
+                            )}
                             <SelectorGroup
                                 label="Department"
                                 loading={loadingDepts}
@@ -335,7 +365,17 @@ export default function ResourcesScreen() {
                                     </span>
                                 )}
                             </div>
-                            {loadingDepts || loadingCourses || !canLoadCourseShelf ? (
+                            {tailoredDepartmentMissing ? (
+                                departmentsError ? (
+                                    <ErrorState message="Failed to load departments." onRetry={loadDepartments} />
+                                ) : (
+                                    <EmptyState
+                                        title="We couldn't find your department"
+                                        description="Your saved department is no longer listed. Choose your filters to continue."
+                                        action={{ label: "Choose filters", onClick: () => setCustomizingProfile(true) }}
+                                    />
+                                )
+                            ) : loadingDepts || loadingCourses || !canLoadCourseShelf ? (
                                 <div className="space-y-3">
                                     {[1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-[28px]" />)}
                                 </div>

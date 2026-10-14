@@ -88,8 +88,8 @@ client.interceptors.response.use(
         const status = error.response?.status;
 
         if (status === 401 && !error.config?.skipAuthClear) {
-            // Token expired or invalid — clear auth and reload
-            useAuthStore.getState().clearAuth();
+            // Token expired or invalid — App re-authenticates once, then Splash offers "Try again"
+            useAuthStore.getState().expireSession();
         }
 
         const requestPath = error.config?.url ?? "";

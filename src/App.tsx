@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
     BrowserRouter,
     Routes,
@@ -7,7 +7,7 @@ import {
     useLocation,
 } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
-import { useAuth } from "./hooks/useAuth";
+import { initAuth } from "./hooks/useAuth";
 import { useTelegramChrome } from "./hooks/useTelegramChrome";
 
 import SplashScreen from "./screens/SplashScreen";
@@ -229,12 +229,21 @@ function AppRoutes() {
 }
 
 export default function App() {
-    const { initAuth } = useAuth();
     useTelegramChrome();
+    const sessionExpired = useAuthStore((state) => state.sessionExpired);
+    const reauthAttemptedRef = useRef(false);
 
     useEffect(() => {
-        initAuth();
+        void initAuth();
     }, []);
+
+    // After a 401, log in again once automatically (Telegram initData is still available).
+    // If that fails too, SplashScreen shows the error with a "Try again" button.
+    useEffect(() => {
+        if (!sessionExpired || reauthAttemptedRef.current) return;
+        reauthAttemptedRef.current = true;
+        void initAuth();
+    }, [sessionExpired]);
 
     return (
         <BrowserRouter>

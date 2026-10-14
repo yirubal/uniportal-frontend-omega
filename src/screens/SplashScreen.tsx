@@ -1,9 +1,8 @@
-import { useAuth } from "../hooks/useAuth";
+import { initAuth } from "../hooks/useAuth";
 import { useAuthStore } from "../store/authStore";
 
 export default function SplashScreen() {
     const { error, isLoading } = useAuthStore();
-    const { initAuth } = useAuth();
 
     return (
         <div className="app-screen items-center justify-center px-6 text-center">
@@ -30,7 +29,7 @@ export default function SplashScreen() {
                     <div className="mt-8">
                         <p className="text-sm leading-relaxed text-[#D95A50]">{error}</p>
                         <button
-                            onClick={initAuth}
+                            onClick={() => void initAuth()}
                             className="mt-5 inline-flex rounded-[18px] bg-[#172B2F] px-5 py-3 text-sm font-semibold text-white"
                         >
                             Try again

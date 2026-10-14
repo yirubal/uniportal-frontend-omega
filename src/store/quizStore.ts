@@ -71,6 +71,8 @@ interface QuizState {
     selectedQuizTitle: string | null;
     examPaperId: number | null;
     totalTime: number | null;
+    /** Epoch ms when a timed attempt ends. The timer derives timeRemaining from this so it can't drift. */
+    deadline: number | null;
     selectedTopics: string[];
 
     questions: Question[];
@@ -124,6 +126,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     selectedQuizTitle: null,
     examPaperId: null,
     totalTime: null,
+    deadline: null,
     selectedTopics: [],
     questions: [],
     currentIndex: 0,
@@ -164,6 +167,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             examPaperId: examPaperId ?? null,
             totalTime: totalTime ?? null,
             timeRemaining: totalTime ?? null,
+            deadline: totalTime ? Date.now() + totalTime * 1000 : null,
             selectedTopics: [],
             currentIndex: 0,
             answers: {},
@@ -185,6 +189,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             examPaperId: null,
             totalTime: null,
             timeRemaining: null,
+            deadline: null,
             selectedTopics,
             currentIndex: 0,
             answers: {},
@@ -257,6 +262,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             attemptSummary: null,
             examPaperId: null,
             totalTime: null,
+            deadline: null,
             selectedQuizId: null,
             selectedQuizTitle: null,
             selectedTopics: [],
@@ -283,6 +289,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             selectedQuizTitle: null,
             examPaperId: null,
             totalTime: null,
+            deadline: null,
             selectedTopics: [],
         }),
 }));

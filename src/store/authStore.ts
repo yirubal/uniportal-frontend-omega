@@ -33,12 +33,14 @@ interface AuthState {
     error: string | null;
     channelRequired: boolean;
     channelUrl: string | null;
+    sessionExpired: boolean;
 
     setAuth: (token: string, student: Student) => void;
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
     setChannelRequired: (channelUrl: string) => void;
     clearAuth: () => void;
+    expireSession: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -49,9 +51,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     error: null,
     channelRequired: false,
     channelUrl: null,
+    sessionExpired: false,
 
     setAuth: (token, student) =>
-        set({ token, student, isAuthenticated: true, isLoading: false, error: null, channelRequired: false, channelUrl: null }),
+        set({ token, student, isAuthenticated: true, isLoading: false, error: null, channelRequired: false, channelUrl: null, sessionExpired: false }),
 
     setLoading: (loading) =>
         set({ isLoading: loading }),
@@ -63,5 +66,16 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ channelRequired: true, channelUrl, isLoading: false, error: null }),
 
     clearAuth: () =>
-        set({ token: null, student: null, isAuthenticated: false, isLoading: false, error: null, channelRequired: false, channelUrl: null }),
+        set({ token: null, student: null, isAuthenticated: false, isLoading: false, error: null, channelRequired: false, channelUrl: null, sessionExpired: false }),
+
+    // A 401 from the API. The error gives SplashScreen a "Try again" button instead of an endless spinner.
+    expireSession: () =>
+        set({
+            token: null,
+            student: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: "Your session expired. Tap Try again to reconnect.",
+            sessionExpired: true,
+        }),
 }));

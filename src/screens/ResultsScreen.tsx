@@ -1,6 +1,6 @@
 import { ArrowLeft, BookOpenCheck, RotateCcw } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import AnswerReviewModal from "../components/AnswerReviewModal";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
@@ -13,6 +13,11 @@ export default function ResultsScreen() {
     const { attemptSummary, answers, courseId, examPaperId, mode, practiceContentType, questions, resetAttempt, selectedTopics } = useQuizStore();
     const [showReview, setShowReview] = useState(false);
     const meta = getPracticeContentMeta(practiceContentType);
+
+    // The store is in memory only: after a reload or a direct open there is no result to show.
+    if (!attemptSummary) {
+        return <Navigate to="/quiz" replace />;
+    }
 
     const percentage = Math.round(
         attemptSummary?.percentage ??

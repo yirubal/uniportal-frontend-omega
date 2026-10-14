@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/authStore";
-import { useAuth } from "../hooks/useAuth";
+import { initAuth } from "../hooks/useAuth";
 
 type ToastState = "idle" | "checking" | "not-joined";
 
 export default function ChannelGateScreen() {
     const { channelUrl } = useAuthStore();
-    const { initAuth } = useAuth();
     const [toast, setToast] = useState<ToastState>("idle");
 
     function onJoinChannel() {
@@ -23,7 +22,8 @@ export default function ChannelGateScreen() {
     async function onCheckJoined() {
         setToast("checking");
         const prevChannelRequired = useAuthStore.getState().channelRequired;
-        await initAuth();
+        // Silent: a global loading state would swap this screen for Splash and the toast below would never show.
+        await initAuth({ silent: true });
         // If still channelRequired after auth, they haven't joined
         const stillRequired = useAuthStore.getState().channelRequired;
         if (stillRequired && prevChannelRequired) {

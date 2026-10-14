@@ -29,20 +29,20 @@ Without these, later phases have no automated checks.
 These are bugs students hit, or that give them wrong information.
 
 ### Quiz / exam flows
-- [ ] 🔴 **A failed submission shows a fake 0% result.** In `QuizAttemptScreen` `handleSubmit`, the `catch` builds a 0% summary and goes to Results. The attempt was never saved. Keep the student on the quiz, show the error and offer **Retry submit**.
-- [ ] 🔴 **The simulation timer drifts and pauses in the background.** `SimulationScreen` subtracts 1 per `setInterval` tick. Telegram or the browser throttles intervals when the app is minimized, so exams last longer than their real time. Store `deadline = Date.now() + totalTime*1000`, compute the time left from it on each tick, and recompute on `visibilitychange`.
-- [ ] 🔴 **A failed simulation submit is invisible and retries forever.** The active-exam view never renders `error`, and at 0:00 `tick` calls `handleSubmit` every second. Stop the timer once it expires, try one guarded submit, and show the error with a manual retry.
-- [ ] 🟠 **Double submit.** Simulation's "Submit simulation" button isn't disabled while submitting. Both screens guard with `submitting` state captured in a callback, which can be stale. Guard with a `useRef` and disable all submit buttons.
-- [ ] 🟠 **Simulation can show another exam's attempt.** It doesn't check that the attempt in the store belongs to the `:examId` in the URL; `QuizAttemptScreen` does. Require `examPaperId === Number(examId)`.
-- [ ] 🟠 **Results on reload or direct open.** With an empty store, `ResultsScreen` shows "0% / Needs more practice". Redirect to `/quiz` when `attemptSummary` is null.
+- [x] 🔴 **A failed submission shows a fake 0% result.** In `QuizAttemptScreen` `handleSubmit`, the `catch` builds a 0% summary and goes to Results. The attempt was never saved. Keep the student on the quiz, show the error and offer **Retry submit**.
+- [x] 🔴 **The simulation timer drifts and pauses in the background.** `SimulationScreen` subtracts 1 per `setInterval` tick. Telegram or the browser throttles intervals when the app is minimized, so exams last longer than their real time. Store `deadline = Date.now() + totalTime*1000`, compute the time left from it on each tick, and recompute on `visibilitychange`.
+- [x] 🔴 **A failed simulation submit is invisible and retries forever.** The active-exam view never renders `error`, and at 0:00 `tick` calls `handleSubmit` every second. Stop the timer once it expires, try one guarded submit, and show the error with a manual retry.
+- [x] 🟠 **Double submit.** Simulation's "Submit simulation" button isn't disabled while submitting. Both screens guard with `submitting` state captured in a callback, which can be stale. Guard with a `useRef` and disable all submit buttons.
+- [x] 🟠 **Simulation can show another exam's attempt.** It doesn't check that the attempt in the store belongs to the `:examId` in the URL; `QuizAttemptScreen` does. Require `examPaperId === Number(examId)`.
+- [x] 🟠 **Results on reload or direct open.** With an empty store, `ResultsScreen` shows "0% / Needs more practice". Redirect to `/quiz` when `attemptSummary` is null.
 
 ### Auth / app shell
-- [ ] 🔴 **A 401 leaves the student on an endless spinner.** `client.ts` calls `clearAuth()`, which sets `error=null` and redirects to `/`. `SplashScreen` only shows "Try again" when `error` is set, and nothing re-runs the login. Re-run `initAuth()` once, or set a "Session expired" error.
-- [ ] 🟠 **The "not joined" message never shows on the channel gate.** `ChannelGateScreen` calls `initAuth()`, which sets the global `isLoading`. App then swaps in `SplashScreen`, and the gate unmounts before its toast shows. Check membership without the global loading flag.
-- [ ] 🟠 **`initAuth` can run more than once at a time.** `App.tsx` calls it from `useEffect([])` with no guard: StrictMode, Splash retry and the gate can all trigger it, and the slower response wins. Keep a module-level in-flight promise.
+- [x] 🔴 **A 401 leaves the student on an endless spinner.** `client.ts` calls `clearAuth()`, which sets `error=null` and redirects to `/`. `SplashScreen` only shows "Try again" when `error` is set, and nothing re-runs the login. Re-run `initAuth()` once, or set a "Session expired" error.
+- [x] 🟠 **The "not joined" message never shows on the channel gate.** `ChannelGateScreen` calls `initAuth()`, which sets the global `isLoading`. App then swaps in `SplashScreen`, and the gate unmounts before its toast shows. Check membership without the global loading flag.
+- [x] 🟠 **`initAuth` can run more than once at a time.** `App.tsx` calls it from `useEffect([])` with no guard: StrictMode, Splash retry and the gate can all trigger it, and the slower response wins. Keep a module-level in-flight promise.
 
 ### Resources
-- [ ] 🟠 **Resources can show a skeleton forever.** In tailored mode, if departments fail to load or don't include the profile's department, `selDept` stays null and the skeleton never ends. Show an error or a "change filters" state.
+- [x] 🟠 **Resources can show a skeleton forever.** In tailored mode, if departments fail to load or don't include the profile's department, `selDept` stays null and the skeleton never ends. Show an error or a "change filters" state.
 
 ---
 
