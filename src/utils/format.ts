@@ -52,6 +52,9 @@ export const formatTimeRemaining = (seconds: number): string => {
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
+/** Score (in %) at which an attempt or topic counts as passed. One value for the label, ring and topic badges. */
+export const PASS_PERCENTAGE = 50;
+
 export const getScoreEmoji = (percentage: number): string => {
     if (percentage >= 90) return "🏆";
     if (percentage >= 75) return "🌟";
@@ -116,3 +119,7 @@ export const truncate = (text: string, maxLength: number): string => {
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength) + "...";
 };
+
+/** Whole seconds until an epoch-ms deadline, never negative. */
+export const getSecondsUntil = (deadline: number): number =>
+    Math.max(0, Math.ceil((deadline - Date.now()) / 1000));

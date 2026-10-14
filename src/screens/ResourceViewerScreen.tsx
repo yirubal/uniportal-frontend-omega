@@ -25,6 +25,7 @@ export default function ResourceViewerScreen() {
     const [downloading, setDownloading] = useState(false);
     const [downloadMessage, setDownloadMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [reloadKey, setReloadKey] = useState(0);
 
     useEffect(() => {
         if (!id) {
@@ -51,7 +52,7 @@ export default function ResourceViewerScreen() {
             });
 
         return () => controller.abort();
-    }, [id]);
+    }, [id, reloadKey]);
 
     const relatedResources = useMemo(() => {
         if (!resource) return [];
@@ -117,7 +118,7 @@ export default function ResourceViewerScreen() {
                     <button onClick={() => navigate(-1)} className="mb-4 text-sm font-medium text-[#526B70]">
                         Back
                     </button>
-                    <ErrorState message={error ?? "Resource not found."} onRetry={() => window.location.reload()} />
+                    <ErrorState message={error ?? "Resource not found."} onRetry={() => setReloadKey((key) => key + 1)} />
                 </div>
             </div>
         );

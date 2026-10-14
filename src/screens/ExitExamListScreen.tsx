@@ -28,6 +28,7 @@ export default function ExitExamListScreen() {
     const [topics, setTopics] = useState<{ topic: string; count: number }[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [reloadKey, setReloadKey] = useState(0);
 
     const exitCategory = isExitExamCategory(category) ? category : null;
     const meta = exitCategory ? getExitExamMeta(exitCategory) : null;
@@ -38,17 +39,29 @@ export default function ExitExamListScreen() {
             return;
         }
 
+        const controller = new AbortController();
+        const options = { signal: controller.signal };
+        setLoading(true);
+        setError(null);
+
         Promise.all([
-            getExitExams(student.preferred_department),
-            getExitExamTopics(student.preferred_department),
+            getExitExams(student.preferred_department, options),
+            getExitExamTopics(student.preferred_department, options),
         ])
             .then(([examItems, topicItems]) => {
+                if (controller.signal.aborted) return;
                 setExams(examItems);
                 setTopics(topicItems);
             })
-            .catch(() => setError("Failed to load exit exam content."))
-            .finally(() => setLoading(false));
-    }, [canAccessExitExam, exitCategory, student?.preferred_department]);
+            .catch(() => {
+                if (!controller.signal.aborted) setError("Failed to load exit exam content.");
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoading(false);
+            });
+
+        return () => controller.abort();
+    }, [canAccessExitExam, exitCategory, student?.preferred_department, reloadKey]);
 
     const filteredExams = useMemo(() => {
         if (!exitCategory) return [];
@@ -99,7 +112,7 @@ export default function ExitExamListScreen() {
                         <Skeleton className="h-28 rounded-[32px]" />
                     </div>
                 ) : error ? (
-                    <ErrorState message={error} onRetry={() => window.location.reload()} />
+                    <ErrorState message={error} onRetry={() => setReloadKey((key) => key + 1)} />
                 ) : (
                     <div className="space-y-4">
                         {topics.length > 0 && (
@@ -126,7 +139,7 @@ export default function ExitExamListScreen() {
                                     key={exam.id}
                                     onClick={() => {
                                         resetAttempt();
-                                        navigate(`/simulate/${exam.id}`);
+                                        navigate(`/simulate/${exam.id}`, { state: { exam } });
                                     }}
                                     className="app-list-item"
                                 >

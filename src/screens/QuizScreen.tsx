@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TopBackButton from "../components/TopBackButton";
 import { useQuizStore, type PracticeContentType } from "../store/quizStore";
 import { getPracticeContentMeta } from "../utils/practice";
+import ResumeAttemptCard from "../components/ResumeAttemptCard";
 
 const PRACTICE_OPTIONS: PracticeContentType[] = ["quiz", "past_exam"];
 
@@ -32,6 +33,7 @@ export default function QuizScreen() {
             </div>
 
             <div className="app-scroll app-scroll-compact space-y-4">
+                <ResumeAttemptCard modes={["practice", "selective"]} />
                 <div className="app-sheet p-5">
                     <p className="app-section-label">What changed</p>
                     <p className="mt-3 text-sm leading-relaxed text-[#526B70]">

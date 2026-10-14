@@ -5,12 +5,12 @@ import AnswerReviewModal from "../components/AnswerReviewModal";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { useQuizStore } from "../store/quizStore";
-import { getScoreEmoji, getScoreMessage } from "../utils/format";
+import { getScoreEmoji, getScoreMessage, PASS_PERCENTAGE } from "../utils/format";
 import { getPracticeContentMeta } from "../utils/practice";
 
 export default function ResultsScreen() {
     const navigate = useNavigate();
-    const { attemptSummary, answers, courseId, examPaperId, mode, practiceContentType, questions, resetAttempt, selectedTopics } = useQuizStore();
+    const { attemptSummary, answers, courseId, examPaperId, mode, practiceContentType, questions, resetAttempt, selectedQuizTitle, selectedTopics, setSelectedQuiz } = useQuizStore();
     const [showReview, setShowReview] = useState(false);
     const meta = getPracticeContentMeta(practiceContentType);
 
@@ -27,7 +27,7 @@ export default function ResultsScreen() {
     );
     const emoji = getScoreEmoji(percentage);
     const message = getScoreMessage(percentage);
-    const passed = percentage >= 50;
+    const passed = percentage >= PASS_PERCENTAGE;
     const canReview = Boolean(attemptSummary && (questions.length > 0 || Object.keys(attemptSummary.detailed_answers ?? {}).length > 0));
     const circumference = 2 * Math.PI * 40;
     const dashOffset = circumference - (percentage / 100) * circumference;
@@ -42,6 +42,13 @@ export default function ResultsScreen() {
 
         if (mode === "selective") {
             navigate("/quiz/selective", { replace: true });
+            return;
+        }
+
+        // Retake the same paper rather than going back to a course list.
+        if (examPaperId) {
+            setSelectedQuiz(examPaperId, selectedQuizTitle ?? "");
+            navigate(`/quiz/take/${examPaperId}`, { replace: true });
             return;
         }
 
@@ -101,7 +108,7 @@ export default function ResultsScreen() {
                                 cy="50"
                                 r="40"
                                 fill="none"
-                                stroke={percentage >= 60 ? "#2E9E73" : "#D95A50"}
+                                stroke={passed ? "#2E9E73" : "#D95A50"}
                                 strokeWidth="8"
                                 strokeLinecap="round"
                                 strokeDasharray={circumference}
@@ -142,7 +149,7 @@ export default function ResultsScreen() {
                                             {score}% topic score
                                         </p>
                                     </div>
-                                    <span className={`app-badge ${score >= 60 ? "app-badge-green" : "app-badge-coral"} !px-3 !py-2 !text-[0.68rem]`}>
+                                    <span className={`app-badge ${score >= PASS_PERCENTAGE ? "app-badge-green" : "app-badge-coral"} !px-3 !py-2 !text-[0.68rem]`}>
                                         {score}%
                                     </span>
                                 </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Question } from "../store/quizStore";
 import { useTelegram } from "../hooks/useTelegram";
 import { getQuestionOptions, getResolvedQuestionType, splitMatchingPair } from "../utils/questions";
@@ -38,18 +38,7 @@ export default function QuestionCard({
     const hasSavedAnswer = hasMeaningfulAnswer(questionType, selectedAnswer);
     const progressPercent = ((questionNumber - 1) / totalQuestions) * 100;
 
-    useEffect(() => {
-        setDraftAnswer(selectedAnswer ?? "");
-        setShowHint(false);
-    }, [question.id]);
-
-    const handleSaveTextAnswer = () => {
-        const nextAnswer = draftAnswer.trim();
-        if (!nextAnswer) return;
-
-        haptic.medium();
-        onSelect(nextAnswer);
-    };
+    // Draft and hint state reset per question because parents render this card with key={question.id}.
 
     return (
         <div className="flex flex-col gap-4">
@@ -173,13 +162,7 @@ export default function QuestionCard({
                         placeholder="Type your answer"
                         className="app-input min-h-12"
                     />
-                    <button
-                        type="button"
-                        onClick={handleSaveTextAnswer}
-                        className="mt-4 inline-flex min-h-11 items-center rounded-[18px] bg-[#172B2F] px-5 py-3 text-sm font-semibold text-white"
-                    >
-                        {hasSavedAnswer ? "Update answer" : "Save answer"}
-                    </button>
+                    <p className="mt-3 text-xs text-[#526B70]">Your answer is saved as you type.</p>
                 </div>
             )}
 
@@ -236,13 +219,7 @@ export default function QuestionCard({
                         placeholder="Write your answer"
                         className="app-input min-h-[140px] resize-none"
                     />
-                    <button
-                        type="button"
-                        onClick={handleSaveTextAnswer}
-                        className="mt-4 inline-flex min-h-11 items-center rounded-[18px] bg-[#172B2F] px-5 py-3 text-sm font-semibold text-white"
-                    >
-                        {hasSavedAnswer ? "Update answer" : "Save answer"}
-                    </button>
+                    <p className="mt-3 text-xs text-[#526B70]">Your answer is saved as you type.</p>
                 </div>
             )}
         </div>

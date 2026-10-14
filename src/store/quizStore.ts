@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { useAuthStore } from "./authStore";
 import type { Course } from "./contentStore";
 import type { ProgramType } from "../utils/periods";
 
@@ -73,6 +75,8 @@ interface QuizState {
     totalTime: number | null;
     /** Epoch ms when a timed attempt ends. The timer derives timeRemaining from this so it can't drift. */
     deadline: number | null;
+    /** telegram_id of the student who started the attempt, so a saved attempt is never resumed by someone else. */
+    ownerId: number | null;
     selectedTopics: string[];
 
     questions: Question[];
@@ -95,6 +99,7 @@ interface QuizState {
         courseName: string;
     }) => void;
     setSelectedQuiz: (quizId: number, quizTitle: string) => void;
+    setCourseContext: (courseId: number | null, courseName: string | null) => void;
     setQuiz: (
         questions: Question[],
         mode: QuizMode,
@@ -113,7 +118,17 @@ interface QuizState {
     resetQuiz: () => void;
 }
 
-export const useQuizStore = create<QuizState>((set, get) => ({
+/** Saved attempts older than this are discarded on load. */
+const SAVED_ATTEMPT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const QUIZ_STORAGE_KEY = "uniportal-quiz-attempt";
+
+function currentOwnerId() {
+    return useAuthStore.getState().student?.telegram_id ?? null;
+}
+
+type PersistedQuizState = Partial<QuizState> & { savedAt?: number };
+
+export const useQuizStore = create<QuizState>()(persist((set, get) => ({
     practiceContentType: null,
     departmentId: null,
     program: null,
@@ -127,6 +142,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     examPaperId: null,
     totalTime: null,
     deadline: null,
+    ownerId: null,
     selectedTopics: [],
     questions: [],
     currentIndex: 0,
@@ -158,6 +174,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             selectedQuizTitle,
         }),
 
+    setCourseContext: (courseId, courseName) =>
+        set({ courseId, courseName }),
+
     setQuiz: (questions, mode, courseId, examPaperId, totalTime) =>
         set({
             questions,
@@ -168,6 +187,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             totalTime: totalTime ?? null,
             timeRemaining: totalTime ?? null,
             deadline: totalTime ? Date.now() + totalTime * 1000 : null,
+            ownerId: currentOwnerId(),
             selectedTopics: [],
             currentIndex: 0,
             answers: {},
@@ -190,6 +210,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             totalTime: null,
             timeRemaining: null,
             deadline: null,
+            ownerId: currentOwnerId(),
             selectedTopics,
             currentIndex: 0,
             answers: {},
@@ -263,6 +284,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             examPaperId: null,
             totalTime: null,
             deadline: null,
+            ownerId: null,
             selectedQuizId: null,
             selectedQuizTitle: null,
             selectedTopics: [],
@@ -290,6 +312,62 @@ export const useQuizStore = create<QuizState>((set, get) => ({
             examPaperId: null,
             totalTime: null,
             deadline: null,
+            ownerId: null,
             selectedTopics: [],
         }),
+}), {
+    // Keep the attempt across reloads and WebView restarts. localStorage (not sessionStorage) so that
+    // closing and reopening the Mini App can still resume a timed exam before its deadline.
+    name: QUIZ_STORAGE_KEY,
+    version: 1,
+    storage: createJSONStorage(() => localStorage),
+    partialize: (state): PersistedQuizState => {
+        // Only an attempt with questions is worth saving; otherwise clear what was stored.
+        if (state.questions.length === 0) return {};
+
+        return {
+            practiceContentType: state.practiceContentType,
+            departmentId: state.departmentId,
+            program: state.program,
+            year: state.year,
+            period: state.period,
+            mode: state.mode,
+            courseId: state.courseId,
+            courseName: state.courseName,
+            selectedQuizId: state.selectedQuizId,
+            selectedQuizTitle: state.selectedQuizTitle,
+            examPaperId: state.examPaperId,
+            totalTime: state.totalTime,
+            deadline: state.deadline,
+            ownerId: state.ownerId,
+            selectedTopics: state.selectedTopics,
+            questions: state.questions,
+            currentIndex: state.currentIndex,
+            answers: state.answers,
+            markedForReview: state.markedForReview,
+            selectedAnswer: state.selectedAnswer,
+            isComplete: state.isComplete,
+            attemptSummary: state.attemptSummary,
+            savedAt: Date.now(),
+        };
+    },
+    merge: (persisted, current) => {
+        const saved = persisted as PersistedQuizState | undefined;
+        if (!saved?.questions?.length || !saved.savedAt) return current;
+        if (Date.now() - saved.savedAt > SAVED_ATTEMPT_MAX_AGE_MS) return current;
+
+        const { savedAt: _savedAt, ...attempt } = saved;
+        return { ...current, ...attempt };
+    },
 }));
+
+/** Route that reopens an unfinished attempt, or null when the store holds nothing to resume for this student. */
+export function getResumeRoute(state: QuizState, studentId: number | null | undefined): string | null {
+    if (state.questions.length === 0 || state.isComplete) return null;
+    if (!studentId || state.ownerId !== studentId) return null;
+
+    if (state.mode === "simulation" && state.examPaperId) return `/simulate/${state.examPaperId}`;
+    if (state.mode === "selective") return "/quiz/selective/take";
+    if (state.examPaperId) return `/quiz/take/${state.examPaperId}`;
+    return null;
+}

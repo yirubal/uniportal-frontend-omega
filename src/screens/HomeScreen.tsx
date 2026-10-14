@@ -11,6 +11,7 @@ import { getSubscriptionRequest, type SubscriptionRequestState } from "../api/qu
 import { fetchActiveTerm } from "../api/exams";
 import ExamScheduleCard from "../components/ExamScheduleCard";
 import type { ActiveTermResponse } from "../types/exams";
+import ResumeAttemptCard from "../components/ResumeAttemptCard";
 
 const QUICK_ACTIONS = [
     {
@@ -160,6 +161,7 @@ export default function HomeScreen() {
             </div>
 
             <div className="app-scroll app-scroll-compact">
+                <ResumeAttemptCard />
                 <div className="app-sheet p-4">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">

@@ -1,6 +1,7 @@
 import { ArrowRight, FileCheck2, FileClock, TimerReset } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import LockedOverlay from "../components/LockedOverlay";
+import ResumeAttemptCard from "../components/ResumeAttemptCard";
 import TopBackButton from "../components/TopBackButton";
 import { useAccess } from "../hooks/useAccess";
 import { useStudentProfile } from "../hooks/useStudentProfile";
@@ -39,6 +40,7 @@ export default function ExitExamScreen() {
             </div>
 
             <div className="app-scroll app-scroll-compact">
+                {canAccessExitExam && <ResumeAttemptCard modes={["simulation"]} />}
                 {!canAccessExitExam ? (
                     <LockedOverlay
                         feature="Exit Exam"

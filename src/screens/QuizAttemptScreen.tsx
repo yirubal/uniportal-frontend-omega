@@ -26,6 +26,8 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
     const submittingRef = useRef(false);
     const [autoAdvancing, setAutoAdvancing] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
+    const [showFinishConfirm, setShowFinishConfirm] = useState(false);
 
     const isQuizActive = quiz.questions.length > 0 && !quiz.isComplete;
     const currentQuestion = quiz.questions[quiz.currentIndex];
@@ -38,10 +40,11 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
     const quizExamPaperId = quiz.examPaperId;
     const quizQuestionsLength = quiz.questions.length;
     const quizMode = quiz.mode;
+    const quizIsComplete = quiz.isComplete;
 
     useEffect(() => {
         if (selectiveMode) {
-            if (quizMode === "selective" && quizQuestionsLength > 0) {
+            if (quizMode === "selective" && quizQuestionsLength > 0 && !quizIsComplete) {
                 setLoading(false);
                 return;
             }
@@ -57,7 +60,8 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
             return;
         }
 
-        if (quizExamPaperId === Number(quizId) && quizQuestionsLength > 0) {
+        // Reuse the stored attempt for this paper (e.g. after a reload); a finished one starts over.
+        if (quizExamPaperId === Number(quizId) && quizQuestionsLength > 0 && !quizIsComplete) {
             setLoading(false);
             return;
         }
@@ -96,7 +100,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
 
         return () => controller.abort();
     // Only re-run when the quiz ID changes or we switch modes — not on every quiz store update.
-    }, [quizExamPaperId, quizQuestionsLength, quizMode, quizId, selectiveMode]);
+    }, [quizExamPaperId, quizQuestionsLength, quizMode, quizId, selectiveMode, quizIsComplete, reloadKey]);
 
     const handleSubmit = useCallback(async () => {
         // Ref guard: state-based guards can be stale between a tap and the auto-advance submit.
@@ -123,6 +127,9 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
             });
 
             completeQuiz(result);
+            // Navigate from here, not from an isComplete effect: a finished attempt is persisted and
+            // must not redirect the next visit to an old result.
+            navigate("/results", { replace: true });
         } catch (submitFailure) {
             // Keep the student on the attempt: the answers were not saved, so showing a result would be wrong.
             setSubmitError(getErrorMessage(submitFailure, "Failed to submit your answers."));
@@ -131,13 +138,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
             setSubmitting(false);
         }
     // No quiz object in deps — reads store via getState() to avoid the full-store re-subscription problem
-    }, [attemptMode, quizId, selectiveMode]);
-
-    useEffect(() => {
-        if (quiz.isComplete) {
-            navigate("/results", { replace: true });
-        }
-    }, [navigate, quiz.isComplete]);
+    }, [attemptMode, navigate, quizId, selectiveMode]);
 
     const quizCurrentIndex = quiz.currentIndex;
     const quizPracticeContentType = quiz.practiceContentType;
@@ -208,13 +209,19 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                 </div>
 
                 <div className="app-scroll app-scroll-compact">
-                    <ErrorState message={error} onRetry={() => window.location.reload()} />
+                    <ErrorState
+                        message={error}
+                        // Selective practice can only restart from chapter selection; papers can refetch.
+                        onRetry={() => (selectiveMode ? navigate("/quiz/selective") : setReloadKey((key) => key + 1))}
+                    />
                 </div>
             </div>
         );
     }
 
     const isLast = quiz.currentIndex + 1 >= quiz.questions.length;
+    const answeredCount = quiz.questions.filter((question) => isQuestionAnswered(question, quiz.answers)).length;
+    const unansweredCount = quiz.questions.length - answeredCount;
 
     return (
         <div className="app-screen">
@@ -239,7 +246,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                                 </p>
                                 <div className="mt-3 flex flex-wrap gap-2">
                                     <span className="rounded-full bg-[#EAF4F1] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#3F6F6A]">
-                                        {quiz.questions.filter((question) => isQuestionAnswered(question, quiz.answers)).length}/{quiz.questions.length} answered
+                                        {answeredCount}/{quiz.questions.length} answered
                                     </span>
                                     <span className="rounded-full bg-[#F4F8F5] px-3 py-1.5 text-[11px] font-semibold text-[#60728F]">
                                         {selectiveMode
@@ -260,6 +267,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
 
             <div className="app-scroll app-scroll-compact">
                 <QuestionCard
+                    key={currentQuestion.id}
                     question={currentQuestion}
                     questionNumber={quiz.currentIndex + 1}
                     totalQuestions={quiz.questions.length}
@@ -305,10 +313,29 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                                 ? `Submit ${selectiveMode ? "selective practice" : quiz.practiceContentType === "past_exam" ? "past exam" : "quiz"}`
                                 : "Next question"}
                 </Button>
-                <Button variant="ghost" size="md" fullWidth loading={submitting} onClick={() => void handleSubmit()}>
+                <Button
+                    variant="ghost"
+                    size="md"
+                    fullWidth
+                    loading={submitting}
+                    onClick={() => (unansweredCount > 0 ? setShowFinishConfirm(true) : void handleSubmit())}
+                >
                     Finish now
                 </Button>
             </div>
+
+            <ConfirmDialog
+                open={showFinishConfirm}
+                title="Submit now?"
+                description={`You have ${unansweredCount} unanswered ${unansweredCount === 1 ? "question" : "questions"}. Unanswered questions earn no points.`}
+                confirmLabel="Submit"
+                cancelLabel="Keep going"
+                onConfirm={() => {
+                    setShowFinishConfirm(false);
+                    void handleSubmit();
+                }}
+                onCancel={() => setShowFinishConfirm(false)}
+            />
 
             <ConfirmDialog
                 open={showLeaveModal}
@@ -318,7 +345,10 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                 cancelLabel="Stay here"
                 onConfirm={() => {
                     setShowLeaveModal(false);
+                    const { selectedQuizId: leftQuizId, selectedQuizTitle: leftQuizTitle } = useQuizStore.getState();
                     quiz.resetAttempt();
+                    // Keep the paper selected so the list highlights the one just left.
+                    if (!selectiveMode && leftQuizId && leftQuizTitle) quiz.setSelectedQuiz(leftQuizId, leftQuizTitle);
                     navigate(selectiveMode ? "/quiz/selective" : "/quiz/list");
                 }}
                 onCancel={() => setShowLeaveModal(false)}

@@ -53,7 +53,7 @@ export default function SubscribeScreen() {
         currentRequestStatus === "approved"
             ? "Payment confirmed"
             : currentRequestStatus === "rejected"
-                ? "Payment not confirmed"
+                ? "Resubmit request"
                 : hasPendingSubscriptionRequest
                 ? "Request already under review"
                 : "Request subscription";
@@ -116,10 +116,12 @@ export default function SubscribeScreen() {
         }
     }, [applySubscriptionRequestState]); // stable: setAuth/token read from refs
 
-    useEffect(() => {
+    const loadPage = useCallback(() => {
         const profileOptions = { skipGlobalLoader: true };
         const optionalRequestOptions = { skipGlobalLoader: true, skipAuthClear: true };
         lastBackgroundRefreshAtRef.current = Date.now();
+        setLoading(true);
+        setError(null);
         Promise.allSettled([
             getPlans(optionalRequestOptions),
             getSubscriptionRequest(optionalRequestOptions),
@@ -134,7 +136,9 @@ export default function SubscribeScreen() {
                 }
 
                 if (requestResult.status === "fulfilled") {
-                    applySubscriptionRequestState(requestResult.value, Boolean(requestResult.value.current_request));
+                    // Open the status modal automatically only while a request is still under review,
+                    // not on every visit after an old approved or rejected request.
+                    applySubscriptionRequestState(requestResult.value, requestResult.value.current_request?.status === "pending");
                 }
 
                 if (profileResult.status === "fulfilled" && tokenRef.current) {
@@ -143,6 +147,10 @@ export default function SubscribeScreen() {
             })
             .finally(() => setLoading(false));
     }, [applySubscriptionRequestState]); // stable: setAuth/token read from refs
+
+    useEffect(() => {
+        loadPage();
+    }, [loadPage]);
 
     useEffect(() => {
         const handleFocus = () => {
@@ -250,7 +258,7 @@ export default function SubscribeScreen() {
                             <Skeleton className="h-28 rounded-[24px]" />
                         </div>
                     ) : error && plans.length === 0 ? (
-                        <ErrorState message={error} onRetry={() => window.location.reload()} />
+                        <ErrorState message={error} onRetry={loadPage} />
                     ) : (
                         <div className="mt-4 space-y-3">
                             {plans.map((plan) => {
@@ -348,22 +356,6 @@ export default function SubscribeScreen() {
                             </span>
                         )}
                     </label>
-                    <Button
-                        variant="primary"
-                        size="lg"
-                        fullWidth
-                        loading={requesting}
-                        disabled={requestDisabled}
-                        onClick={() => void handleRequest()}
-                        style={{
-                            backgroundColor: requestDisabled ? "#D5E1DD" : "#172B2F",
-                            borderColor: requestDisabled ? "#D5E1DD" : "#172B2F",
-                            color: requestDisabled ? "#344E53" : "#FFFFFF",
-                        }}
-                        className="mt-5"
-                    >
-                        {requestButtonLabel}
-                    </Button>
                 </div>
 
                 {error && plans.length > 0 && <ErrorState message={error} />}
@@ -392,8 +384,10 @@ export default function SubscribeScreen() {
                 requesting={requesting}
                 instructions={instructions}
                 onClose={() => {
+                    // Closing mid-submit would hide the result of a payment request; wait for it.
+                    if (requesting) return;
                     setStatusModalOpen(false);
-                    void refreshSubscriptionState();
+                    void refreshSubscriptionState(false, { silent: true });
                 }}
             />
         </div>
@@ -548,6 +542,7 @@ function SubscriptionStatusModal({
                 <button
                     type="button"
                     aria-label="Close"
+                    disabled={requesting}
                     onClick={onClose}
                     className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#F4F8F5] text-[#526B70]"
                     style={{ backgroundColor: "#F4F8F5", color: "#526B70" }}
@@ -597,6 +592,7 @@ function SubscriptionStatusModal({
                         variant="ghost"
                         size="sm"
                         fullWidth
+                        disabled={requesting}
                         onClick={onClose}
                         style={{
                             backgroundColor: "#F4F8F5",

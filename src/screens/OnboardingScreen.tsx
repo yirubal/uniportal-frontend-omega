@@ -1,11 +1,12 @@
 import { Building2, CheckCircle2, GraduationCap, Layers3, Rows3, Wifi } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDepartments } from "../api/content";
 import { updateMyProfile } from "../api/auth";
 import ConfirmDialog from "../components/ConfirmDialog";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
+import { ErrorState } from "../components/ui";
 import { useTelegram } from "../hooks/useTelegram";
 import { Student, useAuthStore } from "../store/authStore";
 import type { Department } from "../store/contentStore";
@@ -35,7 +36,7 @@ type TelegramWindow = Window & {
 export default function OnboardingScreen() {
     const navigate = useNavigate();
     const { close } = useTelegram();
-    const { token, setAuth } = useAuthStore();
+    const { token, setAuth, student } = useAuthStore();
 
     const [step, setStep] = useState(0);
     const [departments, setDepartments] = useState<Department[]>([]);
@@ -46,16 +47,29 @@ export default function OnboardingScreen() {
     const [error, setError] = useState<string | null>(null);
     const [completedProfile, setCompletedProfile] = useState<Student | null>(null);
     const [selectedDept, setSelectedDept] = useState<Department | null>(null);
-    const [selectedProgram, setSelectedProgram] = useState<ProgramType | null>(null);
-    const [selectedYear, setSelectedYear] = useState<number | null>(null);
-    const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
+    // "Update setup" from Home reopens this screen: start from the saved profile instead of blank.
+    const [selectedProgram, setSelectedProgram] = useState<ProgramType | null>(student?.preferred_program ?? null);
+    const [selectedYear, setSelectedYear] = useState<number | null>(student?.preferred_year ?? null);
+    const [selectedPeriod, setSelectedPeriod] = useState<number | null>(student?.preferred_period ?? null);
+    const [departmentsError, setDepartmentsError] = useState(false);
+    const savedDepartmentId = student?.preferred_department ?? null;
+
+    const loadDepartments = useCallback(() => {
+        setLoadingDepts(true);
+        setDepartmentsError(false);
+
+        getDepartments()
+            .then((items) => {
+                setDepartments(items);
+                setSelectedDept((current) => current ?? items.find((item) => item.id === savedDepartmentId) ?? null);
+            })
+            .catch(() => setDepartmentsError(true))
+            .finally(() => setLoadingDepts(false));
+    }, [savedDepartmentId]);
 
     useEffect(() => {
-        getDepartments()
-            .then(setDepartments)
-            .catch(() => setError("Failed to load departments."))
-            .finally(() => setLoadingDepts(false));
-    }, []);
+        loadDepartments();
+    }, [loadDepartments]);
 
     useEffect(() => {
         const validPeriods = getPeriodOptions(selectedProgram).map((item) => item.value);
@@ -210,6 +224,8 @@ export default function OnboardingScreen() {
                                 Array.from({ length: 5 }).map((_, index) => (
                                     <div key={index} className="skeleton h-20 rounded-[24px]" />
                                 ))
+                            ) : departmentsError ? (
+                                <ErrorState message="Failed to load departments." onRetry={loadDepartments} />
                             ) : (
                                 departments.map((dept) => (
                                     <button

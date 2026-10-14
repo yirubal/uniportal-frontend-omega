@@ -11,12 +11,13 @@ import { useQuizStore } from "../store/quizStore";
 export default function PerformanceScreen() {
     const navigate = useNavigate();
     const { canAccessPerformance } = useAccess();
-    const { resetAttempt, setPracticeContentType, setSelectedQuiz } = useQuizStore();
+    const { resetAttempt, setCourseContext, setPracticeContentType, setSelectedQuiz } = useQuizStore();
     const [performance, setPerformance] = useState<Performance | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [retryingPaperKey, setRetryingPaperKey] = useState<string | null>(null);
     const [retryError, setRetryError] = useState<string | null>(null);
+    const [reloadKey, setReloadKey] = useState(0);
 
     useEffect(() => {
         if (!canAccessPerformance) {
@@ -24,11 +25,23 @@ export default function PerformanceScreen() {
             return;
         }
 
-        getMyPerformance()
-            .then(setPerformance)
-            .catch(() => setError("Failed to load performance analytics."))
-            .finally(() => setLoading(false));
-    }, [canAccessPerformance]);
+        const controller = new AbortController();
+        setLoading(true);
+        setError(null);
+
+        getMyPerformance({ signal: controller.signal })
+            .then((data) => {
+                if (!controller.signal.aborted) setPerformance(data);
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) setError("Failed to load performance analytics.");
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoading(false);
+            });
+
+        return () => controller.abort();
+    }, [canAccessPerformance, reloadKey]);
 
     const scoreTrend = useMemo(() => {
         if (!performance?.score_over_time.length) return 0;
@@ -70,7 +83,7 @@ export default function PerformanceScreen() {
         return (
             <div className="app-screen">
                 <div className="app-scroll pt-12">
-                    <ErrorState message={error ?? "No performance data found."} onRetry={() => window.location.reload()} />
+                    <ErrorState message={error ?? "No performance data found."} onRetry={() => setReloadKey((key) => key + 1)} />
                 </div>
             </div>
         );
@@ -86,7 +99,8 @@ export default function PerformanceScreen() {
         setRetryError(null);
 
         try {
-            const paperId = paper.paper_id ?? await resolvePaperId(paper);
+            const resolved = paper.paper_id ? null : await resolvePaper(paper);
+            const paperId = paper.paper_id ?? resolved?.id ?? null;
 
             if (!paperId || !paper.exam_type) {
                 setRetryError("This paper cannot be reopened yet because the performance data does not include a reusable paper id.");
@@ -101,6 +115,8 @@ export default function PerformanceScreen() {
             }
 
             setPracticeContentType(paper.exam_type === "final" ? "past_exam" : "quiz");
+            // Replace the previous course context: otherwise "Try again" and "Leave" open the old course's list.
+            setCourseContext(resolved?.course ?? null, null);
             setSelectedQuiz(paperId, paper.course_name);
             navigate(`/quiz/take/${paperId}`);
         } catch {
@@ -110,14 +126,13 @@ export default function PerformanceScreen() {
         }
     };
 
-    const resolvePaperId = async (paper: Performance["attempts_by_course"][number]) => {
+    // Fallback when the backend omits paper_id: match the paper title. Fragile; the backend should send paper_id.
+    const resolvePaper = async (paper: Performance["attempts_by_course"][number]): Promise<ExamPaper | null> => {
         if (!paper.exam_type) return null;
 
         const papers = await getExamPapers({ type: paper.exam_type });
         const title = normalizeTitle(paper.course_name);
-        const match = papers.find((item) => normalizeTitle(item.title) === title);
-
-        return match?.id ?? null;
+        return papers.find((item) => normalizeTitle(item.title) === title) ?? null;
     };
 
     return (

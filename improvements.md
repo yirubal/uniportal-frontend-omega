@@ -80,17 +80,17 @@ These are bugs students hit, or that give them wrong information.
 
 ## Phase 3 — Attempt resilience & practice UX
 
-- [ ] 🔴 **Attempts don't survive a reload.** `quizStore` lives only in memory, so a WebView kill or reload loses timed-exam progress. Save the active attempt (questions, answers, marked questions, deadline, exam id) with zustand `persist` in sessionStorage, and offer **Resume attempt**. Clear it on submit.
-- [ ] 🟠 **Retry reloads the whole app.** `window.location.reload()` is used for retry in QuizAttempt, Simulation, QuizList, ResourceViewer and Subscribe. It wipes the store, so selective practice can never recover. Re-run the fetch instead.
-- [ ] 🟠 **No confirmation before finishing.** "Finish now" submits straight away even with unanswered questions. Show `ConfirmDialog` with the number of unanswered questions.
-- [ ] 🟠 **Retakes from Performance use the wrong course.** `resetAttempt` keeps `courseId`/`courseName`, so "Try again" opens the previous course's list. `resolvePaperId` matches a paper title against `course_name`, which is fragile. Set the course from the paper, and ask the backend to always return `paper_id`.
-- [ ] 🟠 **Simulation fetches every exit exam to find one.** It calls `getExitExams()` (2–3 list requests) to look up a single exam. Pass the paper through router state or fetch it by id. Add a back button to the error view.
-- [ ] 🟠 **The subscribe status modal opens on every visit.** It opens whenever any request exists, including old approved or rejected ones. Open it automatically only for pending requests. Disable Cancel while submitting.
-- [ ] 🟢 **Pass thresholds disagree.** "Passed" uses 50%, but the ring and topic badges turn green at 60%. Use one constant.
-- [ ] 🟢 **QuestionCard's "Save answer" does nothing new.** The answer already saves on every keystroke. Remove one of the two.
-- [ ] 🟢 **The selected quiz ring never shows.** `QuizListScreen` resets the attempt on mount, which clears `selectedQuizId`.
-- [ ] 🟢 **The onboarding "Update setup" form starts empty.** Pre-fill it from the student profile. Add a retry when departments fail to load.
-- [ ] 🟢 **Rejected payments have a confusing button.** The subscribe button appears twice, and when payment is rejected the CTA says "Payment not confirmed". Keep one button and label it "Resubmit request".
+- [x] 🔴 **Attempts don't survive a reload.** `quizStore` lives only in memory, so a WebView kill or reload loses timed-exam progress. Save the active attempt (questions, answers, marked questions, deadline, exam id) with zustand `persist`, and offer **Resume attempt**. Clear it on submit. _Done with localStorage instead of sessionStorage, so a timed exam can be resumed after the Mini App is closed; saved attempts expire after 24h and only resume for the same student._
+- [x] 🟠 **Retry reloads the whole app.** `window.location.reload()` is used for retry in QuizAttempt, Simulation, QuizList, ResourceViewer and Subscribe. It wipes the store, so selective practice can never recover. Re-run the fetch instead.
+- [x] 🟠 **No confirmation before finishing.** "Finish now" submits straight away even with unanswered questions. Show `ConfirmDialog` with the number of unanswered questions.
+- [x] 🟠 **Retakes from Performance use the wrong course.** `resetAttempt` keeps `courseId`/`courseName`, so "Try again" opens the previous course's list. `resolvePaperId` matches a paper title against `course_name`, which is fragile. Set the course from the paper, and ask the backend to always return `paper_id`.
+- [x] 🟠 **Simulation fetches every exit exam to find one.** It calls `getExitExams()` (2–3 list requests) to look up a single exam. Pass the paper through router state or fetch it by id. Add a back button to the error view.
+- [x] 🟠 **The subscribe status modal opens on every visit.** It opens whenever any request exists, including old approved or rejected ones. Open it automatically only for pending requests. Disable Cancel while submitting.
+- [x] 🟢 **Pass thresholds disagree.** "Passed" uses 50%, but the ring and topic badges turn green at 60%. Use one constant. _Done: `PASS_PERCENTAGE = 50` in `utils/format.ts`._
+- [x] 🟢 **QuestionCard's "Save answer" does nothing new.** The answer already saves on every keystroke. Remove one of the two.
+- [x] 🟢 **The selected quiz ring never shows.** `QuizListScreen` resets the attempt on mount, which clears `selectedQuizId`.
+- [x] 🟢 **The onboarding "Update setup" form starts empty.** Pre-fill it from the student profile. Add a retry when departments fail to load.
+- [x] 🟢 **Rejected payments have a confusing button.** The subscribe button appears twice, and when payment is rejected the CTA says "Payment not confirmed". Keep one button and label it "Resubmit request".
 
 ---
 

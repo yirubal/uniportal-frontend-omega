@@ -24,12 +24,16 @@ export default function QuizListScreen() {
     const [quizzes, setQuizzes] = useState<ExamPaper[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [reloadKey, setReloadKey] = useState(0);
 
     const meta = getPracticeContentMeta(practiceContentType);
 
     useEffect(() => {
+        // Drop any previous attempt but keep the last opened paper so the list can highlight it.
+        const { selectedQuizId: lastQuizId, selectedQuizTitle: lastQuizTitle } = useQuizStore.getState();
         resetAttempt();
-    }, [resetAttempt]);
+        if (lastQuizId && lastQuizTitle) setSelectedQuiz(lastQuizId, lastQuizTitle);
+    }, [resetAttempt, setSelectedQuiz]);
 
     useEffect(() => {
         if (!courseId || !practiceContentType) {
@@ -40,11 +44,21 @@ export default function QuizListScreen() {
         setLoading(true);
         setError(null);
 
-        getCoursePracticePapers(courseId, practiceContentType)
-            .then(setQuizzes)
-            .catch(() => setError(`Failed to load ${meta.listLabel.toLowerCase()} for this course.`))
-            .finally(() => setLoading(false));
-    }, [courseId, meta.listLabel, practiceContentType]);
+        const controller = new AbortController();
+
+        getCoursePracticePapers(courseId, practiceContentType, { signal: controller.signal })
+            .then((papers) => {
+                if (!controller.signal.aborted) setQuizzes(papers);
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) setError(`Failed to load ${meta.listLabel.toLowerCase()} for this course.`);
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoading(false);
+            });
+
+        return () => controller.abort();
+    }, [courseId, meta.listLabel, practiceContentType, reloadKey]);
 
     if (!practiceContentType) {
         return (
@@ -115,7 +129,7 @@ export default function QuizListScreen() {
                             {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-[28px]" />)}
                         </div>
                     ) : error ? (
-                        <ErrorState message={error} onRetry={() => window.location.reload()} />
+                        <ErrorState message={error} onRetry={() => setReloadKey((key) => key + 1)} />
                     ) : quizzes.length === 0 ? (
                         <EmptyState
                             title={meta.emptyTitle}

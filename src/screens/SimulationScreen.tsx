@@ -1,6 +1,6 @@
 import { Bookmark, LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getExitExams, getExamQuestions, submitAttempt, type ExamPaper } from "../api/quiz";
 import ConfirmDialog from "../components/ConfirmDialog";
 import QuestionCard from "../components/QuestionCard";
@@ -16,6 +16,9 @@ import { buildSubmissionAnswers, isQuestionAnswered } from "../utils/questions";
 export default function SimulationScreen() {
     const navigate = useNavigate();
     const { examId } = useParams();
+    const location = useLocation();
+    // The exam list passes the paper through router state, so the start page doesn't refetch every exit exam.
+    const routedExam = (location.state as { exam?: ExamPaper } | null)?.exam;
     const quiz = useQuizStore();
     const handleSubmitCallRef = useRef<() => void>(() => {});
     // Note: handleSubmitCallRef.current is assigned after handleSubmit is declared below
@@ -30,6 +33,8 @@ export default function SimulationScreen() {
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [showNavigator, setShowNavigator] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
+    const [showFinishConfirm, setShowFinishConfirm] = useState(false);
 
     // Only treat the stored attempt as active when it belongs to the exam in the URL.
     const isQuizActive =
@@ -37,7 +42,6 @@ export default function SimulationScreen() {
         !quiz.isComplete &&
         quiz.mode === "simulation" &&
         quiz.examPaperId === Number(examId);
-    const isQuizComplete = quiz.isComplete;
 
     useEffect(() => {
         if (!examId) {
@@ -46,19 +50,33 @@ export default function SimulationScreen() {
             return;
         }
 
-        getExitExams()
+        if (routedExam?.id === Number(examId)) {
+            setExam(routedExam);
+            setLoading(false);
+            return;
+        }
+
+        // Deep link, reload or retake from Performance: look the paper up.
+        const controller = new AbortController();
+        setLoading(true);
+        setError(null);
+
+        getExitExams(undefined, { signal: controller.signal })
             .then((papers) => {
+                if (controller.signal.aborted) return;
                 const selected = papers.find((paper) => paper.id === Number(examId)) ?? null;
                 setExam(selected);
                 if (!selected) setError("Exam paper not found.");
             })
-            .catch(() => setError("Failed to load exam details."))
-            .finally(() => setLoading(false));
-    }, [examId]);
+            .catch(() => {
+                if (!controller.signal.aborted) setError("Failed to load exam details.");
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoading(false);
+            });
 
-    useEffect(() => {
-        if (isQuizComplete) navigate("/results", { replace: true });
-    }, [isQuizComplete, navigate]);
+        return () => controller.abort();
+    }, [examId, routedExam, reloadKey]);
 
     // Timer effect — only depends on isQuizActive, NOT the full quiz object or timeRemaining.
     // Time left is derived from the stored deadline, so throttled or paused intervals
@@ -156,6 +174,9 @@ export default function SimulationScreen() {
             });
 
             completeQuiz(result);
+            // Navigate from here, not from an isComplete effect: a finished attempt is persisted and
+            // must not redirect the next visit to an old result.
+            navigate("/results", { replace: true });
         } catch (submitFailure) {
             setSubmitError(getErrorMessage(submitFailure, "Failed to submit the simulation."));
         } finally {
@@ -163,7 +184,7 @@ export default function SimulationScreen() {
             setSubmitting(false);
         }
     // No quiz object in deps — reads store via getState() to avoid full-store re-subscription problem
-    }, [exam]);
+    }, [exam, navigate]);
 
     // Keep the call ref up to date after handleSubmit is declared (avoids used-before-declared error)
     useEffect(() => { handleSubmitCallRef.current = () => { void handleSubmit(); }; }, [handleSubmit]);
@@ -180,8 +201,13 @@ export default function SimulationScreen() {
     if (error && !exam && !isQuizActive) {
         return (
             <div className="app-screen">
-                <div className="app-scroll pt-12">
-                    <ErrorState message={error} onRetry={() => window.location.reload()} />
+                <div className="app-topbar">
+                    <div className="relative z-10">
+                        <TopBackButton onClick={() => navigate("/exit-exam")} label="Exit exams" />
+                    </div>
+                </div>
+                <div className="app-scroll app-scroll-compact">
+                    <ErrorState message={error} onRetry={() => setReloadKey((key) => key + 1)} />
                 </div>
             </div>
         );
@@ -289,6 +315,7 @@ export default function SimulationScreen() {
 
             <div className="app-scroll app-scroll-compact">
                 <QuestionCard
+                    key={currentQuestion.id}
                     question={currentQuestion}
                     questionNumber={quiz.currentIndex + 1}
                     totalQuestions={quiz.questions.length}
@@ -395,11 +422,30 @@ export default function SimulationScreen() {
                                 : "Next question"}
                 </Button>
                 {!timeExpired && (
-                    <Button variant="ghost" size="md" fullWidth loading={submitting} onClick={() => void handleSubmit()}>
+                    <Button
+                        variant="ghost"
+                        size="md"
+                        fullWidth
+                        loading={submitting}
+                        onClick={() => (unansweredCount > 0 ? setShowFinishConfirm(true) : void handleSubmit())}
+                    >
                         Finish now
                     </Button>
                 )}
             </div>
+
+            <ConfirmDialog
+                open={showFinishConfirm && !timeExpired}
+                title="Submit the exam now?"
+                description={`You have ${unansweredCount} unanswered ${unansweredCount === 1 ? "question" : "questions"} and time left on the clock. Unanswered questions earn no points.`}
+                confirmLabel="Submit exam"
+                cancelLabel="Keep going"
+                onConfirm={() => {
+                    setShowFinishConfirm(false);
+                    void handleSubmit();
+                }}
+                onCancel={() => setShowFinishConfirm(false)}
+            />
 
             <ConfirmDialog
                 open={showLeaveModal}
