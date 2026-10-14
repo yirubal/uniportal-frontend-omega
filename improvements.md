@@ -102,11 +102,16 @@ These are bugs students hit, or that give them wrong information.
   - Fall back to `WebApp.openLink` rather than `window.open`.
   - Reject non-http URLs.
   - Show errors to the student; the card currently ignores everything except 403.
-- [ ] 🟠 **Decide what to do about the PDF viewer and watermark.** `react-pdf` is installed but never imported, and `Watermark.tsx` is never rendered. Either:
-  - **(a)** build an in-app viewer: react-pdf with `workerSrc` set via `new URL(..., import.meta.url)`, pages rendered on demand, and a watermark overlay; or
-  - **(b)** remove the dependency and the component, and rely on the server-side watermark.
+- [x] 🟠 **In-app PDF reader with watermark** (option (a), built before this phase). `/resources/:id/read` (`PdfReaderScreen`, lazy-loaded) downloads the file with progress, checks it is a PDF, and renders with react-pdf using the legacy pdf.js build (for older Telegram WebViews). Features:
+  - only pages near the reading position get a canvas, with a pixel budget per page to cap memory
+  - pinch, double-tap and toolbar zoom (1–3×), page indicator and jump-to-page
+  - a tiled SVG watermark on every page (name and ID from `/api/students/me/watermark/`, plus the date)
+  - text selection, the context menu and the long-press callout are disabled
 
-  Either way, treat the client watermark as a deterrent only. If you keep it, scale the watermark canvas for `devicePixelRatio`.
+  The client watermark is still a deterrent only.
+- [ ] 🟠 **Backend follow-ups for the reader.**
+  - The signed file URL from `/download/` must allow CORS from the Mini App origin, because the reader `fetch`es it.
+  - Reading currently calls `/download/`, so it may count as a download. Consider a `view` endpoint, or not counting reads.
 
 ---
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import {
     BrowserRouter,
     Routes,
@@ -30,6 +30,8 @@ import SubscribeScreen from "./screens/SubscribeScreen";
 import ChannelGateScreen from "./screens/ChannelGateScreen";
 import ExamSchedule from "./screens/ExamSchedule";
 import BottomNav from "./components/BottomNav";
+// pdf.js is large: load the reader only when a document is opened.
+const PdfReaderScreen = lazy(() => import("./screens/PdfReaderScreen"));
 import SlowRequestLoader from "./components/SlowRequestLoader";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -48,7 +50,8 @@ function AppRoutes() {
         location.pathname.startsWith("/quiz/selective") ||
         location.pathname.startsWith("/quiz/take/") ||
         location.pathname.startsWith("/simulate/") ||
-        location.pathname === "/results";
+        location.pathname === "/results" ||
+        /^\/resources\/[^/]+\/read$/.test(location.pathname);
 
     if (isLoading) return <SplashScreen />;
 
@@ -102,6 +105,16 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <ResourceViewerScreen />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/resources/:id/read"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<SplashScreen />}>
+                                <PdfReaderScreen />
+                            </Suspense>
                         </ProtectedRoute>
                     }
                 />

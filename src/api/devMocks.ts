@@ -1270,3 +1270,43 @@ export function mockResponse<T>(data: T, delayMs = 250): Promise<{ data: T }> {
         setTimeout(() => resolve({ data }), delayMs);
     });
 }
+
+/** Builds a small multi-page PDF as a data: URL so the in-app reader can be tried with dev mocks. */
+export function makeMockPdfDataUrl(title: string, pageCount = 6): string {
+    const escape = (text: string) => text.replace(/[\\()]/g, (char) => `\\${char}`);
+    const objects: string[] = [];
+    const pageIds: number[] = [];
+    const fontId = 3 + pageCount * 2;
+
+    objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+    for (let page = 0; page < pageCount; page += 1) {
+        const pageId = 3 + page * 2;
+        const contentId = pageId + 1;
+        pageIds.push(pageId);
+        const lines = [
+            `BT /F1 22 Tf 60 760 Td (${escape(title)}) Tj ET`,
+            `BT /F1 14 Tf 60 720 Td (Mock page ${page + 1} of ${pageCount}) Tj ET`,
+            ...Array.from({ length: 24 }, (_, line) =>
+                `BT /F1 11 Tf 60 ${680 - line * 24} Td (Line ${line + 1}: sample study content for the in-app reader.) Tj ET`),
+        ].join("\n");
+        objects[pageId] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentId} 0 R >>`;
+        objects[contentId] = `<< /Length ${lines.length} >>\nstream\n${lines}\nendstream`;
+    }
+    objects[2] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(" ")}] /Count ${pageCount} >>`;
+    objects[fontId] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";
+
+    let pdf = "%PDF-1.4\n";
+    const offsets: number[] = [];
+    for (let id = 1; id < objects.length; id += 1) {
+        offsets[id] = pdf.length;
+        pdf += `${id} 0 obj\n${objects[id]}\nendobj\n`;
+    }
+    const xrefOffset = pdf.length;
+    pdf += `xref\n0 ${objects.length}\n0000000000 65535 f \n`;
+    for (let id = 1; id < objects.length; id += 1) {
+        pdf += `${String(offsets[id]).padStart(10, "0")} 00000 n \n`;
+    }
+    pdf += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+    return `data:application/pdf;base64,${btoa(pdf)}`;
+}

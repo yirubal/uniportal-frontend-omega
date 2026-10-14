@@ -1,5 +1,5 @@
 import client, { REQUEST_TIMEOUT_MS } from "./client";
-import { forceDevMocks, type ApiRequestOptions } from "./devFallback";
+import { forceDevMocks, withDevFallback, type ApiRequestOptions } from "./devFallback";
 import { Student, StudentPreferences } from "../store/authStore";
 import type { ProgramType } from "../utils/periods";
 import { hasActiveSubscriptionExpiry } from "../utils/subscription";
@@ -360,9 +360,14 @@ export const updateMyProfile = async (data: {
     return normalizeStudent(response.data);
 };
 
-export const getWatermarkText = async (): Promise<string> => {
-    const response = await client.get<{ watermark: string }>(
-        "/api/students/me/watermark/"
+export const getWatermarkText = async (): Promise<string> =>
+    withDevFallback(
+        "watermark",
+        async () => {
+            const response = await client.get<{ watermark: string }>(
+                "/api/students/me/watermark/"
+            );
+            return response.data.watermark;
+        },
+        (mocks) => `${mocks.MOCK_STUDENT.name} · ${mocks.MOCK_STUDENT.telegram_id}`
     );
-    return response.data.watermark;
-};

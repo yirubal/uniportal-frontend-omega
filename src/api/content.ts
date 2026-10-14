@@ -137,5 +137,10 @@ export const requestDownload = async (
             );
             return response.data;
         },
-        () => ({ url: "#", filename: `resource_${resourceId}.pdf`, expires_in: 300, watermark })
+        (mocks) => ({
+            url: mocks.makeMockPdfDataUrl(`Mock resource ${resourceId}`),
+            filename: `resource_${resourceId}.pdf`,
+            expires_in: 300,
+            watermark,
+        })
     );

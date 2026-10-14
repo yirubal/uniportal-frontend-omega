@@ -1,4 +1,4 @@
-import { Download, Lock, Sparkles } from "lucide-react";
+import { BookOpen, Download, Lock, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getResourceDetail, requestDownload } from "../api/content";
@@ -240,16 +240,29 @@ export default function ResourceViewerScreen() {
             </div>
 
             <div className="app-footer">
-                <Button
-                    variant={isLocked ? "secondary" : "primary"}
-                    size="lg"
-                    fullWidth
-                    loading={downloading}
-                    onClick={() => void handleDownload()}
-                >
-                    {isLocked ? <Lock size={16} /> : <Download size={16} />}
-                    {isLocked ? "Unlock premium resource" : "Download resource"}
-                </Button>
+                {isLocked ? (
+                    <Button variant="secondary" size="lg" fullWidth onClick={() => navigate("/subscribe")}>
+                        <Lock size={16} />
+                        Unlock premium resource
+                    </Button>
+                ) : (
+                    <div className="grid grid-cols-[1fr_auto] gap-3">
+                        <Button variant="primary" size="lg" fullWidth onClick={() => navigate(`/resources/${resource.id}/read`)}>
+                            <BookOpen size={16} />
+                            Read in app
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            size="lg"
+                            aria-label="Download resource"
+                            loading={downloading}
+                            onClick={() => void handleDownload()}
+                            className="px-4"
+                        >
+                            <Download size={16} />
+                        </Button>
+                    </div>
+                )}
                 {source !== "official" && (
                     <p className="mt-2 text-center text-xs font-medium leading-relaxed text-[#70868B]">
                         ℹ️ {sourceDisplay} - not an official Unity University document

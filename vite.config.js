@@ -7,6 +7,11 @@ export default defineConfig({
         react(),
         tailwindcss(),
     ],
+    resolve: {
+        alias: [
+            // react-pdf imports the modern pdf.js build, which needs APIs (e.g. Promise.withResolvers)
+            // missing in older Telegram WebViews. The legacy build ships the polyfills.
+            { find: /^pdfjs-dist$/, replacement: 'pdfjs-dist/legacy/build/pdf.mjs' },
+        ],
+    },
 })
-
-
