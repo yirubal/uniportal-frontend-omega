@@ -1,8 +1,10 @@
 import { Bookmark, LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getExitExams, getExamQuestions, submitAttempt, type ExamPaper } from "../api/quiz";
+import { getExitExams, getExamQuestions, type ExamPaper } from "../api/quiz";
+import { useAttemptSubmit } from "../hooks/useAttemptSubmit";
 import ConfirmDialog from "../components/ConfirmDialog";
+import UnansweredConfirmDialog from "../components/UnansweredConfirmDialog";
 import QuestionCard from "../components/QuestionCard";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
@@ -12,8 +14,7 @@ import { getExitExamCategory, getExitExamMeta } from "../utils/exitExams";
 import { formatDuration } from "../utils/format";
 import { ExamTimerBar, ExamTimerChip } from "../components/ExamTimer";
 import { useShallow } from "zustand/react/shallow";
-import { getErrorMessage } from "../utils/errors";
-import { buildSubmissionAnswers, isQuestionAnswered } from "../utils/questions";
+import { isQuestionAnswered } from "../utils/questions";
 
 export default function SimulationScreen() {
     const navigate = useNavigate();
@@ -44,15 +45,12 @@ export default function SimulationScreen() {
     );
     const handleSubmitCallRef = useRef<() => void>(() => {});
     // Note: handleSubmitCallRef.current is assigned after handleSubmit is declared below
-    const submittingRef = useRef(false);
     const autoSubmittedRef = useRef(false);
 
     const [exam, setExam] = useState<ExamPaper | null>(null);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [submitError, setSubmitError] = useState<string | null>(null);
     const [showNavigator, setShowNavigator] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
@@ -168,38 +166,16 @@ export default function SimulationScreen() {
         }
     };
 
+    const { submit, submitting, submitError } = useAttemptSubmit({
+        examPaperId: exam?.id,
+        mode: "simulation",
+        fallbackError: "Failed to submit the simulation.",
+    });
+
     const handleSubmit = useCallback(async () => {
-        // Ref guard: state-based guards can be stale between rapid taps and the expiry auto-submit.
-        if (!exam || submittingRef.current) return;
-
-        // Read live store values via getState() — do NOT put quiz (full object) in deps
-        const { questions, answers, completeQuiz } = useQuizStore.getState();
-
-        submittingRef.current = true;
-        setSubmitting(true);
-        setSubmitError(null);
-
-        try {
-            const result = await submitAttempt({
-                exam_paper: exam.id,
-                answers: Object.fromEntries(
-                    Object.entries(buildSubmissionAnswers(questions, answers)).map(([questionId, selected]) => [String(questionId), selected])
-                ),
-                mode: "simulation",
-            });
-
-            completeQuiz(result);
-            // Navigate from here, not from an isComplete effect: a finished attempt is persisted and
-            // must not redirect the next visit to an old result.
-            navigate("/results", { replace: true });
-        } catch (submitFailure) {
-            setSubmitError(getErrorMessage(submitFailure, "Failed to submit the simulation."));
-        } finally {
-            submittingRef.current = false;
-            setSubmitting(false);
-        }
-    // No quiz object in deps — reads store via getState() to avoid full-store re-subscription problem
-    }, [exam, navigate]);
+        if (!exam) return;
+        await submit();
+    }, [exam, submit]);
 
     // Keep the call ref up to date after handleSubmit is declared (avoids used-before-declared error)
     useEffect(() => { handleSubmitCallRef.current = () => { void handleSubmit(); }; }, [handleSubmit]);
@@ -432,12 +408,10 @@ export default function SimulationScreen() {
                 )}
             </div>
 
-            <ConfirmDialog
+            <UnansweredConfirmDialog
                 open={showFinishConfirm && !timeExpired}
-                title="Submit the exam now?"
-                description={`You have ${unansweredCount} unanswered ${unansweredCount === 1 ? "question" : "questions"} and time left on the clock. Unanswered questions earn no points.`}
-                confirmLabel="Submit exam"
-                cancelLabel="Keep going"
+                unansweredCount={unansweredCount}
+                timed
                 onConfirm={() => {
                     setShowFinishConfirm(false);
                     void handleSubmit();

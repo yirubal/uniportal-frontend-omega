@@ -126,30 +126,30 @@ These are bugs students hit, or that give them wrong information.
 
 ## Phase 6 — Refactor & de-duplicate
 
-- [ ] 🟠 **Extract a `useAttemptSession` hook** (loading, submit, answer payload mapping, leave dialog), plus shared `AttemptFooter` and `LeaveDialog` components for QuizAttempt and Simulation.
-- [ ] 🟠 **Extract a `useCourseFilter` hook** for the department, program, year, period and course cascade. It is currently repeated in PracticeSetup, SelectivePractice and Resources.
-- [ ] 🟠 **Extract `useSubscriptionStatus`.** The ref, refresh and throttle sync logic is copied across Home, Subscribe and Subscription.
-- [ ] 🟠 **Split the large components.**
+- [x] 🟠 **Extract a `useAttemptSession` hook** _(done as `useAttemptSubmit` plus `UnansweredConfirmDialog`; loading stays per screen because practice and exams load differently)_ (loading, submit, answer payload mapping, leave dialog), plus shared `AttemptFooter` and `LeaveDialog` components for QuizAttempt and Simulation.
+- [x] 🟠 **Extract a `useCourseFilter` hook** for the department, program, year, period and course cascade. It is currently repeated in PracticeSetup, SelectivePractice and Resources.
+- [x] 🟠 **Extract `useSubscriptionStatus`.** The ref, refresh and throttle sync logic is copied across Home, Subscribe and Subscription.
+- [x] 🟠 **Split the large components.**
   - `SubscribeScreen` (667 lines) → Plans, PaymentForm, StatusModal
   - `ResourcesScreen` (622 lines) → SelectView, ListView
   - `SelectivePracticeScreen` (595 lines)
   - `AnswerReviewModal` (594 lines)
-- [ ] 🟢 **Shared UI pieces.** Add a `SelectableCard` (used in Resources and Onboarding), a `SearchInput`, and one shared `formatActiveTermLabel` (currently in both ExamSchedule and ExamScheduleCard).
-- [ ] 🟢 **Delete dead code.**
+- [x] 🟢 **Shared UI pieces.** Add a `SelectableCard` (used in Resources and Onboarding), a `SearchInput`, and one shared `formatActiveTermLabel` (currently in both ExamSchedule and ExamScheduleCard). _Done: `SearchInput`, shared `SelectorGroup`, and `utils/examTerm.ts`. Onboarding's department cards keep their own larger layout._
+- [x] 🟢 **Delete dead code.**
   - Unused `ui/Card.tsx` and `ui/Badge.tsx`
   - The commented-out icon in HomeScreen
   - The `public/*:Zone.Identifier` Windows artifact, which is served publicly
   - The redundant ternary in SelectivePractice (`useTailoredStart ? profile.departmentId : profile.departmentId`)
-- [ ] 🟠 **Clear the remaining `set-state-in-effect` warnings** (derived state in PracticeSetup, QuizList, ExitExamList, Onboarding, ResourceViewer, Subscription, AnswerReviewModal), then set `react-hooks/set-state-in-effect` and `react-hooks/purity` back to errors in `eslint.config.js`.
-- [ ] 🟠 **Decide: should a premium student with a pending or rejected renewal show as "Free"?** Home and Subscription currently hide premium whenever a payment request is pending or rejected, even though the student still has an active subscription. Settle this when building `useSubscriptionStatus`.
-- [ ] 🟢 **Clean up the auth store.** `Student` stores preferences twice (the `preferred_*` fields and `preferences.*`). Keep one shape.
+- [x] 🟠 **Clear the remaining `set-state-in-effect` warnings** (derived state in PracticeSetup, QuizList, ExitExamList, Onboarding, ResourceViewer, Subscription, AnswerReviewModal), then set `react-hooks/set-state-in-effect` and `react-hooks/purity` back to errors in `eslint.config.js`.
+- [x] 🟠 **Decide: should a premium student with a pending or rejected renewal show as "Free"?** Home and Subscription currently hide premium whenever a payment request is pending or rejected, even though the student still has an active subscription. Settle this when building `useSubscriptionStatus`. _Decided 2026-10-14: keep showing Free; the rule lives in `useSubscriptionStatus`._
+- [x] 🟢 **Clean up the auth store.** `Student` stores preferences twice (the `preferred_*` fields and `preferences.*`). Keep one shape.
 
 ---
 
 ## Phase 7 — Design system & accessibility
 
 - [ ] 🟠 **Use the theme tokens.** `@theme` defines the palette, yet the code has about 720 hardcoded hex values and almost no token classes. Move to `bg-ink`, `text-text-secondary` and similar. ChannelGateScreen is almost entirely inline styles with JS press handlers.
-- [ ] 🟠 **Add a `dark` Button variant** to replace the repeated inline `style={{ backgroundColor: "#172B2F" }}` overrides (Results, ConfirmDialog, QuizAttempt, Simulation, ExamSchedule, Subscribe, Subscription, Home, LockedOverlay). Align `QuestionCard.getOptionStyle` with the palette and remove its dead ternary.
+- [ ] 🟠 **Remove the inline button style overrides.** _Root cause found and fixed during the Phase 6 smoke test: an unlayered `button { background: none; border: none; padding: 0 }` reset in `index.css` beat every Tailwind utility, so no button's `bg-*`, `border` or padding classes applied. It now lives in `@layer base`._ The inline `style={{ backgroundColor: "#172B2F" }}` workarounds can go. Originally: add a `dark` Button variant to replace the repeated inline `style={{ backgroundColor: "#172B2F" }}` overrides (Results, ConfirmDialog, QuizAttempt, Simulation, ExamSchedule, Subscribe, Subscription, Home, LockedOverlay). Align `QuestionCard.getOptionStyle` with the palette and remove its dead ternary.
 - [ ] 🟠 **Create one accessible `Dialog` component**:
   - `role="dialog"`, `aria-modal` and `aria-labelledby`
   - initial focus, a focus trap, Escape to close and focus return

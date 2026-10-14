@@ -6,16 +6,7 @@ import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { Skeleton } from "../components/ui";
 import type { ActiveTermResponse, ExamEntry, ExamScheduleResponse } from "../types/exams";
-
-function formatActiveTermLabel(term: ActiveTermResponse, separator = " - ") {
-    const termLabel =
-        typeof term.year === "number" && typeof term.term === "number"
-            ? `${term.year} Term ${term.term}`
-            : "Current term";
-    const centerLabel = term.center?.trim();
-
-    return centerLabel ? `${termLabel}${separator}${centerLabel}` : termLabel;
-}
+import { formatActiveTermLabel } from "../utils/examTerm";
 
 function groupExamsByDate(exams: ExamEntry[]) {
     const grouped = new Map<string, ExamEntry[]>();
@@ -66,7 +57,7 @@ export default function ExamSchedule() {
         () => (schedule ? groupExamsByDate(schedule.exams) : []),
         [schedule]
     );
-    const activeTermLabel = activeTerm?.active ? formatActiveTermLabel(activeTerm) : "Current exam schedule";
+    const activeTermLabel = activeTerm?.active ? formatActiveTermLabel(activeTerm, " - ") : "Current exam schedule";
     const showTermNotice = !schedule && (Boolean(termError) || (!termLoading && activeTerm?.active === false));
 
     const resetSearch = useCallback(() => {
@@ -141,7 +132,7 @@ export default function ExamSchedule() {
                         {schedule
                             ? schedule.term
                             : activeTerm?.active
-                                ? formatActiveTermLabel(activeTerm)
+                                ? formatActiveTermLabel(activeTerm, " - ")
                                 : "Check the current term and search using your Student ID or registered name."}
                     </p>
                 </div>

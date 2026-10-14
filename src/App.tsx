@@ -67,7 +67,9 @@ function AppRoutes() {
         location.pathname.startsWith("/quiz/take/") ||
         location.pathname.startsWith("/simulate/") ||
         location.pathname === "/results" ||
-        /^\/resources\/[^/]+\/read$/.test(location.pathname);
+        // Screens with their own footer action bar: the nav would cover it.
+        location.pathname === "/subscribe" ||
+        /^\/resources\/[^/]+(\/read)?$/.test(location.pathname);
 
     if (isLoading) return <SplashScreen />;
 

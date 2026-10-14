@@ -1,15 +1,6 @@
 import { ArrowRight, ClipboardList } from "lucide-react";
 import type { ActiveTermResponse } from "../types/exams";
-
-function formatActiveTermLabel(term: ActiveTermResponse) {
-    const termLabel =
-        typeof term.year === "number" && typeof term.term === "number"
-            ? `${term.year} Term ${term.term}`
-            : "Current term";
-    const centerLabel = term.center?.trim();
-
-    return centerLabel ? `${termLabel} · ${centerLabel}` : termLabel;
-}
+import { formatActiveTermLabel } from "../utils/examTerm";
 
 interface ExamScheduleCardProps {
     term?: ActiveTermResponse | null;

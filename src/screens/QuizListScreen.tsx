@@ -1,6 +1,6 @@
 import { BookOpenCheck, ClipboardList, FileText, Lock, TimerReset } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCoursePracticePapers, type ExamPaper } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
@@ -9,6 +9,9 @@ import { formatDuration } from "../utils/format";
 import { useQuizStore } from "../store/quizStore";
 import { getPracticeContentMeta } from "../utils/practice";
 import { useAccess } from "../hooks/useAccess";
+import { useAsyncData } from "../hooks/useAsyncData";
+
+const NO_PAPERS: ExamPaper[] = [];
 
 export default function QuizListScreen() {
     const navigate = useNavigate();
@@ -24,12 +27,14 @@ export default function QuizListScreen() {
     );
     const { isPremium } = useAccess();
 
-    const [quizzes, setQuizzes] = useState<ExamPaper[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [reloadKey, setReloadKey] = useState(0);
-
     const meta = getPracticeContentMeta(practiceContentType);
+    const papers = useAsyncData(
+        courseId && practiceContentType ? `${courseId}|${practiceContentType}` : null,
+        (signal) => getCoursePracticePapers(courseId!, practiceContentType!, { signal })
+    );
+    const quizzes = papers.data ?? NO_PAPERS;
+    const loading = papers.loading;
+    const error = papers.error ? `Failed to load ${meta.listLabel.toLowerCase()} for this course.` : null;
 
     useEffect(() => {
         // Drop any previous attempt but keep the last opened paper so the list can highlight it.
@@ -37,31 +42,6 @@ export default function QuizListScreen() {
         resetAttempt();
         if (lastQuizId && lastQuizTitle) setSelectedQuiz(lastQuizId, lastQuizTitle);
     }, [resetAttempt, setSelectedQuiz]);
-
-    useEffect(() => {
-        if (!courseId || !practiceContentType) {
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        const controller = new AbortController();
-
-        getCoursePracticePapers(courseId, practiceContentType, { signal: controller.signal })
-            .then((papers) => {
-                if (!controller.signal.aborted) setQuizzes(papers);
-            })
-            .catch(() => {
-                if (!controller.signal.aborted) setError(`Failed to load ${meta.listLabel.toLowerCase()} for this course.`);
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setLoading(false);
-            });
-
-        return () => controller.abort();
-    }, [courseId, meta.listLabel, practiceContentType, reloadKey]);
 
     if (!practiceContentType) {
         return (
@@ -132,7 +112,7 @@ export default function QuizListScreen() {
                             {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-[28px]" />)}
                         </div>
                     ) : error ? (
-                        <ErrorState message={error} onRetry={() => setReloadKey((key) => key + 1)} />
+                        <ErrorState message={error} onRetry={papers.reload} />
                     ) : quizzes.length === 0 ? (
                         <EmptyState
                             title={meta.emptyTitle}

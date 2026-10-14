@@ -1,6 +1,6 @@
 import { BookOpen, Download, Lock, Sparkles } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getResourceDetail } from "../api/content";
 import Button from "../components/ui/Button";
@@ -8,9 +8,9 @@ import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import { ResourceSourceBadge } from "../components/ResourceSourceBadge";
 import TopBackButton from "../components/TopBackButton";
 import { useAccess } from "../hooks/useAccess";
+import { useAsyncData } from "../hooks/useAsyncData";
 import { useResourceDownload } from "../hooks/useResourceDownload";
 import { useContentStore } from "../store/contentStore";
-import type { Resource } from "../store/contentStore";
 import { formatDate, formatFileType } from "../utils/format";
 
 export default function ResourceViewerScreen() {
@@ -25,37 +25,12 @@ export default function ResourceViewerScreen() {
     const { canAccessResource } = useAccess();
     const { download, downloading, message: downloadMessage } = useResourceDownload();
 
-    const [resource, setResource] = useState<Resource | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [reloadKey, setReloadKey] = useState(0);
-
-    useEffect(() => {
-        if (!id) {
-            setError("Invalid resource.");
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        // Abort when moving to a related resource so the previous detail can't land last.
-        const controller = new AbortController();
-
-        getResourceDetail(Number(id), { signal: controller.signal })
-            .then((item) => {
-                if (!controller.signal.aborted) setResource(item);
-            })
-            .catch(() => {
-                if (!controller.signal.aborted) setError("Failed to load resource details.");
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setLoading(false);
-            });
-
-        return () => controller.abort();
-    }, [id, reloadKey]);
+    // Keyed by id: moving to a related resource aborts the previous request and shows loading at once.
+    const resourceId = Number(id);
+    const detail = useAsyncData(resourceId ? String(resourceId) : null, (signal) => getResourceDetail(resourceId, { signal }));
+    const resource = detail.data;
+    const loading = detail.loading;
+    const error = !resourceId ? "Invalid resource." : detail.error ? "Failed to load resource details." : null;
 
     const relatedResources = useMemo(() => {
         if (!resource) return [];
@@ -90,7 +65,7 @@ export default function ResourceViewerScreen() {
                     <button onClick={() => navigate(-1)} className="mb-4 text-sm font-medium text-[#526B70]">
                         Back
                     </button>
-                    <ErrorState message={error ?? "Resource not found."} onRetry={() => setReloadKey((key) => key + 1)} />
+                    <ErrorState message={error ?? "Resource not found."} onRetry={detail.reload} />
                 </div>
             </div>
         );

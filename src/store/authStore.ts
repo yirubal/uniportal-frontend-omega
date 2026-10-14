@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { ProgramType } from "../utils/periods";
 
+/** Study profile as parsed from the backend (which may send it flat or nested). */
 export interface StudentPreferences {
     department: number | null;
     program: ProgramType | null;
@@ -22,7 +23,6 @@ export interface Student {
     onboarding_complete: boolean;
     is_premium: boolean;
     subscription_expiry: string | null;
-    preferences: StudentPreferences;
 }
 
 interface AuthState {

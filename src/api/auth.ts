@@ -194,7 +194,6 @@ export function normalizeStudent(student: BackendStudent): Student {
         ),
         is_premium: isPremium,
         subscription_expiry: student.subscription_expiry ?? null,
-        preferences,
     };
 }
 
@@ -318,22 +317,6 @@ export const updateMyProfile = async (data: {
                 typeof data.onboarding_complete === "boolean"
                     ? data.onboarding_complete
                     : mockStudent.onboarding_complete,
-            preferences: {
-                department:
-                    typeof data.preferred_department === "number"
-                        ? data.preferred_department
-                        : mockStudent.preferences.department,
-                program:
-                    data.preferred_program ?? mockStudent.preferences.program,
-                year:
-                    typeof data.preferred_year === "number"
-                        ? data.preferred_year
-                        : mockStudent.preferences.year,
-                period:
-                    typeof data.preferred_period === "number"
-                        ? data.preferred_period
-                        : mockStudent.preferences.period,
-            },
         };
         saveMockStudent(updatedStudent);
         console.info("[dev] Updated mock student profile");

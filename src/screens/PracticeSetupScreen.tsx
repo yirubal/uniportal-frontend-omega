@@ -2,13 +2,13 @@ import { Brain, ChevronDown, FileText, Layers3 } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getDepartments, getCourses } from "../api/content";
 import TopBackButton from "../components/TopBackButton";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import { useStudentProfile } from "../hooks/useStudentProfile";
-import type { Course, Department } from "../store/contentStore";
+import { useCourseFilter } from "../hooks/useCourseFilter";
+import type { Course } from "../store/contentStore";
 import { useQuizStore } from "../store/quizStore";
-import { getPeriodLabel, getPeriodOptions, getProgramLabel, PROGRAM_OPTIONS, type ProgramType, YEAR_OPTIONS } from "../utils/periods";
+import { getPeriodLabel, getPeriodOptions, getProgramLabel, PROGRAM_OPTIONS, YEAR_OPTIONS } from "../utils/periods";
 import { getPracticeContentMeta } from "../utils/practice";
 
 export default function PracticeSetupScreen() {
@@ -29,104 +29,40 @@ export default function PracticeSetupScreen() {
 
     const meta = getPracticeContentMeta(practiceContentType);
 
-    const [departments, setDepartments] = useState<Department[]>([]);
-    const [courses, setCourses] = useState<Course[]>([]);
     const [customizingProfile, setCustomizingProfile] = useState(false);
-    const [loadingDepts, setLoadingDepts] = useState(true);
-    const [loadingCourses, setLoadingCourses] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const [selDept, setSelDept] = useState<Department | null>(null);
-    const [selProgram, setSelProgram] = useState<ProgramType | null>(profile.program ?? program ?? null);
-    const [selYear, setSelYear] = useState<number | null>(profile.year ?? year ?? null);
-    const [selPeriod, setSelPeriod] = useState<number | null>(profile.period ?? period ?? null);
-    const [selCourse, setSelCourse] = useState<Course | null>(null);
     const useTailoredStart = profile.hasCompleteProfile && !customizingProfile;
-    const canLoadCourseShelf = Boolean(selDept && selProgram && selYear && selPeriod);
+    const filter = useCourseFilter({
+        tailored: useTailoredStart,
+        initial: {
+            departmentId: departmentId ?? profile.departmentId,
+            program: profile.program ?? program,
+            year: profile.year ?? year,
+            period: profile.period ?? period,
+        },
+    });
+    const {
+        departments,
+        department: selDept,
+        program: selProgram,
+        year: selYear,
+        period: selPeriod,
+        setDepartment: setSelDept,
+        setProgram: setSelProgram,
+        setYear: setSelYear,
+        setPeriod: setSelPeriod,
+        courses,
+        isComplete: canLoadCourseShelf,
+    } = filter;
+    const loadingDepts = filter.departmentsLoading;
+    const loadingCourses = filter.coursesLoading;
+    // The course last opened (from the quiz store) stays highlighted when its list loads again.
+    const [selCourseId, setSelCourseId] = useState<number | null>(courseId);
+    const selCourse = courses.find((course) => course.id === selCourseId) ?? null;
     const selectedDepartmentName = selDept?.name ?? "Your department";
 
     useEffect(() => {
         resetAttempt();
     }, [resetAttempt]);
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        getDepartments({ signal: controller.signal })
-            .then((depts) => {
-                if (!controller.signal.aborted) setDepartments(depts);
-            })
-            .catch(() => {
-                if (!controller.signal.aborted) setError("Failed to load departments.");
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setLoadingDepts(false);
-            });
-
-        return () => controller.abort();
-    }, []);
-
-    useEffect(() => {
-        const preferredDepartmentId = useTailoredStart ? profile.departmentId : departmentId ?? profile.departmentId;
-        if (!preferredDepartmentId) return;
-
-        const preferred = departments.find((item) => item.id === preferredDepartmentId) ?? null;
-        setSelDept(preferred);
-
-        if (useTailoredStart) {
-            setSelProgram(profile.program);
-            setSelYear(profile.year);
-            setSelPeriod(profile.period);
-        }
-    }, [
-        departmentId,
-        departments,
-        profile.departmentId,
-        profile.period,
-        profile.program,
-        profile.year,
-        useTailoredStart,
-    ]);
-
-    useEffect(() => {
-        const validPeriods = getPeriodOptions(selProgram).map((item) => item.value);
-        if (selPeriod && !validPeriods.includes(selPeriod)) {
-            setSelPeriod(null);
-        }
-    }, [selPeriod, selProgram]);
-
-    useEffect(() => {
-        if (!selDept || !selProgram || !selYear || !selPeriod) return;
-
-        setLoadingCourses(true);
-        setError(null);
-        setCourses([]);
-        setSelCourse(null);
-
-        // Abort when filters change so an older, slower response can't overwrite the newer list.
-        const controller = new AbortController();
-
-        getCourses(selDept.id, selProgram, selYear, selPeriod, { signal: controller.signal })
-            .then((items) => {
-                if (controller.signal.aborted) return;
-                setCourses(items);
-
-                if (!courseId) return;
-                const preferredCourse = items.find((item) => item.id === courseId) ?? null;
-                setSelCourse(preferredCourse);
-            })
-            .catch(() => {
-                if (!controller.signal.aborted) setError("Failed to load courses.");
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setLoadingCourses(false);
-            });
-
-        return () => {
-            controller.abort();
-            setLoadingCourses(false);
-        };
-    }, [courseId, selDept, selProgram, selYear, selPeriod]);
 
     const handleOpenList = (course: Course) => {
         if (!practiceContentType || !selDept || !selProgram || !selYear || !selPeriod) return;
@@ -318,7 +254,19 @@ export default function PracticeSetupScreen() {
                                     </span>
                                 )}
                             </div>
-                            {loadingDepts || loadingCourses || !canLoadCourseShelf ? (
+                            {filter.departmentMissing ? (
+                                filter.departmentsError ? (
+                                    <ErrorState message="Failed to load departments." onRetry={filter.reloadDepartments} />
+                                ) : (
+                                    <EmptyState
+                                        title="We couldn't find your department"
+                                        description="Your saved department is no longer listed. Choose your filters to continue."
+                                        action={{ label: "Choose filters", onClick: () => setCustomizingProfile(true) }}
+                                    />
+                                )
+                            ) : filter.coursesError ? (
+                                <ErrorState message={filter.coursesError} onRetry={filter.reloadCourses} />
+                            ) : loadingDepts || loadingCourses || !canLoadCourseShelf ? (
                                 <div className="mb-5 space-y-2">
                                     {[1, 2, 3].map((i) => <Skeleton key={i} className="h-14 rounded-2xl" />)}
                                 </div>
@@ -335,7 +283,7 @@ export default function PracticeSetupScreen() {
                                             type="button"
                                             key={course.id}
                                             onClick={() => {
-                                                setSelCourse(course);
+                                                setSelCourseId(course.id);
                                                 handleOpenList(course);
                                             }}
                                             className={`app-list-item ${selCourse?.id === course.id ? "ring-2 ring-[#3F6F6A]/20" : ""}`}
@@ -363,7 +311,9 @@ export default function PracticeSetupScreen() {
                         </>
                     )}
 
-                    {error && <ErrorState message={error} />}
+                    {!useTailoredStart && filter.departmentsError && (
+                        <ErrorState message="Failed to load departments." onRetry={filter.reloadDepartments} />
+                    )}
                 </div>
             </div>
         </div>

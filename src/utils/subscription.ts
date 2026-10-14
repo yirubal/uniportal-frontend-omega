@@ -1,3 +1,6 @@
+import type { PaymentInstructions } from "../api/quiz";
+import { formatETB } from "./format";
+
 const DAY_MS = 1000 * 60 * 60 * 24;
 
 /**
@@ -33,4 +36,15 @@ export function getSubscriptionAccess(
         // At least 1 while active, so a subscription with hours left never reads as "Expires today" (0).
         daysRemaining: Math.max(1, Math.ceil((new Date(expiry).getTime() - now) / DAY_MS)),
     };
+}
+
+/** "Monthly · ETB 99 · 30 days" from whichever parts the payment request includes. */
+export function getPaymentInstructionSummary(instructions: PaymentInstructions) {
+    const parts = [
+        instructions.plan,
+        typeof instructions.amount === "number" ? formatETB(instructions.amount) : null,
+        typeof instructions.days === "number" ? `${instructions.days} days` : null,
+    ].filter(Boolean);
+
+    return parts.join(" · ");
 }

@@ -1069,12 +1069,6 @@ export const MOCK_STUDENT: Student = {
     onboarding_complete: true,
     is_premium: false,
     subscription_expiry: null,
-    preferences: {
-        department: 1,
-        program: "regular",
-        year: 2,
-        period: 1,
-    },
 };
 
 export const MOCK_PERFORMANCE: Performance = {

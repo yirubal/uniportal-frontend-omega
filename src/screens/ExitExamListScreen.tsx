@@ -1,11 +1,12 @@
 import { FileCheck2, TimerReset } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getExitExams, getExitExamTopics, type ExamPaper } from "../api/quiz";
 import LockedOverlay from "../components/LockedOverlay";
 import TopBackButton from "../components/TopBackButton";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui";
 import { useAccess } from "../hooks/useAccess";
+import { useAsyncData } from "../hooks/useAsyncData";
 import { useStudentProfile } from "../hooks/useStudentProfile";
 import { useAuthStore } from "../store/authStore";
 import { useQuizStore } from "../store/quizStore";
@@ -16,6 +17,8 @@ import {
     isExitExamCategory,
 } from "../utils/exitExams";
 
+const NO_EXAMS: ExamPaper[] = [];
+
 export default function ExitExamListScreen() {
     const navigate = useNavigate();
     const { category } = useParams();
@@ -24,44 +27,25 @@ export default function ExitExamListScreen() {
     const profile = useStudentProfile();
     const resetAttempt = useQuizStore((state) => state.resetAttempt);
 
-    const [exams, setExams] = useState<ExamPaper[]>([]);
-    const [topics, setTopics] = useState<{ topic: string; count: number }[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [reloadKey, setReloadKey] = useState(0);
-
     const exitCategory = isExitExamCategory(category) ? category : null;
     const meta = exitCategory ? getExitExamMeta(exitCategory) : null;
+    const departmentId = student?.preferred_department ?? null;
 
-    useEffect(() => {
-        if (!exitCategory || !canAccessExitExam || !student?.preferred_department) {
-            setLoading(false);
-            return;
+    const content = useAsyncData(
+        exitCategory && canAccessExitExam && departmentId ? String(departmentId) : null,
+        async (signal) => {
+            const options = { signal };
+            const [exams, topics] = await Promise.all([
+                getExitExams(departmentId!, options),
+                getExitExamTopics(departmentId!, options),
+            ]);
+            return { exams, topics };
         }
-
-        const controller = new AbortController();
-        const options = { signal: controller.signal };
-        setLoading(true);
-        setError(null);
-
-        Promise.all([
-            getExitExams(student.preferred_department, options),
-            getExitExamTopics(student.preferred_department, options),
-        ])
-            .then(([examItems, topicItems]) => {
-                if (controller.signal.aborted) return;
-                setExams(examItems);
-                setTopics(topicItems);
-            })
-            .catch(() => {
-                if (!controller.signal.aborted) setError("Failed to load exit exam content.");
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setLoading(false);
-            });
-
-        return () => controller.abort();
-    }, [canAccessExitExam, exitCategory, student?.preferred_department, reloadKey]);
+    );
+    const exams = content.data?.exams ?? NO_EXAMS;
+    const topics = content.data?.topics ?? [];
+    const loading = content.loading;
+    const error = content.error ? "Failed to load exit exam content." : null;
 
     const filteredExams = useMemo(() => {
         if (!exitCategory) return [];
@@ -112,7 +96,7 @@ export default function ExitExamListScreen() {
                         <Skeleton className="h-28 rounded-[32px]" />
                     </div>
                 ) : error ? (
-                    <ErrorState message={error} onRetry={() => setReloadKey((key) => key + 1)} />
+                    <ErrorState message={error} onRetry={content.reload} />
                 ) : (
                     <div className="space-y-4">
                         {topics.length > 0 && (

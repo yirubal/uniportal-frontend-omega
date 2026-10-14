@@ -84,13 +84,16 @@ input, textarea {
     -webkit-user-select: text;
 }
 
-/* Remove default button styles */
-button {
-    border: none;
-    background: none;
-    padding: 0;
-    cursor: pointer;
-    font-family: inherit;
+/* Remove default button styles. Must stay in the base layer: unlayered rules beat every Tailwind
+   utility, which silently disabled bg-*, border and padding classes on all buttons. */
+@layer base {
+    button {
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+        font-family: inherit;
+    }
 }
 
 /* Smooth scrolling */

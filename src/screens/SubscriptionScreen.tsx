@@ -1,39 +1,28 @@
 import { CreditCard } from "lucide-react";
-import { useShallow } from "zustand/react/shallow";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyProfile } from "../api/auth";
-import { getPlans, getSubscriptionRequest, type Plan, type SubscriptionRequestState } from "../api/quiz";
+import { getPlans, type Plan } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
-import { useAccess } from "../hooks/useAccess";
-import { useAuthStore } from "../store/authStore";
+import { useSubscriptionStatus } from "../hooks/useSubscriptionStatus";
 import { formatDaysRemaining, formatETB } from "../utils/format";
 
 export default function SubscriptionScreen() {
     const navigate = useNavigate();
-    const { token, setAuth } = useAuthStore(
-        useShallow((state) => ({
-            token: state.token,
-            setAuth: state.setAuth,
-        }))
-    );
-    const { isPremium, daysRemaining } = useAccess();
+    const {
+        refresh,
+        isPremium: displayIsPremium,
+        daysRemaining,
+        requestStatus: currentRequestStatus,
+        hasPendingRequest: hasPendingSubscriptionRequest,
+        currentRequest,
+    } = useSubscriptionStatus();
     const [plans, setPlans] = useState<Plan[]>([]);
-    const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    // Stable refs — prevent callback re-creation when Zustand recreates setAuth
-    const setAuthRef = useRef(setAuth);
-    const tokenRef = useRef(token);
-    useEffect(() => { setAuthRef.current = setAuth; }, [setAuth]);
-    useEffect(() => { tokenRef.current = token; }, [token]);
 
-    const currentRequestStatus = subscriptionRequestState?.current_request?.status;
-    const currentPlanName = subscriptionRequestState?.current_request?.plan;
-    const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
-    const displayIsPremium = hasPendingSubscriptionRequest || currentRequestStatus === "rejected" ? false : isPremium;
+    const currentPlanName = currentRequest?.plan;
     const statusLabel = hasPendingSubscriptionRequest
         ? "Payment under review"
         : currentRequestStatus === "rejected"
@@ -49,38 +38,31 @@ export default function SubscriptionScreen() {
                 ? formatDaysRemaining(daysRemaining)
                 : "Upgrade when you need premium resources and exam tools.";
 
-    const refreshSubscriptionPage = useCallback(() => {
-        setLoading(true);
-        setError(null);
-
-        const profileOptions = { skipGlobalLoader: true };
-        const optionalRequestOptions = { skipGlobalLoader: true, skipAuthClear: true };
+    // Loading starts true; retries set it before calling this so the first load doesn't set state in an effect.
+    const loadPage = useCallback(() => {
         Promise.allSettled([
-            getPlans(optionalRequestOptions),
-            getSubscriptionRequest(optionalRequestOptions),
-            getMyProfile(profileOptions),
+            getPlans({ skipGlobalLoader: true, skipAuthClear: true }),
+            refresh(),
         ])
-            .then(([plansResult, requestResult, profileResult]) => {
+            .then(([plansResult]) => {
                 if (plansResult.status === "fulfilled") {
                     setPlans(plansResult.value);
                 } else {
                     setError("Failed to load subscription plans.");
                 }
-
-                if (requestResult.status === "fulfilled") {
-                    setSubscriptionRequestState(requestResult.value);
-                }
-
-                if (profileResult.status === "fulfilled" && tokenRef.current) {
-                    setAuthRef.current(tokenRef.current, profileResult.value);
-                }
             })
             .finally(() => setLoading(false));
-    }, []); // stable: setAuth/token read from refs
+    }, [refresh]);
 
     useEffect(() => {
-        refreshSubscriptionPage();
-    }, [refreshSubscriptionPage]);
+        loadPage();
+    }, [loadPage]);
+
+    const reloadPage = () => {
+        setLoading(true);
+        setError(null);
+        loadPage();
+    };
 
     return (
         <div className="app-screen">
@@ -127,7 +109,7 @@ export default function SubscriptionScreen() {
                             variant="ghost"
                             size="md"
                             fullWidth
-                            onClick={refreshSubscriptionPage}
+                            onClick={reloadPage}
                             disabled={loading}
                         >
                             Refresh status
@@ -144,7 +126,7 @@ export default function SubscriptionScreen() {
                                 <Skeleton className="h-28 rounded-[22px]" />
                             </>
                         ) : error && plans.length === 0 ? (
-                            <ErrorState message={error} onRetry={refreshSubscriptionPage} />
+                            <ErrorState message={error} onRetry={reloadPage} />
                         ) : (
                             plans.map((plan) => (
                                 <PlanCard

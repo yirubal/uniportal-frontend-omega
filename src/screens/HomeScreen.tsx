@@ -1,14 +1,11 @@
 import { ArrowRight, BookOpenText, Brain, ChartColumn, FolderOpen, Sparkles, Target } from "lucide-react";
-import { useShallow } from "zustand/react/shallow";
 import Button from "../components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import { useAccess } from "../hooks/useAccess";
+import { useSubscriptionStatus } from "../hooks/useSubscriptionStatus";
 import { formatDaysRemaining } from "../utils/format";
 import { getPeriodLabel, getProgramLabel } from "../utils/periods";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { getMyProfile } from "../api/auth";
-import { getSubscriptionRequest, type SubscriptionRequestState } from "../api/quiz";
+import { useEffect, useState } from "react";
 import { fetchActiveTerm } from "../api/exams";
 import ExamScheduleCard from "../components/ExamScheduleCard";
 import type { ActiveTermResponse } from "../types/exams";
@@ -49,32 +46,20 @@ const QUICK_ACTIONS = [
     },
 ];
 
-const BACKGROUND_REFRESH_THROTTLE_MS = 8000;
-
 export default function HomeScreen() {
     const navigate = useNavigate();
-    const { student, token, setAuth } = useAuthStore(
-        useShallow((state) => ({
-            student: state.student,
-            token: state.token,
-            setAuth: state.setAuth,
-        }))
-    );
-    const { isPremium, daysRemaining } = useAccess();
-    const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
+    const student = useAuthStore((state) => state.student);
+    // Re-syncs premium status when the student returns to the app (e.g. after paying).
+    const {
+        refresh: refreshSubscription,
+        isPremium: displayIsPremium,
+        daysRemaining,
+        requestStatus: currentRequestStatus,
+        hasPendingRequest: hasPendingSubscriptionRequest,
+    } = useSubscriptionStatus({ syncOnFocus: true });
     const [activeTerm, setActiveTerm] = useState<ActiveTermResponse | null>(null);
-    const backgroundRefreshInFlightRef = useRef(false);
-    const lastBackgroundRefreshAtRef = useRef(0);
-    // Stable refs so the effect never re-runs due to Zustand action/token identity changes
-    const setAuthRef = useRef(setAuth);
-    const tokenRef = useRef(token);
-    useEffect(() => { setAuthRef.current = setAuth; }, [setAuth]);
-    useEffect(() => { tokenRef.current = token; }, [token]);
 
     const greeting = "Selam";
-    const currentRequestStatus = subscriptionRequestState?.current_request?.status;
-    const hasPendingSubscriptionRequest = subscriptionRequestState?.has_pending_request === true || currentRequestStatus === "pending";
-    const displayIsPremium = hasPendingSubscriptionRequest || currentRequestStatus === "rejected" ? false : isPremium;
     const statusBadgeLabel = displayIsPremium ? "Premium" : "Free";
     const statusBadgeClass = displayIsPremium ? "tone-green" : "tone-gold";
     const profileBadges = [
@@ -83,47 +68,9 @@ export default function HomeScreen() {
         getPeriodLabel(student?.preferred_period, student?.preferred_program),
     ];
 
-    const refreshHomeState = useCallback((force = false) => {
-        if (backgroundRefreshInFlightRef.current) return;
-        const now = Date.now();
-        if (!force && now - lastBackgroundRefreshAtRef.current < BACKGROUND_REFRESH_THROTTLE_MS) return;
-
-        backgroundRefreshInFlightRef.current = true;
-        lastBackgroundRefreshAtRef.current = now;
-
-        Promise.allSettled([
-            getMyProfile({ skipGlobalLoader: true }),
-            getSubscriptionRequest({ skipGlobalLoader: true, skipAuthClear: true }),
-        ]).then(([profileResult, requestResult]) => {
-            if (profileResult.status === "fulfilled" && tokenRef.current) {
-                setAuthRef.current(tokenRef.current, profileResult.value);
-            }
-
-            if (requestResult.status === "fulfilled") {
-                setSubscriptionRequestState(requestResult.value);
-            }
-        }).finally(() => {
-            backgroundRefreshInFlightRef.current = false;
-        });
-    }, []); // stable — reads token/setAuth from refs
-
     useEffect(() => {
-        const handleResume = () => {
-            if (document.visibilityState === "visible") {
-                refreshHomeState();
-            }
-        };
-
-        refreshHomeState(true);
-        const handleFocus = () => refreshHomeState();
-        window.addEventListener("focus", handleFocus);
-        document.addEventListener("visibilitychange", handleResume);
-
-        return () => {
-            window.removeEventListener("focus", handleFocus);
-            document.removeEventListener("visibilitychange", handleResume);
-        };
-    }, [refreshHomeState]); // refreshHomeState is stable (useCallback with [])
+        void refreshSubscription();
+    }, [refreshSubscription]);
 
     useEffect(() => {
         let active = true;
@@ -199,7 +146,6 @@ export default function HomeScreen() {
                                 className="inline-flex items-center gap-2 rounded-full bg-[#172B2F] !px-4 py-3 text-sm font-semibold text-white sm:!px-12"
                                 style={{ backgroundColor: "#172B2F", color: "#FFFFFF", paddingInline: "2.5rem" }}
                             >
-                                {/* <Sparkles size={14} /> */}
                                 {hasPendingSubscriptionRequest ? "View request status" : "Unlock premium tools"}
                             </button>
                         )}

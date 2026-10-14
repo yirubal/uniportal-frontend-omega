@@ -7,11 +7,18 @@ import Watermark from "../Watermark";
 // Legacy build (see vite.config.js alias): the modern pdf.js build needs APIs that older Telegram WebViews lack.
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
+// pdf.js data files, served from our own origin by the pdfjs-assets plugin in vite.config.js
+// (absolute URLs because the worker resolves them).
+const pdfjsAssetUrl = (dir: string) => new URL(`${import.meta.env.BASE_URL}pdfjs/${dir}/`, window.location.origin).href;
+
 const DOCUMENT_OPTIONS = {
-    // Fonts and character maps for PDFs that don't embed them, matched to the bundled pdf.js version.
-    cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+    // Fonts and character maps for PDFs that don't embed them.
+    cMapUrl: pdfjsAssetUrl("cmaps"),
     cMapPacked: true,
-    standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+    standardFontDataUrl: pdfjsAssetUrl("standard_fonts"),
+    // JPEG 2000 image decoder and colour profiles (scanned documents).
+    wasmUrl: pdfjsAssetUrl("wasm"),
+    iccUrl: pdfjsAssetUrl("iccs"),
     isEvalSupported: false,
 };
 

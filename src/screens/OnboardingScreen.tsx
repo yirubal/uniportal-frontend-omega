@@ -1,6 +1,6 @@
 import { Building2, CheckCircle2, GraduationCap, Layers3, Rows3, Wifi } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDepartments } from "../api/content";
 import { updateMyProfile } from "../api/auth";
@@ -8,6 +8,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { ErrorState } from "../components/ui";
+import { useAsyncData } from "../hooks/useAsyncData";
 import { useTelegram } from "../hooks/useTelegram";
 import { Student, useAuthStore } from "../store/authStore";
 import type { Department } from "../store/contentStore";
@@ -34,6 +35,8 @@ type TelegramWindow = Window & {
     };
 };
 
+const NO_DEPARTMENTS: Department[] = [];
+
 export default function OnboardingScreen() {
     const navigate = useNavigate();
     const { close } = useTelegram();
@@ -46,44 +49,28 @@ export default function OnboardingScreen() {
     );
 
     const [step, setStep] = useState(0);
-    const [departments, setDepartments] = useState<Department[]>([]);
-    const [loadingDepts, setLoadingDepts] = useState(true);
     const [saving, setSaving] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [completedProfile, setCompletedProfile] = useState<Student | null>(null);
-    const [selectedDept, setSelectedDept] = useState<Department | null>(null);
     // "Update setup" from Home reopens this screen: start from the saved profile instead of blank.
     const [selectedProgram, setSelectedProgram] = useState<ProgramType | null>(student?.preferred_program ?? null);
     const [selectedYear, setSelectedYear] = useState<number | null>(student?.preferred_year ?? null);
-    const [selectedPeriod, setSelectedPeriod] = useState<number | null>(student?.preferred_period ?? null);
-    const [departmentsError, setDepartmentsError] = useState(false);
-    const savedDepartmentId = student?.preferred_department ?? null;
+    const [rawSelectedPeriod, setSelectedPeriod] = useState<number | null>(student?.preferred_period ?? null);
+    // A period that doesn't exist for the chosen program (e.g. semester 2 after switching to distance) reads as unset.
+    const selectedPeriod = rawSelectedPeriod && getPeriodOptions(selectedProgram).some((item) => item.value === rawSelectedPeriod)
+        ? rawSelectedPeriod
+        : null;
 
-    const loadDepartments = useCallback(() => {
-        setLoadingDepts(true);
-        setDepartmentsError(false);
-
-        getDepartments()
-            .then((items) => {
-                setDepartments(items);
-                setSelectedDept((current) => current ?? items.find((item) => item.id === savedDepartmentId) ?? null);
-            })
-            .catch(() => setDepartmentsError(true))
-            .finally(() => setLoadingDepts(false));
-    }, [savedDepartmentId]);
-
-    useEffect(() => {
-        loadDepartments();
-    }, [loadDepartments]);
-
-    useEffect(() => {
-        const validPeriods = getPeriodOptions(selectedProgram).map((item) => item.value);
-        if (selectedPeriod && !validPeriods.includes(selectedPeriod)) {
-            setSelectedPeriod(null);
-        }
-    }, [selectedPeriod, selectedProgram]);
+    const departmentsData = useAsyncData("departments", (signal) => getDepartments({ signal }));
+    const departments = departmentsData.data ?? NO_DEPARTMENTS;
+    const loadingDepts = departmentsData.loading;
+    const departmentsError = Boolean(departmentsData.error);
+    const loadDepartments = departmentsData.reload;
+    // Starts on the saved department so "Update setup" from Home opens with the current profile selected.
+    const [selectedDeptId, setSelectedDeptId] = useState<number | null>(student?.preferred_department ?? null);
+    const selectedDept = departments.find((item) => item.id === selectedDeptId) ?? null;
 
     const periodOptions = useMemo(() => getPeriodOptions(selectedProgram), [selectedProgram]);
 
@@ -239,7 +226,7 @@ export default function OnboardingScreen() {
                                         key={dept.id}
                                         onClick={() => {
                                             setError(null);
-                                            setSelectedDept(dept);
+                                            setSelectedDeptId(dept.id);
                                             goToNextStep();
                                         }}
                                         className={`app-list-item ${selectedDept?.id === dept.id ? "ring-2 ring-[#3F6F6A]/20" : ""}`}

@@ -1,17 +1,19 @@
 import { Brain, FileText } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { getExamQuestions, submitAttempt } from "../api/quiz";
+import { useCallback, useEffect, useState } from "react";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { getExamQuestions } from "../api/quiz";
+import { useAsyncData } from "../hooks/useAsyncData";
+import { useAttemptSubmit } from "../hooks/useAttemptSubmit";
 import ConfirmDialog from "../components/ConfirmDialog";
+import UnansweredConfirmDialog from "../components/UnansweredConfirmDialog";
 import QuestionCard from "../components/QuestionCard";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
 import { useShallow } from "zustand/react/shallow";
 import { useQuizStore } from "../store/quizStore";
-import { getErrorMessage } from "../utils/errors";
 import { getPracticeContentMeta } from "../utils/practice";
-import { buildSubmissionAnswers, isOptionQuestion, isQuestionAnswered } from "../utils/questions";
+import { isOptionQuestion, isQuestionAnswered } from "../utils/questions";
 
 export default function QuizAttemptScreen({ selectiveMode = false }: { selectiveMode?: boolean }) {
     const navigate = useNavigate();
@@ -19,6 +21,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
     const quiz = useQuizStore(
         useShallow((state) => ({
             answers: state.answers,
+            attemptSummary: state.attemptSummary,
             courseName: state.courseName,
             currentIndex: state.currentIndex,
             examPaperId: state.examPaperId,
@@ -38,14 +41,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
     const meta = getPracticeContentMeta(quiz.practiceContentType);
     const attemptMode = selectiveMode ? "selective" : "practice";
 
-    const [loading, setLoading] = useState(true);
-    const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [submitError, setSubmitError] = useState<string | null>(null);
-    const submittingRef = useRef(false);
-    const [autoAdvancing, setAutoAdvancing] = useState(false);
     const [showLeaveModal, setShowLeaveModal] = useState(false);
-    const [reloadKey, setReloadKey] = useState(0);
     const [showFinishConfirm, setShowFinishConfirm] = useState(false);
 
     const isQuizActive = quiz.questions.length > 0 && !quiz.isComplete;
@@ -53,154 +49,86 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
     const currentQuestionAnswered = currentQuestion
         ? isQuestionAnswered(currentQuestion, quiz.answers)
         : false;
+    const contentLabel = quiz.practiceContentType === "past_exam" ? "past exam" : "quiz";
 
-    // Extract specific primitives from the store so the effect doesn't restart on every quiz state change.
-    // Using quiz (full object) as a dep would re-run this on every answer, nav, etc. — causing flicker on touch.
-    const quizExamPaperId = quiz.examPaperId;
-    const quizQuestionsLength = quiz.questions.length;
-    const quizMode = quiz.mode;
-    const quizIsComplete = quiz.isComplete;
+    // Reuse the stored attempt for this paper (e.g. after a reload); otherwise fetch it.
+    // A finished attempt is never refetched: Router navigations run in a transition, so this screen stays
+    // mounted while the lazy Results screen loads, and a refetch would reset the store under it.
+    // Every way into a retake (quiz list, "Try again", Performance) resets the attempt first.
+    const paperId = Number(quizId);
+    const hasStoredAttempt = quiz.examPaperId === paperId && quiz.questions.length > 0;
+    const needsQuestions = !selectiveMode && Boolean(paperId) && !hasStoredAttempt;
+    const showsFinishedAttempt = quiz.isComplete && quiz.attemptSummary !== null &&
+        (selectiveMode ? quiz.mode === "selective" : quiz.examPaperId === paperId);
+    const questionsLoad = useAsyncData(
+        needsQuestions ? String(paperId) : null,
+        (signal) => getExamQuestions(paperId, "practice", { signal })
+    );
+    const loadedQuestions = questionsLoad.data;
 
     useEffect(() => {
-        if (selectiveMode) {
-            if (quizMode === "selective" && quizQuestionsLength > 0 && !quizIsComplete) {
-                setLoading(false);
-                return;
-            }
+        if (!loadedQuestions?.length) return;
+        // Read non-subscribed store values here to avoid stale closures.
+        const { courseId, setQuiz } = useQuizStore.getState();
+        setQuiz(loadedQuestions, "practice", courseId ?? undefined, paperId);
+    }, [loadedQuestions, paperId]);
 
-            setError("Choose chapters before starting selective practice.");
-            setLoading(false);
-            return;
-        }
+    // Still loading while fetched questions are on their way into the store (one render after they arrive).
+    const loading = questionsLoad.loading || (needsQuestions && Boolean(loadedQuestions?.length));
+    const error = selectiveMode
+        ? (quiz.mode === "selective" && isQuizActive ? null : "Choose chapters before starting selective practice.")
+        : !paperId
+            ? "Missing quiz id."
+            : questionsLoad.error
+                ? `Failed to load ${contentLabel} questions.`
+                : loadedQuestions && loadedQuestions.length === 0
+                    ? `This ${contentLabel} has no questions yet.`
+                    : null;
 
-        if (!quizId) {
-            setError("Missing quiz id.");
-            setLoading(false);
-            return;
-        }
-
-        // Reuse the stored attempt for this paper (e.g. after a reload); a finished one starts over.
-        if (quizExamPaperId === Number(quizId) && quizQuestionsLength > 0 && !quizIsComplete) {
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        // Read non-subscribed store values inside the callback via getState() to avoid stale closures
-        const { practiceContentType, courseId, setQuiz } = useQuizStore.getState();
-
-        const controller = new AbortController();
-
-        getExamQuestions(Number(quizId), "practice", { signal: controller.signal })
-            .then((questions) => {
-                if (controller.signal.aborted) return;
-                if (questions.length === 0) {
-                    setError(`This ${practiceContentType === "past_exam" ? "past exam" : "quiz"} has no questions yet.`);
-                    return;
-                }
-
-                setQuiz(
-                    questions,
-                    "practice",
-                    courseId ?? undefined,
-                    Number(quizId)
-                );
-            })
-            .catch(() => {
-                if (!controller.signal.aborted) {
-                    setError(`Failed to load ${practiceContentType === "past_exam" ? "past exam" : "quiz"} questions.`);
-                }
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setLoading(false);
-            });
-
-        return () => controller.abort();
-    // Only re-run when the quiz ID changes or we switch modes — not on every quiz store update.
-    }, [quizExamPaperId, quizQuestionsLength, quizMode, quizId, selectiveMode, quizIsComplete, reloadKey]);
+    const { submit, submitting, submitError } = useAttemptSubmit({
+        examPaperId: selectiveMode ? undefined : Number(quizId),
+        mode: attemptMode,
+        includeQuestions: true,
+        fallbackError: "Failed to submit your answers.",
+    });
 
     const handleSubmit = useCallback(async () => {
-        // Ref guard: state-based guards can be stale between a tap and the auto-advance submit.
-        if ((!quizId && !selectiveMode) || submittingRef.current) return;
+        if (!quizId && !selectiveMode) return;
+        await submit();
+    }, [quizId, selectiveMode, submit]);
 
-        // Read live store values inside the callback — do NOT capture quiz in deps to avoid cascade re-renders
-        const { questions, answers, completeQuiz } = useQuizStore.getState();
-
-        submittingRef.current = true;
-        setSubmitting(true);
-        setAutoAdvancing(false);
-        setSubmitError(null);
-
-        try {
-            const submissionAnswers = buildSubmissionAnswers(questions, answers);
-
-            const result = await submitAttempt({
-                exam_paper: selectiveMode ? undefined : Number(quizId),
-                answers: Object.fromEntries(
-                    Object.entries(submissionAnswers).map(([questionId, answer]) => [String(questionId), answer])
-                ),
-                mode: attemptMode,
-                questions,
-            });
-
-            completeQuiz(result);
-            // Navigate from here, not from an isComplete effect: a finished attempt is persisted and
-            // must not redirect the next visit to an old result.
-            navigate("/results", { replace: true });
-        } catch (submitFailure) {
-            // Keep the student on the attempt: the answers were not saved, so showing a result would be wrong.
-            setSubmitError(getErrorMessage(submitFailure, "Failed to submit your answers."));
-        } finally {
-            submittingRef.current = false;
-            setSubmitting(false);
-        }
-    // No quiz object in deps — reads store via getState() to avoid the full-store re-subscription problem
-    }, [attemptMode, navigate, quizId, selectiveMode]);
-
+    // Quizzes move on by themselves once an option is picked. Derived rather than stored, so it turns
+    // off as soon as the question changes, a submit starts, or a submit fails (retry is manual).
+    const autoAdvancing = Boolean(
+        isQuizActive &&
+        quiz.practiceContentType === "quiz" &&
+        currentQuestion &&
+        currentQuestionAnswered &&
+        isOptionQuestion(currentQuestion) &&
+        !submitting &&
+        !submitError
+    );
     const quizCurrentIndex = quiz.currentIndex;
-    const quizPracticeContentType = quiz.practiceContentType;
+    const quizQuestionsLength = quiz.questions.length;
+
     useEffect(() => {
-        if (
-            !isQuizActive ||
-            quizPracticeContentType !== "quiz" ||
-            !currentQuestion ||
-            !currentQuestionAnswered ||
-            !isOptionQuestion(currentQuestion) ||
-            submitting ||
-            // After a failed submit, wait for a manual retry instead of auto-submitting again.
-            submitError
-        ) return;
+        if (!autoAdvancing) return;
 
         const isLast = quizCurrentIndex + 1 >= quizQuestionsLength;
-        setAutoAdvancing(true);
-
         const timer = window.setTimeout(() => {
             if (isLast) {
                 void handleSubmit();
                 return;
             }
-
             useQuizStore.getState().nextQuestion();
-            setAutoAdvancing(false);
         }, 550);
 
-        return () => {
-            window.clearTimeout(timer);
-            setAutoAdvancing(false);
-        };
-    }, [
-        handleSubmit,
-        currentQuestion,
-        currentQuestionAnswered,
-        isQuizActive,
-        quizCurrentIndex,
-        quizQuestionsLength,
-        quizPracticeContentType,
-        submitting,
-        submitError,
-    ]);
+        return () => window.clearTimeout(timer);
+    }, [autoAdvancing, handleSubmit, quizCurrentIndex, quizQuestionsLength]);
+
+    if (showsFinishedAttempt) {
+        return <Navigate to="/results" replace />;
+    }
 
     if (loading) {
         return (
@@ -231,7 +159,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                     <ErrorState
                         message={error}
                         // Selective practice can only restart from chapter selection; papers can refetch.
-                        onRetry={() => (selectiveMode ? navigate("/quiz/selective") : setReloadKey((key) => key + 1))}
+                        onRetry={() => (selectiveMode ? navigate("/quiz/selective") : questionsLoad.reload())}
                     />
                 </div>
             </div>
@@ -343,12 +271,9 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                 </Button>
             </div>
 
-            <ConfirmDialog
+            <UnansweredConfirmDialog
                 open={showFinishConfirm}
-                title="Submit now?"
-                description={`You have ${unansweredCount} unanswered ${unansweredCount === 1 ? "question" : "questions"}. Unanswered questions earn no points.`}
-                confirmLabel="Submit"
-                cancelLabel="Keep going"
+                unansweredCount={unansweredCount}
                 onConfirm={() => {
                     setShowFinishConfirm(false);
                     void handleSubmit();

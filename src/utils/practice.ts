@@ -33,7 +33,7 @@ const PRACTICE_CONTENT_META: Record<PracticeContentType, PracticeContentMeta> = 
         emptyDescription: "This course does not have quiz sets available right now.",
         attemptLabel: "Practice quiz",
         attemptFallbackTitle: "Quiz attempt",
-        resultsRetryLabel: "Try another quiz",
+        resultsRetryLabel: "Retake this quiz",
         resultsSummaryLabel: "Quiz summary",
     },
     past_exam: {
@@ -50,7 +50,7 @@ const PRACTICE_CONTENT_META: Record<PracticeContentType, PracticeContentMeta> = 
         emptyDescription: "This course does not have past exam papers available right now.",
         attemptLabel: "Past exam practice",
         attemptFallbackTitle: "Past exam attempt",
-        resultsRetryLabel: "Try another past exam",
+        resultsRetryLabel: "Retake this past exam",
         resultsSummaryLabel: "Past exam summary",
     },
 };

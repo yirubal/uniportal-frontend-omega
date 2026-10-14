@@ -29,9 +29,15 @@ export default function ResultsScreen() {
     const [showReview, setShowReview] = useState(false);
     const meta = getPracticeContentMeta(practiceContentType);
 
-    // The store is in memory only: after a reload or a direct open there is no result to show.
-    if (!attemptSummary) {
+    // Opened without a result (e.g. a direct link): go to the Practice hub. Only checked against the state
+    // at mount: "Try again" resets the attempt while its navigation is still in a transition, and this
+    // screen must not redirect to /quiz in the meantime.
+    const [openedWithResult] = useState(() => attemptSummary !== null);
+    if (!openedWithResult) {
         return <Navigate to="/quiz" replace />;
+    }
+    if (!attemptSummary) {
+        return null;
     }
 
     const percentage = Math.round(

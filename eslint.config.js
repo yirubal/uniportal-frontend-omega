@@ -20,10 +20,6 @@ export default defineConfig([
       globals: globals.browser,
     },
     rules: {
-      // Temporarily warnings: the remaining hits are derived-state effects in the filter cascades,
-      // rewritten in improvements.md Phase 6 (useCourseFilter). Promote back to errors after.
-      'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/purity': 'warn',
       '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
     },
   },
