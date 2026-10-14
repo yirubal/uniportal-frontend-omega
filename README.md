@@ -99,10 +99,10 @@ The backend may answer the login with `403 { error: "CHANNEL_REQUIRED", channel_
 | `npm run dev` | Starts the Vite dev server with HMR |
 | `npm run build` | Builds for production into `dist/` (uses `.env.production`) |
 | `npm run preview` | Serves the built `dist/` locally |
-| `npm run lint` | Runs ESLint |
-| `npx tsc --noEmit -p tsconfig.json` | Type-checks; `build` does not type-check (a few pre-existing errors remain) |
+| `npm run lint` | Runs ESLint (TypeScript + React Hooks rules) |
+| `npm run typecheck` | Type-checks with `tsc --noEmit`; `build` does not type-check |
 
-There is no test suite yet. Before pushing, run `npm run lint` and `npm run build`.
+There is no test suite yet. Before pushing, run `npm run lint`, `npm run typecheck` and `npm run build`.
 
 ---
 

@@ -108,15 +108,10 @@ function saveMockStudent(student: Student) {
 
 function readPreference(
     preferences: Record<string, unknown> | null | undefined,
-    key: "department" | "program" | "year" | "period"
+    key: "department" | "year" | "period"
 ): number | null {
-    if (key === "program") {
-        return null;
-    }
-
     const aliases: Record<typeof key, string[]> = {
         department: ["department", "preferred_department"],
-        program: ["program", "preferred_program"],
         year: ["year", "preferred_year"],
         period: ["period", "preferred_period", "semester", "preferred_semester"],
     };
@@ -215,10 +210,6 @@ export const loginWithTelegram = async (): Promise<LoginResponse> => {
     const webApp = getTelegramWebApp();
     webApp?.ready?.();
     const initData = webApp?.initData;
-
-    console.info("initData exists:", Boolean(initData));
-    console.info("initData length:", initData?.length ?? 0);
-    console.info("initData preview:", initData?.substring(0, 100) ?? "");
 
     if (!initData) {
         console.error("initData is empty - app may not be running inside Telegram");

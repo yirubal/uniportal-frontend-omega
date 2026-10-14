@@ -11,7 +11,7 @@ const APP_THEME = {
     buttonText: "#ffffff",
     section: "rgba(250,252,250,0.94)",
     header: "#172b2f",
-};
+} as const;
 
 function setTelegramThemeVars() {
     const root = document.documentElement;

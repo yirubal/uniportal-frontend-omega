@@ -1251,10 +1251,11 @@ export function evaluateMockAttempt(
 
 export function getMockExitExamTopicQuestions(departmentId: number, topic: string): Question[] {
     const topicKey = topic.trim().toLowerCase();
-    return Object.values(MOCK_QUESTIONS_BY_EXAM)
+    return Object.values(MOCK_EXAM_QUESTIONS)
         .flat()
         .filter((question) => {
             const questionTopic = (question.topic ?? question.topic_tags?.[0] ?? "").toLowerCase();
+            if (!questionTopic) return false;
             return questionTopic.includes(topicKey) || topicKey.includes(questionTopic);
         })
         .slice(0, departmentId ? 10 : 0);

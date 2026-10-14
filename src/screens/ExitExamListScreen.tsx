@@ -62,8 +62,7 @@ export default function ExitExamListScreen() {
                     <EmptyState
                         title="Choose an exit exam path first"
                         description="Open the exit exam page and choose the exam type you want to practice."
-                        actionLabel="Back to exit exams"
-                        onAction={() => navigate("/exit-exam", { replace: true })}
+                        action={{ label: "Back to exit exams", onClick: () => navigate("/exit-exam", { replace: true }) }}
                     />
                 </div>
             </div>

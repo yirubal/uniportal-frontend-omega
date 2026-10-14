@@ -163,8 +163,7 @@ export default function SelectivePracticeScreen() {
                     <EmptyState
                         title="Complete your profile first"
                         description="Selective Practice starts from your department, program, year, and period."
-                        actionLabel="Edit profile"
-                        onAction={() => navigate("/onboarding")}
+                        action={{ label: "Edit profile", onClick: () => navigate("/onboarding") }}
                     />
                 </div>
             </div>

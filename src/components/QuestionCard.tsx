@@ -123,7 +123,6 @@ export default function QuestionCard({
                 <div className="flex flex-col gap-3.5">
                     {optionEntries.map(([option, label]) => {
                         const style = getOptionStyle(option, selectedAnswer, simulationMode);
-                        const isSelected = option === selectedAnswer;
 
                         return (
                             <button

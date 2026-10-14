@@ -126,8 +126,7 @@ export default function PracticeSetupScreen() {
                     <EmptyState
                         title="Choose a practice path first"
                         description="Open the Practice Hub first, then choose quiz or past exam."
-                        actionLabel="Back to hub"
-                        onAction={() => navigate("/quiz", { replace: true })}
+                        action={{ label: "Back to hub", onClick: () => navigate("/quiz", { replace: true }) }}
                     />
                 </div>
             </div>
@@ -325,7 +324,7 @@ export default function PracticeSetupScreen() {
                                                     {course.name}
                                                 </p>
                                                 <p className="mt-1 text-xs text-[#70868B]">
-                                                    {course.code} · {getProgramLabel(selProgram)} · {itemLabel(selPeriod, selProgram)}
+                                                    {course.code} · {getProgramLabel(selProgram)} · {getPeriodLabel(selPeriod, selProgram)}
                                                 </p>
                                             </div>
                                             {selCourse?.id === course.id && (
@@ -345,8 +344,4 @@ export default function PracticeSetupScreen() {
             </div>
         </div>
     );
-}
-
-function itemLabel(period: number, program: ProgramType) {
-    return getPeriodLabel(period, program);
 }

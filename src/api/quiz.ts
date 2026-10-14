@@ -176,7 +176,7 @@ export interface SubmitAttemptPayload {
     questions?: Question[];
 }
 
-export interface AttemptResponse extends AttemptSummary {}
+export type AttemptResponse = AttemptSummary;
 
 type RawTopicScore = number | { percentage?: number; correct?: number; total?: number };
 
@@ -604,6 +604,12 @@ interface SubscriptionRequestResponse {
     additional_instructions?: string;
 }
 
+function isSubscriptionRequestResponse(
+    data: PaymentInstructions | SubscriptionRequestResponse
+): data is SubscriptionRequestResponse {
+    return "current_request" in data || "has_pending_request" in data || "pending_request" in data;
+}
+
 function normalizeSubscriptionRequestState(
     data: PaymentInstructions | SubscriptionRequestResponse | null
 ): SubscriptionRequestState {
@@ -617,7 +623,7 @@ function normalizeSubscriptionRequestState(
         };
     }
 
-    if ("current_request" in data || "has_pending_request" in data || "pending_request" in data) {
+    if (isSubscriptionRequestResponse(data)) {
         const currentRequest = data.current_request ?? data.pending_request ?? null;
         const pendingRequest = data.pending_request ?? (currentRequest?.status === "pending" ? currentRequest : null);
 

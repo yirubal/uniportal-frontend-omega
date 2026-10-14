@@ -37,17 +37,13 @@ export const fetchActiveTerm = async (options?: ApiRequestOptions): Promise<Acti
         }
     }
 
-    try {
-        const response = await client.get<ActiveTermResponse>("/api/exams/active-term/", {
-            params: { _ts: Date.now() },
-            skipGlobalLoader: options?.skipGlobalLoader,
-            skipAuthClear: options?.skipAuthClear,
-        });
+    const response = await client.get<ActiveTermResponse>("/api/exams/active-term/", {
+        params: { _ts: Date.now() },
+        skipGlobalLoader: options?.skipGlobalLoader,
+        skipAuthClear: options?.skipAuthClear,
+    });
 
-        return normalizeActiveTerm(response.data);
-    } catch (error) {
-        throw error;
-    }
+    return normalizeActiveTerm(response.data);
 };
 
 export const lookupExamSchedule = async (
@@ -83,13 +79,9 @@ export const lookupExamSchedule = async (
         return getMockSchedule();
     }
 
-    try {
-        const response = await client.get<ExamScheduleResponse>("/api/exams/lookup/", {
-            params,
-        });
+    const response = await client.get<ExamScheduleResponse>("/api/exams/lookup/", {
+        params,
+    });
 
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    return response.data;
 };

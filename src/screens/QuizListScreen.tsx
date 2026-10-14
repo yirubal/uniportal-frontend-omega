@@ -53,8 +53,7 @@ export default function QuizListScreen() {
                     <EmptyState
                         title="Choose a practice path first"
                         description="Open the Practice Hub and choose quiz or past exam before loading a list."
-                        actionLabel="Back to hub"
-                        onAction={() => navigate("/quiz", { replace: true })}
+                        action={{ label: "Back to hub", onClick: () => navigate("/quiz", { replace: true }) }}
                     />
                 </div>
             </div>
@@ -68,8 +67,7 @@ export default function QuizListScreen() {
                     <EmptyState
                         title="Pick a course first"
                         description={`The ${meta.listLabel.toLowerCase()} view needs a course selection before it can load.`}
-                        actionLabel="Back to setup"
-                        onAction={() => navigate("/quiz/setup", { replace: true })}
+                        action={{ label: "Back to setup", onClick: () => navigate("/quiz/setup", { replace: true }) }}
                     />
                 </div>
             </div>
@@ -122,8 +120,7 @@ export default function QuizListScreen() {
                         <EmptyState
                             title={meta.emptyTitle}
                             description={meta.emptyDescription}
-                            actionLabel="Choose another course"
-                            onAction={() => navigate("/quiz/setup")}
+                            action={{ label: "Choose another course", onClick: () => navigate("/quiz/setup") }}
                         />
                     ) : (
                         <div className="space-y-3">
