@@ -1,4 +1,5 @@
 import { BookOpen, Download, Lock, Sparkles } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getResourceDetail } from "../api/content";
@@ -15,7 +16,12 @@ import { formatDate, formatFileType } from "../utils/format";
 export default function ResourceViewerScreen() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { resources, selectedCourse } = useContentStore();
+    const { resources, selectedCourse } = useContentStore(
+        useShallow((state) => ({
+            resources: state.resources,
+            selectedCourse: state.selectedCourse,
+        }))
+    );
     const { canAccessResource } = useAccess();
     const { download, downloading, message: downloadMessage } = useResourceDownload();
 

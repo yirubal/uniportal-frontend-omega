@@ -1,8 +1,14 @@
 import { initAuth } from "../hooks/useAuth";
+import { useShallow } from "zustand/react/shallow";
 import { useAuthStore } from "../store/authStore";
 
 export default function SplashScreen() {
-    const { error, isLoading } = useAuthStore();
+    const { error, isLoading } = useAuthStore(
+        useShallow((state) => ({
+            error: state.error,
+            isLoading: state.isLoading,
+        }))
+    );
 
     return (
         <div className="app-screen items-center justify-center px-6 text-center">

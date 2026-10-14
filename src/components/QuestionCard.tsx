@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import type { Question } from "../store/quizStore";
 import { useTelegram } from "../hooks/useTelegram";
 import { getQuestionOptions, getResolvedQuestionType, splitMatchingPair } from "../utils/questions";
@@ -8,7 +8,8 @@ interface QuestionCardProps {
     questionNumber: number;
     totalQuestions: number;
     selectedAnswer: string | null;
-    onSelect: (answer: string) => void;
+    /** Receives the question id too, so a debounced text answer is saved to the right question. */
+    onSelect: (answer: string, questionId: number) => void;
     simulationMode?: boolean;
     showQuestionType?: boolean;
 }
@@ -21,7 +22,10 @@ const OPTION_LABELS: Record<string, string> = {
     e: "E",
 };
 
-export default function QuestionCard({
+/** Typed answers are saved after a short pause instead of on every keystroke (each save persists the attempt). */
+const TEXT_SAVE_DELAY_MS = 300;
+
+function QuestionCard({
     question,
     questionNumber,
     totalQuestions,
@@ -39,6 +43,33 @@ export default function QuestionCard({
     const progressPercent = ((questionNumber - 1) / totalQuestions) * 100;
 
     // Draft and hint state reset per question because parents render this card with key={question.id}.
+    const pendingTextRef = useRef<string | null>(null);
+    const saveTimerRef = useRef<number | undefined>(undefined);
+    const onSelectRef = useRef(onSelect);
+    useEffect(() => {
+        onSelectRef.current = onSelect;
+    }, [onSelect]);
+
+    const flushTextAnswer = () => {
+        window.clearTimeout(saveTimerRef.current);
+        if (pendingTextRef.current === null) return;
+        onSelectRef.current(pendingTextRef.current, question.id);
+        pendingTextRef.current = null;
+    };
+    const flushTextAnswerRef = useRef(flushTextAnswer);
+    useEffect(() => {
+        flushTextAnswerRef.current = flushTextAnswer;
+    });
+
+    // Save a pending answer when the card goes away (moving to another question or submitting).
+    useEffect(() => () => flushTextAnswerRef.current(), []);
+
+    const handleTextChange = (value: string) => {
+        setDraftAnswer(value);
+        pendingTextRef.current = value;
+        window.clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = window.setTimeout(flushTextAnswer, TEXT_SAVE_DELAY_MS);
+    };
 
     return (
         <div className="flex flex-col gap-4">
@@ -119,7 +150,7 @@ export default function QuestionCard({
                                 key={option}
                                 onClick={() => {
                                     haptic.medium();
-                                    onSelect(option);
+                                    onSelect(option, question.id);
                                 }}
                                 className="flex min-h-16 min-w-0 items-center gap-3 rounded-[16px] px-4 py-3.5 text-left transition-all duration-200 active:scale-[0.98] !px-1"
                                 style={{
@@ -154,11 +185,9 @@ export default function QuestionCard({
                     <input
                         type="text"
                         value={draftAnswer}
-                        onChange={(event) => {
-                            const nextValue = event.target.value;
-                            setDraftAnswer(nextValue);
-                            onSelect(nextValue);
-                        }}
+                        onChange={(event) => handleTextChange(event.target.value)}
+                        // Tapping Next/Submit blurs the field first, so the answer is saved before they run.
+                        onBlur={flushTextAnswer}
                         placeholder="Type your answer"
                         className="app-input min-h-12"
                     />
@@ -210,11 +239,9 @@ export default function QuestionCard({
                 <div className="app-sheet p-5">
                     <textarea
                         value={draftAnswer}
-                        onChange={(event) => {
-                            const nextValue = event.target.value;
-                            setDraftAnswer(nextValue);
-                            onSelect(nextValue);
-                        }}
+                        onChange={(event) => handleTextChange(event.target.value)}
+                        // Tapping Next/Submit blurs the field first, so the answer is saved before they run.
+                        onBlur={flushTextAnswer}
                         rows={6}
                         placeholder="Write your answer"
                         className="app-input min-h-[140px] resize-none"
@@ -279,3 +306,5 @@ function hasMeaningfulAnswer(questionType: string | undefined, selectedAnswer: s
 
     return selectedAnswer !== null;
 }
+
+export default memo(QuestionCard);

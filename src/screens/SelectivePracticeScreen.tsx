@@ -1,4 +1,5 @@
 import { Brain, Check, ChevronDown, Target } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCourses, getDepartments } from "../api/content";
@@ -13,7 +14,12 @@ import { getPeriodLabel, getPeriodOptions, getProgramLabel, PROGRAM_OPTIONS, typ
 export default function SelectivePracticeScreen() {
     const navigate = useNavigate();
     const profile = useStudentProfile();
-    const { initializeSelectivePractice, resetAttempt } = useQuizStore();
+    const { initializeSelectivePractice, resetAttempt } = useQuizStore(
+        useShallow((state) => ({
+            initializeSelectivePractice: state.initializeSelectivePractice,
+            resetAttempt: state.resetAttempt,
+        }))
+    );
 
     const [departments, setDepartments] = useState<Department[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);

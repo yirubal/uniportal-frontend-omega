@@ -1,4 +1,5 @@
 import { RotateCcw } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useEffect, useMemo, useState } from "react";
 import { getExamPapers, getMyPerformance, type ExamPaper, type Performance } from "../api/quiz";
 import LockedOverlay from "../components/LockedOverlay";
@@ -11,7 +12,14 @@ import { useQuizStore } from "../store/quizStore";
 export default function PerformanceScreen() {
     const navigate = useNavigate();
     const { canAccessPerformance } = useAccess();
-    const { resetAttempt, setCourseContext, setPracticeContentType, setSelectedQuiz } = useQuizStore();
+    const { resetAttempt, setCourseContext, setPracticeContentType, setSelectedQuiz } = useQuizStore(
+        useShallow((state) => ({
+            resetAttempt: state.resetAttempt,
+            setCourseContext: state.setCourseContext,
+            setPracticeContentType: state.setPracticeContentType,
+            setSelectedQuiz: state.setSelectedQuiz,
+        }))
+    );
     const [performance, setPerformance] = useState<Performance | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

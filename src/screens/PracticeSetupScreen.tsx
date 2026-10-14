@@ -1,4 +1,5 @@
 import { Brain, ChevronDown, FileText, Layers3 } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDepartments, getCourses } from "../api/content";
@@ -13,16 +14,18 @@ import { getPracticeContentMeta } from "../utils/practice";
 export default function PracticeSetupScreen() {
     const navigate = useNavigate();
     const profile = useStudentProfile();
-    const {
-        practiceContentType,
-        departmentId,
-        program,
-        year,
-        period,
-        courseId,
-        setQuizContext,
-        resetAttempt,
-    } = useQuizStore();
+    const { practiceContentType, departmentId, program, year, period, courseId, setQuizContext, resetAttempt } = useQuizStore(
+        useShallow((state) => ({
+            practiceContentType: state.practiceContentType,
+            departmentId: state.departmentId,
+            program: state.program,
+            year: state.year,
+            period: state.period,
+            courseId: state.courseId,
+            setQuizContext: state.setQuizContext,
+            resetAttempt: state.resetAttempt,
+        }))
+    );
 
     const meta = getPracticeContentMeta(practiceContentType);
 

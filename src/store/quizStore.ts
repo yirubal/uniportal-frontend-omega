@@ -73,7 +73,7 @@ interface QuizState {
     selectedQuizTitle: string | null;
     examPaperId: number | null;
     totalTime: number | null;
-    /** Epoch ms when a timed attempt ends. The timer derives timeRemaining from this so it can't drift. */
+    /** Epoch ms when a timed attempt ends. Timers derive the time left from this, so it cannot drift. */
     deadline: number | null;
     /** telegram_id of the student who started the attempt, so a saved attempt is never resumed by someone else. */
     ownerId: number | null;
@@ -84,7 +84,6 @@ interface QuizState {
     answers: Record<number, string>;
     markedForReview: Record<number, boolean>;
     selectedAnswer: string | null;
-    timeRemaining: number | null;
     isComplete: boolean;
 
     attemptSummary: AttemptSummary | null;
@@ -108,12 +107,12 @@ interface QuizState {
         totalTime?: number
     ) => void;
     initializeSelectivePractice: (questions: Question[], course: Course, topics: string[]) => void;
-    setAnswer: (answer: string) => void;
+    /** Saves an answer for `questionId` (defaults to the current question). */
+    setAnswer: (answer: string, questionId?: number) => void;
     jumpToQuestion: (index: number) => void;
     toggleMarkedForReview: (questionId?: number) => void;
     nextQuestion: () => void;
     completeQuiz: (summary: AttemptSummary) => void;
-    setTimeRemaining: (time: number) => void;
     resetAttempt: () => void;
     resetQuiz: () => void;
 }
@@ -149,7 +148,6 @@ export const useQuizStore = create<QuizState>()(persist((set, get) => ({
     answers: {},
     markedForReview: {},
     selectedAnswer: null,
-    timeRemaining: null,
     isComplete: false,
     attemptSummary: null,
 
@@ -185,7 +183,6 @@ export const useQuizStore = create<QuizState>()(persist((set, get) => ({
             selectedQuizId: examPaperId ?? null,
             examPaperId: examPaperId ?? null,
             totalTime: totalTime ?? null,
-            timeRemaining: totalTime ?? null,
             deadline: totalTime ? Date.now() + totalTime * 1000 : null,
             ownerId: currentOwnerId(),
             selectedTopics: [],
@@ -208,8 +205,7 @@ export const useQuizStore = create<QuizState>()(persist((set, get) => ({
             selectedQuizTitle: "Selective Practice",
             examPaperId: null,
             totalTime: null,
-            timeRemaining: null,
-            deadline: null,
+                    deadline: null,
             ownerId: currentOwnerId(),
             selectedTopics,
             currentIndex: 0,
@@ -220,13 +216,15 @@ export const useQuizStore = create<QuizState>()(persist((set, get) => ({
             attemptSummary: null,
         }),
 
-    setAnswer: (answer) => {
+    setAnswer: (answer, questionId) => {
         const { currentIndex, questions, answers } = get();
-        const question = questions[currentIndex];
-        if (!question) return;
+        const currentQuestionId = questions[currentIndex]?.id;
+        const targetId = questionId ?? currentQuestionId;
+        if (targetId === undefined) return;
         set({
-            selectedAnswer: answer,
-            answers: { ...answers, [question.id]: answer },
+            // A debounced text answer can arrive after moving on; only the current question drives selectedAnswer.
+            ...(targetId === currentQuestionId ? { selectedAnswer: answer } : {}),
+            answers: { ...answers, [targetId]: answer },
         });
     },
 
@@ -269,8 +267,6 @@ export const useQuizStore = create<QuizState>()(persist((set, get) => ({
     completeQuiz: (attemptSummary) =>
         set({ attemptSummary, isComplete: true }),
 
-    setTimeRemaining: (time) => set({ timeRemaining: time }),
-
     resetAttempt: () =>
         set({
             questions: [],
@@ -278,8 +274,7 @@ export const useQuizStore = create<QuizState>()(persist((set, get) => ({
             answers: {},
             markedForReview: {},
             selectedAnswer: null,
-            timeRemaining: null,
-            isComplete: false,
+                    isComplete: false,
             attemptSummary: null,
             examPaperId: null,
             totalTime: null,
@@ -301,8 +296,7 @@ export const useQuizStore = create<QuizState>()(persist((set, get) => ({
             answers: {},
             markedForReview: {},
             selectedAnswer: null,
-            timeRemaining: null,
-            isComplete: false,
+                    isComplete: false,
             attemptSummary: null,
             courseId: null,
             courseName: null,

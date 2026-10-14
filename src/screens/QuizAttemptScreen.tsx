@@ -7,6 +7,7 @@ import QuestionCard from "../components/QuestionCard";
 import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
+import { useShallow } from "zustand/react/shallow";
 import { useQuizStore } from "../store/quizStore";
 import { getErrorMessage } from "../utils/errors";
 import { getPracticeContentMeta } from "../utils/practice";
@@ -15,7 +16,25 @@ import { buildSubmissionAnswers, isOptionQuestion, isQuestionAnswered } from "..
 export default function QuizAttemptScreen({ selectiveMode = false }: { selectiveMode?: boolean }) {
     const navigate = useNavigate();
     const { quizId } = useParams();
-    const quiz = useQuizStore();
+    const quiz = useQuizStore(
+        useShallow((state) => ({
+            answers: state.answers,
+            courseName: state.courseName,
+            currentIndex: state.currentIndex,
+            examPaperId: state.examPaperId,
+            isComplete: state.isComplete,
+            mode: state.mode,
+            nextQuestion: state.nextQuestion,
+            practiceContentType: state.practiceContentType,
+            questions: state.questions,
+            resetAttempt: state.resetAttempt,
+            selectedAnswer: state.selectedAnswer,
+            selectedQuizTitle: state.selectedQuizTitle,
+            selectedTopics: state.selectedTopics,
+            setAnswer: state.setAnswer,
+            setSelectedQuiz: state.setSelectedQuiz,
+        }))
+    );
     const meta = getPracticeContentMeta(quiz.practiceContentType);
     const attemptMode = selectiveMode ? "selective" : "practice";
 
@@ -272,7 +291,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                     questionNumber={quiz.currentIndex + 1}
                     totalQuestions={quiz.questions.length}
                     selectedAnswer={quiz.selectedAnswer}
-                    onSelect={(answer) => quiz.setAnswer(answer)}
+                    onSelect={quiz.setAnswer}
                 />
             </div>
 

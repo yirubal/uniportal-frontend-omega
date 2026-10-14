@@ -19,7 +19,7 @@ import {
 export default function ExitExamListScreen() {
     const navigate = useNavigate();
     const { category } = useParams();
-    const { student } = useAuthStore();
+    const student = useAuthStore((state) => state.student);
     const { canAccessExitExam } = useAccess();
     const profile = useStudentProfile();
     const resetAttempt = useQuizStore((state) => state.resetAttempt);

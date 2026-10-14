@@ -3,7 +3,7 @@ import { useAuthStore } from "../store/authStore";
 import { getPeriodLabel, getProgramLabel } from "../utils/periods";
 
 export function useStudentProfile() {
-    const { student } = useAuthStore();
+    const student = useAuthStore((state) => state.student);
 
     return useMemo(() => {
         const departmentId = student?.preferred_department ?? null;

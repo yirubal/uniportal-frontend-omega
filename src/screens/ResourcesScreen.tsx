@@ -34,7 +34,9 @@ const SOURCE_FILTER_TABS: { key: SourceFilter; label: string }[] = [
 export default function ResourcesScreen() {
     const navigate = useNavigate();
     const profile = useStudentProfile();
-    const store = useContentStore();
+    // Subscribe to the resource list only; the saved picker values are read once for initial state.
+    const resources = useContentStore((state) => state.resources);
+    const savedPicker = useContentStore.getState();
     const { canAccessResource } = useAccess();
 
     const [view, setView] = useState<"select" | "list">("select");
@@ -46,11 +48,11 @@ export default function ResourcesScreen() {
     const [loadingResources, setLoadingResources] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [selDept, setSelDept] = useState<Department | null>(
-        store.selectedDepartment?.id === profile.departmentId ? store.selectedDepartment : null
+        savedPicker.selectedDepartment?.id === profile.departmentId ? savedPicker.selectedDepartment : null
     );
-    const [selProgram, setSelProgram] = useState<ProgramType | null>(profile.program ?? store.selectedProgram ?? null);
-    const [selYear, setSelYear] = useState<number | null>(profile.year ?? store.selectedYear ?? null);
-    const [selPeriod, setSelPeriod] = useState<number | null>(profile.period ?? store.selectedPeriod ?? null);
+    const [selProgram, setSelProgram] = useState<ProgramType | null>(profile.program ?? savedPicker.selectedProgram ?? null);
+    const [selYear, setSelYear] = useState<number | null>(profile.year ?? savedPicker.selectedYear ?? null);
+    const [selPeriod, setSelPeriod] = useState<number | null>(profile.period ?? savedPicker.selectedPeriod ?? null);
     const [selCourse, setSelCourse] = useState<Course | null>(null);
     const [filterType, setFilterType] = useState<FilterType>("All");
     const [sourceFilter, setSourceFilter] = useState<SourceFilter>("All");
@@ -140,6 +142,7 @@ export default function ResourcesScreen() {
     }, [selDeptId, selProgram, selYear, selPeriod]);
 
     const loadResources = useCallback(async (course: Course) => {
+        const content = useContentStore.getState();
         // Tapping a second course cancels the first request so its resources can't replace the newer ones.
         resourcesRequestRef.current?.abort();
         const controller = new AbortController();
@@ -148,27 +151,27 @@ export default function ResourcesScreen() {
         setLoadingResources(true);
         setError(null);
 
-        store.setSelectedDepartment(selDept);
-        store.setSelectedProgram(selProgram);
-        store.setSelectedYear(selYear);
-        store.setSelectedPeriod(selPeriod);
-        store.setSelectedCourse(course);
+        content.setSelectedDepartment(selDept);
+        content.setSelectedProgram(selProgram);
+        content.setSelectedYear(selYear);
+        content.setSelectedPeriod(selPeriod);
+        content.setSelectedCourse(course);
 
         try {
             const resources = await getResources(course.id, undefined, { signal: controller.signal });
             if (controller.signal.aborted) return;
-            store.setResources(resources);
+            content.setResources(resources);
             setView("list");
         } catch {
             if (!controller.signal.aborted) setError("Failed to load resources.");
         } finally {
             if (!controller.signal.aborted) setLoadingResources(false);
         }
-    }, [selDept, selPeriod, selProgram, selYear, store]);
+    }, [selDept, selPeriod, selProgram, selYear]);
 
     const visibleResources = useMemo(() => {
-        return store.resources.filter((resource) => !INTERACTIVE_RESOURCE_TYPES.has(resource.file_type));
-    }, [store.resources]);
+        return resources.filter((resource) => !INTERACTIVE_RESOURCE_TYPES.has(resource.file_type));
+    }, [resources]);
 
     const filteredResources = useMemo(() => {
         return visibleResources.filter((resource) => {
@@ -436,8 +439,8 @@ export default function ResourcesScreen() {
                         onClick={() => {
                             setView("select");
                             setSelCourse(null);
-                            store.setSelectedCourse(null);
-                            store.setResources([]);
+                            useContentStore.getState().setSelectedCourse(null);
+                            useContentStore.getState().setResources([]);
                         }}
                     />
                     <p className="app-section-label">{selCourse?.code}</p>

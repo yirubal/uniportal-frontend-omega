@@ -1,4 +1,5 @@
 import { Check, CheckCircle2, Clock3, Sparkles, X, XCircle } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getPlans, getSubscriptionRequest, requestSubscription, type PaymentInstructions, type PaymentOptions, type Plan, type SubscriptionRequestState } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
@@ -19,7 +20,12 @@ interface RefreshOptions {
 
 export default function SubscribeScreen() {
     const navigate = useNavigate();
-    const { token, setAuth } = useAuthStore();
+    const { token, setAuth } = useAuthStore(
+        useShallow((state) => ({
+            token: state.token,
+            setAuth: state.setAuth,
+        }))
+    );
     const [plans, setPlans] = useState<Plan[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<"telebirr" | "cbe">("telebirr");

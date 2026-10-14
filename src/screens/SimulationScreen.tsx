@@ -9,7 +9,9 @@ import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
 import { useQuizStore } from "../store/quizStore";
 import { getExitExamCategory, getExitExamMeta } from "../utils/exitExams";
-import { formatDuration, formatTimeRemaining } from "../utils/format";
+import { formatDuration } from "../utils/format";
+import { ExamTimerBar, ExamTimerChip } from "../components/ExamTimer";
+import { useShallow } from "zustand/react/shallow";
 import { getErrorMessage } from "../utils/errors";
 import { buildSubmissionAnswers, isQuestionAnswered } from "../utils/questions";
 
@@ -19,7 +21,27 @@ export default function SimulationScreen() {
     const location = useLocation();
     // The exam list passes the paper through router state, so the start page doesn't refetch every exit exam.
     const routedExam = (location.state as { exam?: ExamPaper } | null)?.exam;
-    const quiz = useQuizStore();
+    // Explicit selector: the screen re-renders on attempt changes only (the countdown lives in ExamTimer).
+    const quiz = useQuizStore(
+        useShallow((state) => ({
+            questions: state.questions,
+            currentIndex: state.currentIndex,
+            answers: state.answers,
+            markedForReview: state.markedForReview,
+            selectedAnswer: state.selectedAnswer,
+            isComplete: state.isComplete,
+            mode: state.mode,
+            examPaperId: state.examPaperId,
+            totalTime: state.totalTime,
+            deadline: state.deadline,
+            setQuiz: state.setQuiz,
+            setAnswer: state.setAnswer,
+            nextQuestion: state.nextQuestion,
+            jumpToQuestion: state.jumpToQuestion,
+            toggleMarkedForReview: state.toggleMarkedForReview,
+            resetAttempt: state.resetAttempt,
+        }))
+    );
     const handleSubmitCallRef = useRef<() => void>(() => {});
     // Note: handleSubmitCallRef.current is assigned after handleSubmit is declared below
     const submittingRef = useRef(false);
@@ -35,6 +57,8 @@ export default function SimulationScreen() {
     const [showLeaveModal, setShowLeaveModal] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
     const [showFinishConfirm, setShowFinishConfirm] = useState(false);
+    // Deadline of the attempt whose time ran out; compared with the current deadline so a new attempt starts clean.
+    const [expiredDeadline, setExpiredDeadline] = useState<number | null>(null);
 
     // Only treat the stored attempt as active when it belongs to the exam in the URL.
     const isQuizActive =
@@ -78,43 +102,40 @@ export default function SimulationScreen() {
         return () => controller.abort();
     }, [examId, routedExam, reloadKey]);
 
-    // Timer effect — only depends on isQuizActive, NOT the full quiz object or timeRemaining.
-    // Time left is derived from the stored deadline, so throttled or paused intervals
-    // (Telegram minimized, hidden tab) can't stretch the exam beyond its real duration.
+    // Expiry watcher: wakes at the deadline (not every second) and re-checks when the app becomes visible,
+    // because timers are throttled while Telegram is minimized. Submits once; failures are retried manually.
+    const deadline = quiz.deadline;
     useEffect(() => {
-        if (!isQuizActive) return;
+        if (!isQuizActive || deadline === null) return;
 
-        const tick = () => {
-            const { deadline, setTimeRemaining } = useQuizStore.getState();
-            if (deadline === null) return;
+        let timer = 0;
+        const check = () => {
+            window.clearTimeout(timer);
+            const msLeft = deadline - Date.now();
+            if (msLeft > 0) {
+                timer = window.setTimeout(check, Math.min(msLeft, 60_000));
+                return;
+            }
 
-            const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-            setTimeRemaining(remaining);
-
-            if (remaining <= 0) {
-                window.clearInterval(timer);
-                // Submit once on expiry; a failed submit is retried manually, not every tick.
-                if (!autoSubmittedRef.current) {
-                    autoSubmittedRef.current = true;
-                    handleSubmitCallRef.current();
-                }
+            setExpiredDeadline(deadline);
+            if (!autoSubmittedRef.current) {
+                autoSubmittedRef.current = true;
+                handleSubmitCallRef.current();
             }
         };
-
         const handleVisibilityChange = () => {
-            if (document.visibilityState === "visible") tick();
+            if (document.visibilityState === "visible") check();
         };
 
         autoSubmittedRef.current = false;
-        const timer = window.setInterval(tick, 1000);
-        tick();
+        timer = window.setTimeout(check, 0);
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
         return () => {
-            window.clearInterval(timer);
+            window.clearTimeout(timer);
             document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
-    }, [isQuizActive]);
+    }, [isQuizActive, deadline]);
 
     const answeredCount = useMemo(
         () => quiz.questions.filter((question) => isQuestionAnswered(question, quiz.answers)).length,
@@ -129,13 +150,7 @@ export default function SimulationScreen() {
     const backTarget = exam ? `/exit-exam/list/${getExitExamCategory(exam)}` : "/exit-exam";
     const startLabel = "Start the exam";
     const totalDuration = quiz.totalTime ?? (exam?.duration_minutes ? exam.duration_minutes * 60 : 0);
-    const timeRemaining = quiz.timeRemaining ?? totalDuration;
-    const timeProgress = totalDuration > 0
-        ? Math.max(0, Math.min(100, (timeRemaining / totalDuration) * 100))
-        : 0;
-    const isLowTime = timeRemaining > 0 && timeRemaining <= 300;
-    const isCriticalTime = timeRemaining > 0 && timeRemaining <= 60;
-    const timeExpired = isQuizActive && quiz.deadline !== null && timeRemaining <= 0;
+    const timeExpired = isQuizActive && deadline !== null && expiredDeadline === deadline;
 
     const handleStart = async () => {
         if (!exam) return;
@@ -283,11 +298,7 @@ export default function SimulationScreen() {
                     <TopBackButton
                         onClick={() => setShowLeaveModal(true)}
                         label="Leave"
-                        trailing={(
-                            <span className={`rounded-full px-3 py-2 text-xs font-bold transition-all ${isLowTime ? "bg-[#FFF0ED] text-[#D95A50]" : "bg-[#172B2F] text-white"} ${isCriticalTime ? "animate-pulse shadow-[0_0_0_6px_rgba(217,90,80,0.12)]" : ""}`}>
-                                {formatTimeRemaining(timeRemaining)}
-                            </span>
-                        )}
+                        trailing={deadline !== null ? <ExamTimerChip deadline={deadline} /> : undefined}
                     />
 
                     <div className="mt-2 app-grid-2">
@@ -295,20 +306,7 @@ export default function SimulationScreen() {
                         <InfoTile label="Answered" value={`${answeredCount}/${quiz.questions.length}`} />
                     </div>
 
-                    <div className="mt-3 app-sheet p-4">
-                        <div className="flex items-center justify-between gap-3">
-                            <p className="app-section-label">Timer</p>
-                            <span className={`text-xs font-bold uppercase tracking-[0.14em] ${isLowTime ? "text-[#D95A50]" : "text-[#60728F]"}`}>
-                                {timeProgress.toFixed(0)}% left
-                            </span>
-                        </div>
-                        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[rgba(23,43,47,0.08)]">
-                            <div
-                                className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${isLowTime ? "bg-[#D95A50]" : "bg-[#172B2F]"} ${isCriticalTime ? "animate-pulse" : ""}`}
-                                style={{ width: `${timeProgress}%` }}
-                            />
-                        </div>
-                    </div>
+                    {deadline !== null && <ExamTimerBar deadline={deadline} totalSeconds={totalDuration} />}
 
                 </div>
             </div>
@@ -320,7 +318,7 @@ export default function SimulationScreen() {
                     questionNumber={quiz.currentIndex + 1}
                     totalQuestions={quiz.questions.length}
                     selectedAnswer={quiz.selectedAnswer}
-                    onSelect={(answer) => quiz.setAnswer(answer)}
+                    onSelect={quiz.setAnswer}
                     simulationMode
                     showQuestionType={false}
                 />

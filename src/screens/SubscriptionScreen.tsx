@@ -1,4 +1,5 @@
 import { CreditCard } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyProfile } from "../api/auth";
@@ -12,7 +13,12 @@ import { formatDaysRemaining, formatETB } from "../utils/format";
 
 export default function SubscriptionScreen() {
     const navigate = useNavigate();
-    const { token, setAuth } = useAuthStore();
+    const { token, setAuth } = useAuthStore(
+        useShallow((state) => ({
+            token: state.token,
+            setAuth: state.setAuth,
+        }))
+    );
     const { isPremium, daysRemaining } = useAccess();
     const [plans, setPlans] = useState<Plan[]>([]);
     const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);

@@ -1,4 +1,5 @@
 import { ArrowRight, BookOpenText, Brain, ChartColumn, FolderOpen, Sparkles, Target } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import Button from "../components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
@@ -52,7 +53,13 @@ const BACKGROUND_REFRESH_THROTTLE_MS = 8000;
 
 export default function HomeScreen() {
     const navigate = useNavigate();
-    const { student, token, setAuth } = useAuthStore();
+    const { student, token, setAuth } = useAuthStore(
+        useShallow((state) => ({
+            student: state.student,
+            token: state.token,
+            setAuth: state.setAuth,
+        }))
+    );
     const { isPremium, daysRemaining } = useAccess();
     const [subscriptionRequestState, setSubscriptionRequestState] = useState<SubscriptionRequestState | null>(null);
     const [activeTerm, setActiveTerm] = useState<ActiveTermResponse | null>(null);

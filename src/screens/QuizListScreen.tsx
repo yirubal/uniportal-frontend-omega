@@ -1,4 +1,5 @@
 import { BookOpenCheck, ClipboardList, FileText, Lock, TimerReset } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCoursePracticePapers, type ExamPaper } from "../api/quiz";
@@ -11,14 +12,16 @@ import { useAccess } from "../hooks/useAccess";
 
 export default function QuizListScreen() {
     const navigate = useNavigate();
-    const {
-        practiceContentType,
-        courseId,
-        courseName,
-        selectedQuizId,
-        setSelectedQuiz,
-        resetAttempt,
-    } = useQuizStore();
+    const { practiceContentType, courseId, courseName, selectedQuizId, setSelectedQuiz, resetAttempt } = useQuizStore(
+        useShallow((state) => ({
+            practiceContentType: state.practiceContentType,
+            courseId: state.courseId,
+            courseName: state.courseName,
+            selectedQuizId: state.selectedQuizId,
+            setSelectedQuiz: state.setSelectedQuiz,
+            resetAttempt: state.resetAttempt,
+        }))
+    );
     const { isPremium } = useAccess();
 
     const [quizzes, setQuizzes] = useState<ExamPaper[]>([]);

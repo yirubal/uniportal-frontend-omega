@@ -1,4 +1,5 @@
 import { ArrowRight, BookOpenCheck, FileText, Target } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useNavigate } from "react-router-dom";
 import TopBackButton from "../components/TopBackButton";
 import { useQuizStore, type PracticeContentType } from "../store/quizStore";
@@ -9,7 +10,12 @@ const PRACTICE_OPTIONS: PracticeContentType[] = ["quiz", "past_exam"];
 
 export default function QuizScreen() {
     const navigate = useNavigate();
-    const { resetAttempt, setPracticeContentType } = useQuizStore();
+    const { resetAttempt, setPracticeContentType } = useQuizStore(
+        useShallow((state) => ({
+            resetAttempt: state.resetAttempt,
+            setPracticeContentType: state.setPracticeContentType,
+        }))
+    );
 
     const handleOpenPath = (type: PracticeContentType) => {
         setPracticeContentType(type);

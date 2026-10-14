@@ -1,4 +1,5 @@
 import { ArrowLeft, BookOpenCheck, RotateCcw } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import AnswerReviewModal from "../components/AnswerReviewModal";
@@ -10,7 +11,21 @@ import { getPracticeContentMeta } from "../utils/practice";
 
 export default function ResultsScreen() {
     const navigate = useNavigate();
-    const { attemptSummary, answers, courseId, examPaperId, mode, practiceContentType, questions, resetAttempt, selectedQuizTitle, selectedTopics, setSelectedQuiz } = useQuizStore();
+    const { attemptSummary, answers, courseId, examPaperId, mode, practiceContentType, questions, resetAttempt, selectedQuizTitle, selectedTopics, setSelectedQuiz } = useQuizStore(
+        useShallow((state) => ({
+            attemptSummary: state.attemptSummary,
+            answers: state.answers,
+            courseId: state.courseId,
+            examPaperId: state.examPaperId,
+            mode: state.mode,
+            practiceContentType: state.practiceContentType,
+            questions: state.questions,
+            resetAttempt: state.resetAttempt,
+            selectedQuizTitle: state.selectedQuizTitle,
+            selectedTopics: state.selectedTopics,
+            setSelectedQuiz: state.setSelectedQuiz,
+        }))
+    );
     const [showReview, setShowReview] = useState(false);
     const meta = getPracticeContentMeta(practiceContentType);
 

@@ -5,7 +5,7 @@ import { initAuth } from "../hooks/useAuth";
 type ToastState = "idle" | "checking" | "not-joined";
 
 export default function ChannelGateScreen() {
-    const { channelUrl } = useAuthStore();
+    const channelUrl = useAuthStore((state) => state.channelUrl);
     const [toast, setToast] = useState<ToastState>("idle");
 
     function onJoinChannel() {

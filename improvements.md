@@ -117,10 +117,10 @@ These are bugs students hit, or that give them wrong information.
 
 ## Phase 5 — Performance
 
-- [ ] 🟠 **Split routes.** All 19 screens load eagerly into one 522 KB chunk (151 KB gzip). Use `React.lazy` plus `Suspense` per route, starting with the exam, simulation, subscribe and review-modal screens.
-- [ ] 🟠 **Store selectors.** `useQuizStore()`, `useContentStore()` and `useAuthStore()` are called with no selector (in QuizAttempt, Simulation, Resources, useAccess, useStudentProfile, App), so these components re-render on every store change. Use selectors or `useShallow`. In ResourcesScreen, the `loadResources` memo depends on the whole store, so it never actually memoizes.
-- [ ] 🟠 **Simulation re-renders every second.** The timer re-renders the whole screen, including the navigator grid and `QuestionCard`. Move the timer into its own component, wrap `QuestionCard` in `memo` with a stable `onSelect`, and debounce the fill-blank and essay inputs, which currently write to the store on every keystroke.
-- [ ] 🟢 **Image size.** The splash image is 92 KB but displayed at 96px. Resize it and convert to WebP.
+- [x] 🟠 **Split routes.** All 19 screens load eagerly into one 522 KB chunk (151 KB gzip). Use `React.lazy` plus `Suspense` per route, starting with the exam, simulation, subscribe and review-modal screens.
+- [x] 🟠 **Store selectors.** `useQuizStore()`, `useContentStore()` and `useAuthStore()` are called with no selector (in QuizAttempt, Simulation, Resources, useAccess, useStudentProfile, App), so these components re-render on every store change. Use selectors or `useShallow`. In ResourcesScreen, the `loadResources` memo depends on the whole store, so it never actually memoizes.
+- [x] 🟠 **Simulation re-renders every second.** The timer re-renders the whole screen, including the navigator grid and `QuestionCard`. Move the timer into its own component, wrap `QuestionCard` in `memo` with a stable `onSelect`, and debounce the fill-blank and essay inputs, which currently write to the store on every keystroke.
+- [ ] 🟢 **Image size.** The splash image is 92 KB but displayed at 96px. Resize it and convert to WebP. _Not done: no image tool is installed here (Pillow, ImageMagick, cwebp). Export a 192×192 WebP (2× for retina) and replace `public/IMG_20260430_200017_724.jpg`._
 
 ---
 

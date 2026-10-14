@@ -1,4 +1,5 @@
 import { Building2, CheckCircle2, GraduationCap, Layers3, Rows3, Wifi } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDepartments } from "../api/content";
@@ -36,7 +37,13 @@ type TelegramWindow = Window & {
 export default function OnboardingScreen() {
     const navigate = useNavigate();
     const { close } = useTelegram();
-    const { token, setAuth, student } = useAuthStore();
+    const { token, setAuth, student } = useAuthStore(
+        useShallow((state) => ({
+            token: state.token,
+            setAuth: state.setAuth,
+            student: state.student,
+        }))
+    );
 
     const [step, setStep] = useState(0);
     const [departments, setDepartments] = useState<Department[]>([]);
