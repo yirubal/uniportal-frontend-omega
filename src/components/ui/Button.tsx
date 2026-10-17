@@ -1,5 +1,4 @@
 import React from "react";
-import WebApp from "@twa-dev/sdk";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: "primary" | "secondary" | "ghost" | "danger";
@@ -22,7 +21,6 @@ export default function Button({
     onClick,
     ...props
 }: ButtonProps) {
-    const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
     const base =
         "inline-flex min-h-11 items-center justify-center gap-2 font-semibold rounded-[18px] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:shadow-none";
 
@@ -45,12 +43,9 @@ export default function Button({
 
     return (
         <button
-            onClick={(event) => {
-                if (!disabled && !loading && supportsHaptics) {
-                    WebApp.HapticFeedback.impactOccurred(variant === "ghost" ? "light" : "medium");
-                }
-                onClick?.(event);
-            }}
+            onClick={onClick}
+            // Tap haptics come from the shared listener (utils/haptics.ts); solid buttons get a firmer tap.
+            data-haptic={variant === "ghost" ? "light" : "medium"}
             className={`
         ${base}
         ${variants[variant]}

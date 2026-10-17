@@ -1,6 +1,5 @@
 import { Moon, Sun, SunMoon } from "lucide-react";
 import { type ThemePreference, useTheme } from "../utils/theme";
-import { haptic } from "../utils/haptics";
 
 const OPTIONS: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
     { value: "system", label: "Auto", icon: SunMoon },
@@ -23,9 +22,7 @@ export default function ThemeSwitch() {
                         role="radio"
                         aria-checked={selected}
                         onClick={() => {
-                            if (selected) return;
-                            haptic.selection();
-                            setPreference(value);
+                            if (!selected) setPreference(value);
                         }}
                         className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-bold transition-colors duration-200 ${
                             selected ? "bg-fill text-white shadow-[0_4px_10px_var(--shadow-tint)]" : "text-subtle"

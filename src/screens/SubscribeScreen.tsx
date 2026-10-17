@@ -9,6 +9,7 @@ import Button from "../components/ui/Button";
 import { ErrorState, Skeleton } from "../components/ui";
 import { useSubscriptionStatus } from "../hooks/useSubscriptionStatus";
 import { formatETB } from "../utils/format";
+import { haptic } from "../utils/haptics";
 
 const PAYMENT_REFERENCE_PATTERN = /^[A-Z0-9]{10,12}$/;
 
@@ -105,7 +106,9 @@ export default function SubscribeScreen() {
         try {
             await requestSubscription(selectedPlan, paymentMethod, normalizedPaymentReference);
             await refresh({ force: true });
+            haptic.success();
         } catch {
+            haptic.error();
             setStatusModalOpen(false);
             setError("Failed to generate payment instructions.");
         } finally {

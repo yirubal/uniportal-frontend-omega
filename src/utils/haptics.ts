@@ -25,3 +25,32 @@ export const haptic = {
     warning: () => run(() => WebApp.HapticFeedback.notificationOccurred("warning")),
     error: () => run(() => WebApp.HapticFeedback.notificationOccurred("error")),
 };
+
+type TapStyle = "light" | "medium" | "selection" | "none";
+
+/**
+ * One delegated listener gives every tappable element a tap buzz, so components don't each call it.
+ * Defaults: radios, tabs and toggles → selection; everything else → light. Override per element with
+ * data-haptic="medium" | "light" | "selection" | "none".
+ */
+export function installTapHaptics() {
+    document.addEventListener(
+        "click",
+        (event) => {
+            const target = (event.target as Element | null)?.closest?.(
+                "button, a[href], [role='button'], [role='radio'], [role='tab'], [role='checkbox'], [role='switch']"
+            );
+            if (!target || target.matches(":disabled, [aria-disabled='true']")) return;
+
+            const explicit = target.getAttribute("data-haptic") as TapStyle | null;
+            const role = target.getAttribute("role");
+            const style: TapStyle =
+                explicit ??
+                (role === "radio" || role === "tab" || role === "checkbox" || role === "switch" || target.hasAttribute("aria-pressed")
+                    ? "selection"
+                    : "light");
+            if (style !== "none") haptic[style]();
+        },
+        { capture: true, passive: true }
+    );
+}

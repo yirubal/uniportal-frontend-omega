@@ -1,6 +1,5 @@
 import { Home, Library, Brain, Trophy } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import WebApp from "@twa-dev/sdk";
 
 const tabs = [
     { path: "/home", icon: Home, label: "Home" },
@@ -12,7 +11,6 @@ const tabs = [
 export default function BottomNav() {
     const location = useLocation();
     const navigate = useNavigate();
-    const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
 
     const isActive = (path: string) =>
         location.pathname === path ||
@@ -31,12 +29,8 @@ export default function BottomNav() {
                             type="button"
                             key={tab.path}
                             aria-current={isActive(tab.path) ? "page" : undefined}
-                            onClick={() => {
-                                if (supportsHaptics) {
-                                    WebApp.HapticFeedback.selectionChanged();
-                                }
-                                navigate(tab.path);
-                            }}
+                            data-haptic="selection"
+                            onClick={() => navigate(tab.path)}
                             className={`
                 nav-tab relative flex min-w-0 flex-1 appearance-none flex-col items-center justify-center
               gap-1.5 rounded-[22px] px-2 py-4 h-14

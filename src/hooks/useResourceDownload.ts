@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { requestDownload } from "../api/content";
 import { getErrorMessage } from "../utils/errors";
+import { haptic } from "../utils/haptics";
 
 export interface DownloadMessage {
     tone: "success" | "error";
@@ -65,6 +66,7 @@ export function useResourceDownload() {
 
             const result = await deliverFile(response.url, response.filename);
             if (result === "started") {
+                haptic.success();
                 setMessage({ tone: "success", text: `Downloading ${response.filename}` });
             }
         } catch (error) {
@@ -72,6 +74,7 @@ export function useResourceDownload() {
                 navigate("/subscribe");
                 return;
             }
+            haptic.error();
             setMessage({ tone: "error", text: getErrorMessage(error, "Unable to prepare the download right now.") });
         } finally {
             inFlightRef.current = false;

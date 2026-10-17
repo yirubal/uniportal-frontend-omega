@@ -1,6 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
 import type { Question } from "../store/quizStore";
-import { useTelegram } from "../hooks/useTelegram";
 import { getQuestionOptions, getResolvedQuestionType, splitMatchingPair } from "../utils/questions";
 
 interface QuestionCardProps {
@@ -32,7 +31,6 @@ function QuestionCard({
     onSelect,
     showQuestionType = true,
 }: QuestionCardProps) {
-    const { haptic } = useTelegram();
     const [draftAnswer, setDraftAnswer] = useState(selectedAnswer ?? "");
     const [showHint, setShowHint] = useState(false);
     const optionEntries = getQuestionOptions(question);
@@ -111,10 +109,8 @@ function QuestionCard({
                     {question.hint && (
                         <button
                             type="button"
-                            onClick={() => {
-                                haptic.light();
-                                setShowHint((current) => !current);
-                            }}
+                            aria-pressed={showHint}
+                            onClick={() => setShowHint((current) => !current)}
                             className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${showHint
                                 ? "bg-fill text-white"
                                 : "bg-accent-soft text-accent"
@@ -148,10 +144,8 @@ function QuestionCard({
                                 role="radio"
                                 aria-checked={option === selectedAnswer}
                                 key={option}
-                                onClick={() => {
-                                    haptic.medium();
-                                    onSelect(option, question.id);
-                                }}
+                                data-haptic="medium"
+                                onClick={() => onSelect(option, question.id)}
                                 className="flex min-h-16 min-w-0 items-center gap-3 rounded-[16px] px-4 py-3.5 text-left transition-all duration-200 active:scale-[0.98] !px-1"
                                 style={{
                                     border: `2px solid ${style.border}`,

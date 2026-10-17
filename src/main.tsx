@@ -4,6 +4,7 @@ import WebApp from "@twa-dev/sdk";
 import "./index.css";
 import App from "./App.tsx";
 import { initTheme } from "./utils/theme";
+import { installTapHaptics } from "./utils/haptics";
 
 // Initialize Telegram WebApp
 WebApp.ready();
@@ -18,6 +19,7 @@ if (WebApp.isVersionAtLeast?.("7.7")) {
 
 // Before the first render, so a dark-mode user never sees a light flash.
 initTheme();
+installTapHaptics();
 
 const rootElement = document.getElementById("root");
 

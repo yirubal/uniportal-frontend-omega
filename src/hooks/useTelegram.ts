@@ -2,18 +2,6 @@ import WebApp from "@twa-dev/sdk";
 
 export const useTelegram = () => {
     const user = WebApp.initDataUnsafe?.user;
-    const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
-
-    const safeImpact = (style: "light" | "medium" | "heavy") => {
-        if (!supportsHaptics) return;
-        WebApp.HapticFeedback.impactOccurred(style);
-    };
-
-    const safeNotify = (type: "success" | "error" | "warning") => {
-        if (!supportsHaptics) return;
-        WebApp.HapticFeedback.notificationOccurred(type);
-    };
-
     return {
         webApp: WebApp,
         user,
@@ -33,14 +21,7 @@ export const useTelegram = () => {
                 WebApp.showConfirm(message, (confirmed) => resolve(confirmed))
             ),
 
-        haptic: {
-            light: () => safeImpact("light"),
-            medium: () => safeImpact("medium"),
-            heavy: () => safeImpact("heavy"),
-            success: () => safeNotify("success"),
-            error: () => safeNotify("error"),
-            warning: () => safeNotify("warning"),
-        },
+        // Haptics: use utils/haptics.ts.
 
         backButton: {
             show: (callback: () => void) => {

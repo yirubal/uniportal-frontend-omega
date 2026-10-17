@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import WebApp from "@twa-dev/sdk";
+import { haptic } from "../utils/haptics";
 
 interface TopBackButtonProps {
     onClick: () => void;
@@ -16,24 +17,20 @@ export default function TopBackButton({
     tone = "light",
     trailing,
 }: TopBackButtonProps) {
-    const supportsHaptics = WebApp.isVersionAtLeast?.("6.1") ?? false;
     const onClickRef = useRef(onClick);
-    const supportsHapticsRef = useRef(supportsHaptics);
 
     useEffect(() => {
         onClickRef.current = onClick;
-        supportsHapticsRef.current = supportsHaptics;
-    }, [onClick, supportsHaptics]);
+    }, [onClick]);
 
     useEffect(() => {
         if (!WebApp.isVersionAtLeast?.("6.1")) {
             return;
         }
 
+        // Telegram's own back button isn't a DOM click, so the shared tap listener doesn't see it.
         const handleBack = () => {
-            if (supportsHapticsRef.current) {
-                WebApp.HapticFeedback.impactOccurred("light");
-            }
+            haptic.light();
             onClickRef.current();
         };
 
@@ -70,12 +67,7 @@ export default function TopBackButton({
         <div className="mb-5 flex items-center justify-between gap-3">
             <button
                 type="button"
-                onClick={() => {
-                    if (supportsHaptics) {
-                        WebApp.HapticFeedback.impactOccurred("light");
-                    }
-                    onClick();
-                }}
+                onClick={onClick}
                 style={buttonStyle}
                 className={`inline-flex min-h-[2.75rem] appearance-none items-center gap-2 rounded-[5px] border text-sm font-semibold transition-[transform,background-color,border-color,color] duration-200 active:scale-[0.98] focus:outline-none ${shadowClass}`}
             >

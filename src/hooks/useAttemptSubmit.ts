@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { submitAttempt } from "../api/quiz";
 import { type QuizMode, useQuizStore } from "../store/quizStore";
 import { getErrorMessage } from "../utils/errors";
+import { haptic } from "../utils/haptics";
 import { buildSubmissionAnswers } from "../utils/questions";
 
 interface AttemptSubmitOptions {
@@ -52,6 +53,7 @@ export function useAttemptSubmit({ examPaperId, mode, includeQuestions = false, 
             navigate("/results", { replace: true });
         } catch (error) {
             // Stay on the attempt: the answers were not saved, so showing a result would be wrong.
+            haptic.error();
             setSubmitError(getErrorMessage(error, fallbackError));
         } finally {
             submittingRef.current = false;
