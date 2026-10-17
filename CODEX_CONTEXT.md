@@ -341,6 +341,14 @@ This file is the durable handoff for future Codex sessions working in this repos
 - Phase 8: developer copy removed from the UI, real plan price in `LockedOverlay`, docs updated.
 - Backend follow-ups: CORS on signed download URLs for the reader; reads currently call `/download/` (may count as downloads); `paper_id` should always be returned in performance data.
 
+### 2026-10-17 (Phase 9: delight and ease of use)
+
+- Dark mode following Telegram (`utils/theme.ts`, Auto/Light/Dark switch on Home). ~260 hardcoded colour classes moved to tokens with dark values; `bg-ink` became `bg-fill` (fills stay dark with white text).
+- Haptics through one delegated tap listener (`utils/haptics.ts`) plus success/error buzzes on submit, download, payment request and results.
+- Screen transitions (`useScreenTransitions`), row-shaped shimmer placeholders (`SkeletonList`), quiz animations (slide per direction, answer pop, progress fill, review glow/shake), results count-up, ring fill and confetti.
+- Continue reading (`readingStore`): last PDF page per student per file, "Continuing from page N · Start over" notice, Home row.
+- Reduced motion switches all decorative animation off. Verified in headless Chromium in both themes.
+
 ## Next Work
 
 - Continue all new implementation on `dev`.

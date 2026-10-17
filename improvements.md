@@ -190,24 +190,24 @@ These are bugs students hit, or that give them wrong information.
 Added 2026-10-17. Make the app feel native and pleasant without heavy libraries: CSS animations, Telegram's
 built-in APIs, and small hand-written helpers. Every animation respects the phone's "reduce motion" setting.
 
-- [ ] 🟠 **Dark mode.** Follow Telegram's light/dark setting automatically (`WebApp.colorScheme`, `themeChanged`), with
+- [x] 🟠 **Dark mode.** Follow Telegram's light/dark setting automatically (`WebApp.colorScheme`, `themeChanged`), with
   an Auto / Light / Dark choice on Home that is remembered on the device.
   - Give every colour a token with a light and a dark value, and replace the remaining hardcoded colours
     (about 150 arbitrary class values, `bg-white`, inline hex styles in QuestionCard, the subscribe screens and the results ring).
   - Split `ink` into text (`text-ink`, turns light) and fills (`bg-fill`, stays a dark button colour with white text).
   - Colour Telegram's header and background bars to match, and set the theme before the first paint so there is no flash.
-- [ ] 🟢 **Haptic feedback everywhere.** One `utils/haptics.ts` helper (version-gated, Bot API 6.1+) used by buttons,
+- [x] 🟢 **Haptic feedback everywhere.** One `utils/haptics.ts` helper (version-gated, Bot API 6.1+) used by buttons,
   tabs, chips, answer options, the question navigator, and success/error buzzes on submit, download and payment requests.
-- [ ] 🟠 **Screen transitions.** Screens slide in from the right when opened, from the left when going back, and fade
+- [x] 🟠 **Screen transitions.** Screens slide in from the right when opened, from the left when going back, and fade
   between bottom-nav tabs. CSS only, keyed on React Router's navigation type.
-- [ ] 🟢 **Shimmer placeholders.** A clearer moving-highlight shimmer that works in dark mode, and screen-shaped
+- [x] 🟢 **Shimmer placeholders.** A clearer moving-highlight shimmer that works in dark mode, and screen-shaped
   placeholders instead of spinners while lists and screens load.
-- [ ] 🟠 **Quiz animations.** Selected answers pop, the question slides when moving next/previous, the progress bar
+- [x] 🟠 **Quiz animations.** Selected answers pop, the question slides when moving next/previous, the progress bar
   fills smoothly, and the answer review marks correct/wrong answers with a short entrance. (Answers are only graded after
   submitting, so there is no right/wrong feedback during the attempt itself.)
-- [ ] 🟠 **Results celebration.** The score ring fills and the percentage counts up, the message depends on the score,
+- [x] 🟠 **Results celebration.** The score ring fills and the percentage counts up, the message depends on the score,
   confetti for 80% and above (small hand-written canvas helper, no dependency), and a success or warning buzz.
-- [ ] 🟠 **Continue reading.** Remember the last page per document (per student, on the device), reopen at that page with
+- [x] 🟠 **Continue reading.** Remember the last page per document (per student, on the device), reopen at that page with
   a "Start from the beginning" option, and show a "Continue reading" row with recently opened files on Home.
 
 ---
