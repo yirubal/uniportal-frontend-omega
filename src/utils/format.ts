@@ -56,6 +56,7 @@ export const formatTimeRemaining = (seconds: number): string => {
 export const PASS_PERCENTAGE = 50;
 
 export const getScoreEmoji = (percentage: number): string => {
+    if (percentage >= 100) return "🎉";
     if (percentage >= 90) return "🏆";
     if (percentage >= 75) return "🌟";
     if (percentage >= 60) return "👍";
@@ -64,6 +65,7 @@ export const getScoreEmoji = (percentage: number): string => {
 };
 
 export const getScoreMessage = (percentage: number): string => {
+    if (percentage >= 100) return "Perfect score!";
     if (percentage >= 90) return "Outstanding!";
     if (percentage >= 75) return "Great work!";
     if (percentage >= 60) return "Good effort!";

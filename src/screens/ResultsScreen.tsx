@@ -1,6 +1,6 @@
 import { ArrowLeft, BookOpenCheck, RotateCcw } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import AnswerReviewModal from "../components/AnswerReviewModal";
 import TopBackButton from "../components/TopBackButton";
@@ -8,6 +8,12 @@ import Button from "../components/ui/Button";
 import { useQuizStore } from "../store/quizStore";
 import { getScoreEmoji, getScoreMessage, PASS_PERCENTAGE } from "../utils/format";
 import { getPracticeContentMeta } from "../utils/practice";
+import { useCountUp } from "../hooks/useCountUp";
+import { launchConfetti } from "../utils/confetti";
+import { haptic } from "../utils/haptics";
+
+/** Scores at or above this get confetti. */
+const CELEBRATE_PERCENTAGE = 80;
 
 export default function ResultsScreen() {
     const navigate = useNavigate();
@@ -33,12 +39,6 @@ export default function ResultsScreen() {
     // at mount: "Try again" resets the attempt while its navigation is still in a transition, and this
     // screen must not redirect to /quiz in the meantime.
     const [openedWithResult] = useState(() => attemptSummary !== null);
-    if (!openedWithResult) {
-        return <Navigate to="/quiz" replace />;
-    }
-    if (!attemptSummary) {
-        return null;
-    }
 
     const percentage = Math.round(
         attemptSummary?.percentage ??
@@ -46,6 +46,37 @@ export default function ResultsScreen() {
             ? (attemptSummary.score / attemptSummary.gradable_total) * 100
             : 0)
     );
+    const shownPercentage = useCountUp(percentage);
+
+    // Celebrate when the result first appears: one buzz, and confetti for a high score.
+    const buzzedRef = useRef(false);
+    useEffect(() => {
+        if (!openedWithResult || buzzedRef.current) return;
+        buzzedRef.current = true;
+        if (percentage >= PASS_PERCENTAGE) haptic.success();
+        else haptic.warning();
+    }, [openedWithResult, percentage]);
+
+    useEffect(() => {
+        if (!openedWithResult || percentage < CELEBRATE_PERCENTAGE) return;
+        let stop = () => {};
+        // Start after the ring has mostly filled.
+        const timer = window.setTimeout(() => {
+            stop = launchConfetti();
+        }, 650);
+        return () => {
+            window.clearTimeout(timer);
+            stop();
+        };
+    }, [openedWithResult, percentage]);
+
+    if (!openedWithResult) {
+        return <Navigate to="/quiz" replace />;
+    }
+    if (!attemptSummary) {
+        return null;
+    }
+
     const emoji = getScoreEmoji(percentage);
     const message = getScoreMessage(percentage);
     const passed = percentage >= PASS_PERCENTAGE;
@@ -134,15 +165,17 @@ export default function ResultsScreen() {
                                 strokeLinecap="round"
                                 strokeDasharray={circumference}
                                 strokeDashoffset={dashOffset}
+                                className="result-ring"
+                                style={{ "--ring-from": `${circumference}` } as React.CSSProperties}
                             />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-3xl">{emoji}</span>
-                            <span className="mt-1 text-xl font-black text-ink">{percentage}%</span>
+                            <span className="result-emoji text-3xl">{emoji}</span>
+                            <span className="mt-1 text-xl font-black tabular-nums text-ink" aria-label={`${percentage}%`}>{shownPercentage}%</span>
                         </div>
                     </div>
 
-                    <p className="mt-5 text-xl font-bold text-ink">{message}</p>
+                    <p className="animate-fade-in-up mt-5 text-xl font-bold text-ink [animation-delay:0.5s] [animation-fill-mode:backwards]">{message}</p>
                     <div className={`mx-auto mt-3 inline-flex min-h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-black ${passed ? "bg-ok-tint text-ok-ink" : "bg-bad-tint text-bad-ink"}`}>
                         {passed ? "Passed" : "Needs more practice"}
                     </div>
