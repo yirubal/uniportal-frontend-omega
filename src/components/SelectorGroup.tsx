@@ -1,4 +1,4 @@
-import { EmptyState, SearchInput, Skeleton } from "./ui";
+import { EmptyState, SearchInput, SkeletonList } from "./ui";
 
 /** Searchable single-choice list (e.g. departments) with a "Selected" chip on the chosen item. */
 export default function SelectorGroup<T>({
@@ -35,9 +35,7 @@ export default function SelectorGroup<T>({
                 </div>
             )}
             {loading ? (
-                <div className="space-y-3">
-                    {[1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-[28px]" />)}
-                </div>
+                <SkeletonList count={3} />
             ) : items.length === 0 ? (
                 <EmptyState
                     title="No departments found"

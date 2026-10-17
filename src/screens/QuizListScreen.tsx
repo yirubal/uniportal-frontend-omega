@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCoursePracticePapers, type ExamPaper } from "../api/quiz";
 import TopBackButton from "../components/TopBackButton";
-import { EmptyState, ErrorState, Skeleton } from "../components/ui";
+import { EmptyState, ErrorState, SkeletonList } from "../components/ui";
 import { formatDuration } from "../utils/format";
 import { useQuizStore } from "../store/quizStore";
 import { getPracticeContentMeta } from "../utils/practice";
@@ -108,9 +108,7 @@ export default function QuizListScreen() {
                     <p className="mb-3 app-section-label">{meta.listLabel}</p>
 
                     {loading ? (
-                        <div className="space-y-3">
-                            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-[28px]" />)}
-                        </div>
+                        <SkeletonList count={4} lines={3} label="Loading quizzes" />
                     ) : error ? (
                         <ErrorState message={error} onRetry={papers.reload} />
                     ) : quizzes.length === 0 ? (

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getExitExams, getExitExamTopics, type ExamPaper } from "../api/quiz";
 import LockedOverlay from "../components/LockedOverlay";
 import TopBackButton from "../components/TopBackButton";
-import { EmptyState, ErrorState, Skeleton } from "../components/ui";
+import { EmptyState, ErrorState, SkeletonList } from "../components/ui";
 import { useAccess } from "../hooks/useAccess";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { useStudentProfile } from "../hooks/useStudentProfile";
@@ -90,11 +90,7 @@ export default function ExitExamListScreen() {
                         description="Practice with realistic timed exam flows, past years papers, and model exams."
                     />
                 ) : loading ? (
-                    <div className="space-y-4">
-                        <Skeleton className="h-32 rounded-[32px]" />
-                        <Skeleton className="h-28 rounded-[32px]" />
-                        <Skeleton className="h-28 rounded-[32px]" />
-                    </div>
+                    <SkeletonList count={4} lines={3} label="Loading exams" />
                 ) : error ? (
                     <ErrorState message={error} onRetry={content.reload} />
                 ) : (

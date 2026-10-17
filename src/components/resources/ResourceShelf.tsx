@@ -5,7 +5,7 @@ import type { Course, ResourceFilterType, ResourceSource } from "../../store/con
 import ResourceCard from "../ResourceCard";
 import { ResourceSourceBadge } from "../ResourceSourceBadge";
 import TopBackButton from "../TopBackButton";
-import { EmptyState, ErrorState, SearchInput, Skeleton } from "../ui";
+import { EmptyState, ErrorState, SearchInput, SkeletonList } from "../ui";
 
 type FilterType = ResourceFilterType;
 type SourceFilter = "All" | ResourceSource;
@@ -167,9 +167,7 @@ export default function ResourceShelf({ course, loading, error, onRetry, onBack 
 
                 <div className="mt-4">
                     {loading ? (
-                        <div className="space-y-3">
-                            {[1, 2, 3].map((item) => <Skeleton key={item} className="h-24 rounded-[28px]" />)}
-                        </div>
+                        <SkeletonList count={4} lines={3} label="Loading resources" />
                     ) : error ? (
                         <ErrorState
                             message={error}

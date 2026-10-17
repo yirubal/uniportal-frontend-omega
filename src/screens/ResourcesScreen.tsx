@@ -5,7 +5,7 @@ import { getResources } from "../api/content";
 import ResourceShelf from "../components/resources/ResourceShelf";
 import SelectorGroup from "../components/SelectorGroup";
 import TopBackButton from "../components/TopBackButton";
-import { EmptyState, ErrorState, Skeleton } from "../components/ui";
+import { EmptyState, ErrorState, SkeletonList } from "../components/ui";
 import { useCourseFilter } from "../hooks/useCourseFilter";
 import { useStudentProfile } from "../hooks/useStudentProfile";
 import { useContentStore } from "../store/contentStore";
@@ -275,9 +275,7 @@ export default function ResourcesScreen() {
                                     />
                                 )
                             ) : loadingDepts || loadingCourses || !canLoadCourseShelf ? (
-                                <div className="space-y-3">
-                                    {[1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-[28px]" />)}
-                                </div>
+                                <SkeletonList count={3} label="Loading courses" />
                             ) : courses.length === 0 ? (
                                 <EmptyState
                                     title="No courses found"
