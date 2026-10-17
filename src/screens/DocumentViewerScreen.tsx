@@ -1,4 +1,4 @@
-import { Download, FileWarning, Lock } from "lucide-react";
+import { Download, FileWarning, Lock, RotateCcw } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getResourceDetail, requestDownload } from "../api/content";
@@ -6,7 +6,9 @@ import TopBackButton from "../components/TopBackButton";
 import Button from "../components/ui/Button";
 import { useAccess } from "../hooks/useAccess";
 import { useResourceDownload } from "../hooks/useResourceDownload";
+import { useAuthStore } from "../store/authStore";
 import type { Resource } from "../store/contentStore";
+import { getReadingEntry, useReadingStore } from "../store/readingStore";
 import { getErrorMessage } from "../utils/errors";
 import { detectFileFormat, type FileFormat, getExtension } from "../utils/fileFormat";
 
@@ -20,7 +22,7 @@ const TextView = lazy(() => import("../components/viewers/TextView"));
 type ViewerState =
     | { status: "preparing" }
     | { status: "downloading"; progress: number | null }
-    | { status: "ready"; data: Uint8Array; format: FileFormat; extension: string | null }
+    | { status: "ready"; data: Uint8Array; format: FileFormat; extension: string | null; initialPage: number }
     | { status: "locked" }
     | { status: "error"; message: string };
 
@@ -61,6 +63,11 @@ export default function DocumentViewerScreen() {
     const [state, setState] = useState<ViewerState>({ status: "preparing" });
     const [reloadKey, setReloadKey] = useState(0);
     const resourceId = Number(id);
+    const ownerId = useAuthStore((store) => store.student?.telegram_id);
+    const recordPage = useReadingStore((store) => store.recordPage);
+    // "Continuing from page N" notice, and a jump back to page 1 when the student taps "Start over".
+    const [resumeNotice, setResumeNotice] = useState<number | null>(null);
+    const [jumpRequest, setJumpRequest] = useState<{ page: number; id: number } | null>(null);
 
     useEffect(() => {
         if (!resourceId) {
@@ -95,7 +102,16 @@ export default function DocumentViewerScreen() {
                 if (signal.aborted) return;
 
                 const extension = detail.file_extension ?? getExtension(url);
-                setState({ status: "ready", data, format: detectFileFormat(data, extension), extension });
+                const format = detectFileFormat(data, extension);
+                // Remember the file for "Continue reading" on Home, and reopen a PDF where it was left.
+                const owner = useAuthStore.getState().student?.telegram_id;
+                const saved = getReadingEntry(owner, resourceId);
+                const initialPage = format.kind === "pdf" ? saved?.page ?? 1 : 1;
+                if (owner !== undefined && format.kind !== "unsupported") {
+                    useReadingStore.getState().recordOpen({ ownerId: owner, resourceId, title: detail.title, format: format.kind, extension });
+                }
+                setState({ status: "ready", data, format, extension, initialPage });
+                setResumeNotice(initialPage > 1 ? initialPage : null);
             } catch (error) {
                 if (signal.aborted) return;
                 if (typeof error === "object" && error !== null && "status" in error && error.status === 403) {
@@ -110,6 +126,17 @@ export default function DocumentViewerScreen() {
     // canAccessResource changes identity each render; access is re-checked on retry.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [resourceId, reloadKey]);
+
+    // The notice hides itself after a few seconds.
+    useEffect(() => {
+        if (resumeNotice === null) return;
+        const timer = window.setTimeout(() => setResumeNotice(null), 6000);
+        return () => window.clearTimeout(timer);
+    }, [resumeNotice]);
+
+    const handlePageChange = useCallback((page: number, numPages: number) => {
+        if (ownerId !== undefined) recordPage(ownerId, resourceId, page, numPages);
+    }, [ownerId, recordPage, resourceId]);
 
     const handleRenderError = useCallback((error: Error) => {
         setState({ status: "error", message: error.message || "This file could not be displayed." });
@@ -136,7 +163,15 @@ export default function DocumentViewerScreen() {
 
             {state.status === "ready" && state.format.kind !== "unsupported" ? (
                 <Suspense fallback={<LoadingPanel progress={1} preparing={false} />}>
-                    {state.format.kind === "pdf" && <PdfPageList data={state.data} onLoadError={handleRenderError} />}
+                    {state.format.kind === "pdf" && (
+                        <PdfPageList
+                            data={state.data}
+                            onLoadError={handleRenderError}
+                            initialPage={state.initialPage}
+                            onPageChange={handlePageChange}
+                            jumpRequest={jumpRequest}
+                        />
+                    )}
                     {state.format.kind === "docx" && <DocxView data={state.data} onError={handleRenderError} />}
                     {state.format.kind === "sheet" && (
                         <SheetView data={state.data} csv={state.extension === "csv"} onError={handleRenderError} />
@@ -175,6 +210,28 @@ export default function DocumentViewerScreen() {
                             note={downloadMessage?.text}
                         />
                     ) : null}
+                </div>
+            )}
+
+            {resumeNotice !== null && (
+                <div
+                    role="status"
+                    className="animate-fade-in-up pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+5.5rem)] z-40 flex justify-center px-4"
+                >
+                    <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-fill py-1.5 pl-4 pr-1.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
+                        <span>Continuing from page {resumeNotice}</span>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setJumpRequest({ page: 1, id: Date.now() });
+                                setResumeNotice(null);
+                            }}
+                            className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-white/15 px-3 text-xs font-bold"
+                        >
+                            <RotateCcw size={13} />
+                            Start over
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

@@ -35,9 +35,15 @@ const clampZoom = (value: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value
 interface PdfPageListProps {
     data: Uint8Array;
     onLoadError: (error: Error) => void;
+    /** Page to open at (e.g. where the student stopped last time). */
+    initialPage?: number;
+    /** Called when the page in view changes. */
+    onPageChange?: (page: number, numPages: number) => void;
+    /** Scroll to a page from outside; a new `id` repeats the jump to the same page. */
+    jumpRequest?: { page: number; id: number } | null;
 }
 
-export default function PdfPageList({ data, onLoadError }: PdfPageListProps) {
+export default function PdfPageList({ data, onLoadError, initialPage = 1, onPageChange, jumpRequest }: PdfPageListProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState(0);
@@ -81,21 +87,31 @@ export default function PdfPageList({ data, onLoadError }: PdfPageListProps) {
         return { tops, heights, totalHeight: y };
     }, [aspects, numPages, pageWidth]);
 
+    // The latest layout for scroll handlers and imperative scrolls. A layout effect declared before the ones that
+    // read it, so restoring the saved page (also a layout effect) already sees the new layout.
+    const layoutRef = useRef(layout);
+    useLayoutEffect(() => {
+        layoutRef.current = layout;
+    }, [layout]);
+
+    // Stable, and reads the layout from the ref: the scroll listener stays attached across layout changes, so a
+    // scroll caused by restoring the page or zooming is never missed.
     const updateCurrentPage = useCallback(() => {
         const element = scrollRef.current;
-        if (!element || layout.tops.length === 0) return;
+        const { tops } = layoutRef.current;
+        if (!element || tops.length === 0) return;
 
         // The page crossing a line 30% down the viewport counts as the one being read.
         const line = element.scrollTop + element.clientHeight * 0.3;
         let low = 0;
-        let high = layout.tops.length - 1;
+        let high = tops.length - 1;
         while (low < high) {
             const mid = Math.ceil((low + high) / 2);
-            if (layout.tops[mid] <= line) low = mid;
+            if (tops[mid] <= line) low = mid;
             else high = mid - 1;
         }
         setCurrentPage(low + 1);
-    }, [layout]);
+    }, []);
 
     useEffect(() => {
         const element = scrollRef.current;
@@ -115,10 +131,6 @@ export default function PdfPageList({ data, onLoadError }: PdfPageListProps) {
 
     // Anchor to the page being read (and the spot inside it), not to a ratio of the total height: page
     // gaps and padding don't scale with zoom, so a ratio drifts and the view visibly jumps.
-    const layoutRef = useRef(layout);
-    useEffect(() => {
-        layoutRef.current = layout;
-    }, [layout]);
 
     const captureZoomAnchor = useCallback(() => {
         const element = scrollRef.current;
@@ -202,12 +214,43 @@ export default function PdfPageList({ data, onLoadError }: PdfPageListProps) {
         };
     }, [captureZoomAnchor]);
 
-    const scrollToPage = (page: number) => {
+    const scrollToPage = useCallback((page: number, behavior: ScrollBehavior = "smooth") => {
         const element = scrollRef.current;
-        const target = Math.min(Math.max(page, 1), numPages);
-        if (!element || !layout.tops.length) return;
-        element.scrollTo({ top: layout.tops[target - 1] - SIDE_PADDING, behavior: "smooth" });
-    };
+        const { tops } = layoutRef.current;
+        const target = Math.min(Math.max(page, 1), tops.length);
+        if (!element || !tops.length) return;
+        element.scrollTo({ top: tops[target - 1] - SIDE_PADDING, behavior });
+    }, []);
+
+    // Don't report page 1 while the saved page is still being restored, or it would overwrite it.
+    const restoringRef = useRef(initialPage > 1);
+
+    // Open at the saved page once the pages have a size (before paint, so page 1 never flashes).
+    const openedAtInitialPageRef = useRef(false);
+    useLayoutEffect(() => {
+        if (openedAtInitialPageRef.current || layout.tops.length === 0 || pageWidth === 0) return;
+        openedAtInitialPageRef.current = true;
+        if (initialPage > 1) scrollToPage(initialPage, "auto");
+    }, [initialPage, layout, pageWidth, scrollToPage]);
+
+    useEffect(() => {
+        if (!jumpRequest) return;
+        restoringRef.current = false;
+        scrollToPage(jumpRequest.page);
+    }, [jumpRequest, scrollToPage]);
+
+    const onPageChangeRef = useRef(onPageChange);
+    useEffect(() => {
+        onPageChangeRef.current = onPageChange;
+    }, [onPageChange]);
+    useEffect(() => {
+        if (numPages === 0) return;
+        if (restoringRef.current) {
+            if (currentPage !== Math.min(initialPage, numPages)) return;
+            restoringRef.current = false;
+        }
+        onPageChangeRef.current?.(currentPage, numPages);
+    }, [currentPage, initialPage, numPages]);
 
     // Only pages near the reading position get a canvas; the rest are sized placeholders.
     const renderRadius = zoom > 1.5 ? 1 : 2;

@@ -11,6 +11,7 @@ import ExamScheduleCard from "../components/ExamScheduleCard";
 import type { ActiveTermResponse } from "../types/exams";
 import ResumeAttemptCard from "../components/ResumeAttemptCard";
 import ThemeSwitch from "../components/ThemeSwitch";
+import ContinueReading from "../components/ContinueReading";
 
 const QUICK_ACTIONS = [
     {
@@ -117,6 +118,7 @@ export default function HomeScreen() {
 
             <div className="app-scroll app-scroll-compact">
                 <ResumeAttemptCard />
+                <ContinueReading />
                 <div className="app-sheet p-4">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
