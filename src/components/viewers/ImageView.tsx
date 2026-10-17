@@ -11,8 +11,8 @@ export default function ImageView({ data, mime, alt }: { data: Uint8Array; mime:
 
     return (
         <div className="relative flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 overflow-auto bg-[#E4EAE7] p-3" style={{ scrollBehavior: "auto" }}>
-                <img src={url} alt={alt} className="mx-auto block h-auto max-w-none rounded-[6px] bg-white" style={{ width: `${ZOOMS[zoomIndex] * 100}%` }} />
+            <div className="min-h-0 flex-1 overflow-auto bg-track p-3" style={{ scrollBehavior: "auto" }}>
+                <img src={url} alt={alt} className="mx-auto block h-auto max-w-none rounded-[6px] bg-card" style={{ width: `${ZOOMS[zoomIndex] * 100}%` }} />
             </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] flex justify-center">
                 <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-[rgba(23,43,47,0.92)] p-1 text-white">

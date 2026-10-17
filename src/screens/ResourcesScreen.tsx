@@ -140,7 +140,7 @@ export default function ResourcesScreen() {
                                 <button
                                     type="button"
                                     onClick={() => setCustomizingProfile(true)}
-                                    className="flex-1 rounded-full border border-[rgba(23,43,47,0.10)] bg-white/85 px-3.5 py-2 text-xs font-bold text-ink"
+                                    className="flex-1 rounded-full border border-line-strong bg-card/85 px-3.5 py-2 text-xs font-bold text-ink"
                                 >
                                     Change filters
                                 </button>
@@ -301,7 +301,7 @@ export default function ResourcesScreen() {
                                                     {course.code} · {getProgramLabel(selProgram)} · {getPeriodLabel(selPeriod, selProgram)}
                                                 </p>
                                             </div>
-                                            <div className="rounded-full bg-ink px-3 py-2 text-xs font-bold text-white">
+                                            <div className="rounded-full bg-fill px-3 py-2 text-xs font-bold text-white">
                                                 Open
                                             </div>
                                         </button>

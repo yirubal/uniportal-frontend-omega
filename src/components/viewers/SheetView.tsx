@@ -84,9 +84,9 @@ export default function SheetView({ data, csv, onError }: { data: Uint8Array; cs
     const sheet = sheets[Math.min(active, sheets.length - 1)];
 
     return (
-        <div className="flex min-h-0 flex-1 flex-col bg-white">
+        <div className="flex min-h-0 flex-1 flex-col bg-card">
             {sheets.length > 1 && (
-                <div role="tablist" aria-label="Sheets" className="flex shrink-0 gap-2 overflow-x-auto border-b border-[rgba(23,43,47,0.08)] px-3 py-2">
+                <div role="tablist" aria-label="Sheets" className="flex shrink-0 gap-2 overflow-x-auto border-b border-line px-3 py-2">
                     {sheets.map((item, index) => (
                         <button
                             key={item.name}
@@ -108,9 +108,9 @@ export default function SheetView({ data, csv, onError }: { data: Uint8Array; cs
                     <table className="min-w-full border-collapse text-left text-xs text-ink">
                         <tbody>
                             {sheet.rows.map((row, rowIndex) => (
-                                <tr key={rowIndex} className={rowIndex === 0 ? "bg-mist font-bold" : "odd:bg-white even:bg-[#FAFCFB]"}>
+                                <tr key={rowIndex} className={rowIndex === 0 ? "bg-mist font-bold" : "odd:bg-card even:bg-mist/60"}>
                                     {row.map((cell, cellIndex) => (
-                                        <td key={cellIndex} className="max-w-[16rem] border border-[rgba(23,43,47,0.08)] px-2.5 py-1.5 align-top [overflow-wrap:anywhere]">
+                                        <td key={cellIndex} className="max-w-[16rem] border border-line px-2.5 py-1.5 align-top [overflow-wrap:anywhere]">
                                             {formatCell(cell)}
                                         </td>
                                     ))}

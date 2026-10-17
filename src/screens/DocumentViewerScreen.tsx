@@ -187,7 +187,7 @@ function LoadingPanel({ progress, preparing }: { progress: number | null; prepar
             <p className="text-sm font-semibold text-ink">
                 {preparing ? "Preparing file..." : progress === null ? "Downloading..." : progress >= 1 ? "Opening..." : `Downloading ${Math.round(progress * 100)}%`}
             </p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[rgba(23,43,47,0.08)]">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-line">
                 <div
                     className={`h-full rounded-full bg-accent transition-[width] duration-300 ${progress === null ? "w-1/3 animate-pulse" : ""}`}
                     style={progress === null ? undefined : { width: `${Math.max(4, progress * 100)}%` }}

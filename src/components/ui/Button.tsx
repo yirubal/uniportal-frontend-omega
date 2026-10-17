@@ -28,13 +28,13 @@ export default function Button({
 
     const variants = {
         primary:
-            "border border-ink bg-ink text-white shadow-[0_10px_24px_rgba(23,43,47,0.10)] disabled:border-disabled disabled:bg-disabled disabled:text-[#344E53]",
+            "border border-fill bg-fill text-white shadow-[0_10px_24px_rgba(23,43,47,0.10)] disabled:border-disabled disabled:bg-disabled disabled:text-ink-soft",
         secondary:
-            "border border-accent-line bg-accent-soft text-accent-deep disabled:border-[#DCE5E1] disabled:bg-background disabled:text-[#5E7479]",
+            "border border-accent-line bg-accent-soft text-accent-deep disabled:border-edge disabled:bg-background disabled:text-faint",
         ghost:
-            "border border-[rgba(23,43,47,0.08)] bg-[rgba(244,247,252,0.92)] text-ink shadow-none disabled:bg-background disabled:text-[#5E7479]",
+            "border border-line bg-mist text-ink shadow-none disabled:bg-background disabled:text-faint",
         danger:
-            "border border-danger bg-danger text-white disabled:border-[#E9CBC7] disabled:bg-[#E9CBC7] disabled:text-[#7C4B47]",
+            "border border-danger bg-danger text-white disabled:border-bad-line disabled:bg-bad-line disabled:text-bad-ink",
     };
 
     const sizes = {

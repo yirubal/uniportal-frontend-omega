@@ -156,7 +156,7 @@ export default function ResourceViewerScreen() {
                 {downloadMessage && (
                     <div
                         role={downloadMessage.tone === "error" ? "alert" : "status"}
-                        className={`rounded-[20px] px-4 py-4 text-sm font-semibold ${downloadMessage.tone === "error" ? "bg-coral-soft text-[#B4473F]" : "bg-[rgba(230,242,237,0.96)] text-[#2E7C62]"}`}
+                        className={`rounded-[20px] px-4 py-4 text-sm font-semibold ${downloadMessage.tone === "error" ? "bg-coral-soft text-bad-ink" : "bg-success-tint text-ok-ink"}`}
                     >
                         {downloadMessage.text}
                     </div>

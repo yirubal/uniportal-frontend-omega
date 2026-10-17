@@ -59,7 +59,7 @@ export default function AnswerReviewModal({
                 onClose={onClose}
                 progressLabel="No questions available"
             >
-                <div className="flex min-h-[18rem] flex-col items-center justify-center rounded-[22px] bg-white px-5 text-center">
+                <div className="flex min-h-[18rem] flex-col items-center justify-center rounded-[22px] bg-card px-5 text-center">
                     <p className="text-base font-bold text-ink">No answer details available</p>
                     <p className="mt-2 max-w-sm text-sm leading-relaxed text-subtle">
                         This attempt did not keep question-level review data.

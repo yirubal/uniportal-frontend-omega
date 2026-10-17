@@ -40,7 +40,7 @@ function ConfirmDialogPanel({
                 aria-modal="true"
                 aria-labelledby={titleId}
                 aria-describedby={descriptionId}
-                className="w-full max-w-md rounded-[28px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-5 shadow-[0_24px_60px_rgba(10,22,40,0.22)] backdrop-blur-xl"
+                className="w-full max-w-md rounded-[28px] border border-line bg-card p-5 shadow-[0_24px_60px_rgba(10,22,40,0.22)] backdrop-blur-xl"
             >
                 <p className="app-section-label">Confirm action</p>
                 <h2 id={titleId} className="mt-2 text-xl font-bold text-ink">{title}</h2>

@@ -245,7 +245,7 @@ export default function SimulationScreen() {
                             type="button"
                             onClick={() => void handleStart()}
                             disabled={starting}
-                            className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-[20px] border border-ink bg-ink px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(23,43,47,0.18)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-[20px] border border-fill bg-fill px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_rgba(23,43,47,0.18)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {starting ? "Starting..." : startLabel}
                         </button>
@@ -314,9 +314,9 @@ export default function SimulationScreen() {
                                 const isMarked = Boolean(quiz.markedForReview[question.id]);
 
                                 const paletteClass = isCurrent
-                                    ? "bg-ink text-white"
+                                    ? "bg-fill text-white"
                                     : isMarked
-                                        ? "bg-gold-tint text-[#8E5A00] border border-[#F1C364]"
+                                        ? "bg-gold-tint text-warn-ink border border-warn-line"
                                         : isAnswered
                                             ? "bg-accent-soft text-accent"
                                             : "bg-mist text-steel";
@@ -344,7 +344,7 @@ export default function SimulationScreen() {
 
             <div className="app-footer space-y-3">
                 {(submitError || timeExpired) && (
-                    <div role="alert" className="rounded-[16px] border border-[#F3C9C3] bg-coral-soft px-4 py-3 text-sm leading-relaxed text-[#A8443A]">
+                    <div role="alert" className="rounded-[16px] border border-bad-line bg-coral-soft px-4 py-3 text-sm leading-relaxed text-bad-ink">
                         {timeExpired && <p className="font-semibold">Time is up.</p>}
                         <p>
                             {submitError

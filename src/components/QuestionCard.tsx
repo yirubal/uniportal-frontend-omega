@@ -82,9 +82,9 @@ function QuestionCard({
                 )}
             </div>
 
-            <div className="h-2 overflow-hidden rounded-full bg-[rgba(23,43,47,0.08)]">
+            <div className="h-2 overflow-hidden rounded-full bg-line">
                 <div
-                    className="h-full rounded-full bg-ink transition-all duration-200"
+                    className="h-full rounded-full bg-fill transition-all duration-200"
                     style={{ width: `${progressPercent}%` }}
                 />
             </div>
@@ -116,7 +116,7 @@ function QuestionCard({
                                 setShowHint((current) => !current);
                             }}
                             className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${showHint
-                                ? "bg-ink text-white"
+                                ? "bg-fill text-white"
                                 : "bg-accent-soft text-accent"
                                 }`}
                         >
@@ -125,12 +125,12 @@ function QuestionCard({
                     )}
                 </div>
 
-                <p className="text-[1.02rem] font-semibold leading-relaxed text-[#1A1A1A]">
+                <p className="text-[1.02rem] font-semibold leading-relaxed text-ink">
                     {question.text}
                 </p>
 
                 {question.hint && showHint && (
-                    <div className="mt-4 rounded-[20px] border border-[rgba(23,43,47,0.06)] bg-[rgba(244,247,252,0.92)] px-4 py-3">
+                    <div className="mt-4 rounded-[20px] border border-line bg-mist px-4 py-3">
                         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-faint">Hint</p>
                         <p className="mt-2 text-sm leading-relaxed text-subtle">{question.hint}</p>
                     </div>
@@ -205,7 +205,7 @@ function QuestionCard({
                             return (
                                 <div
                                     key={option}
-                                    className="rounded-[22px] border border-[rgba(23,43,47,0.08)] bg-[rgba(239,244,249,0.84)] px-4 py-4"
+                                    className="rounded-[22px] border border-line bg-wash px-4 py-4"
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="min-w-0">
@@ -255,19 +255,20 @@ function QuestionCard({
     );
 }
 
-// Answer options use the navy selected state from the project brief, on white cards with dark text.
+// Answer options: card surface with dark text; the selected option takes the strong fill. Theme variables, so
+// both light and dark mode work.
 const OPTION_STYLE = {
-    border: "#E0E0E0",
-    bg: "#FFFFFF",
-    text: "#1F2937",
-    labelBg: "#F3F4F6",
-    labelText: "#374151",
+    border: "var(--color-edge)",
+    bg: "var(--color-card)",
+    text: "var(--color-ink)",
+    labelBg: "var(--color-mist)",
+    labelText: "var(--color-ink-soft)",
 };
 const SELECTED_OPTION_STYLE = {
-    border: "#0A1628",
-    bg: "#F5F7FA",
-    text: "#0A1628",
-    labelBg: "#0A1628",
+    border: "var(--color-fill)",
+    bg: "color-mix(in srgb, var(--color-fill) 8%, var(--color-card))",
+    text: "var(--color-ink)",
+    labelBg: "var(--color-fill)",
     labelText: "#FFFFFF",
 };
 

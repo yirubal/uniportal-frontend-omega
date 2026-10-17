@@ -156,7 +156,7 @@ export default function ExamSchedule() {
                         <div className="app-divider mt-5" />
 
                         {showTermNotice && (
-                            <div className="mt-5 rounded-[20px] border border-[#F4D6D1] bg-[#FFF7F5] px-4 py-3">
+                            <div className="mt-5 rounded-[20px] border border-bad-line bg-bad-tint px-4 py-3">
                                 <p className="text-sm font-bold text-ink">
                                     Could not confirm the active term.
                                 </p>
@@ -192,7 +192,7 @@ export default function ExamSchedule() {
                                     value={query}
                                     onChange={(event) => setQuery(event.target.value)}
                                     placeholder="Student ID or Full Name"
-                                    className="w-full rounded-[20px] border border-[rgba(23,43,47,0.10)] bg-white/90 px-4 py-3.5 text-sm font-medium text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
+                                    className="w-full rounded-[20px] border border-line-strong bg-card/90 px-4 py-3.5 text-sm font-medium text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
                                     autoComplete="off"
                                 />
                             </label>
@@ -210,7 +210,7 @@ export default function ExamSchedule() {
                             </Button>
                         </form>
 
-                        <div className="mt-4 rounded-[20px] bg-[#F7FAF8] px-4 py-3">
+                        <div className="mt-4 rounded-[20px] bg-card px-4 py-3">
                             <p className="text-sm leading-relaxed text-subtle">
                                 Can&apos;t find your name? Try your registered name exactly as it appears on your ID card.
                             </p>
@@ -257,7 +257,7 @@ export default function ExamSchedule() {
                                     {group.entries.map((exam) => (
                                         <div
                                             key={`${group.date}-${exam.course_code}-${exam.start_time}`}
-                                            className="min-w-0 overflow-hidden rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm"
+                                            className="min-w-0 overflow-hidden rounded-xl border border-line bg-card px-4 py-3 shadow-sm"
                                         >
                                             <div className="flex items-center justify-between gap-3">
                                                 <div className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-faint">
@@ -265,7 +265,7 @@ export default function ExamSchedule() {
                                                     <span className="truncate">{exam.start_time} – {exam.end_time}</span>
                                                 </div>
 
-                                                <div className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-ink px-3 py-1 text-base font-bold leading-none text-white">
+                                                <div className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-fill px-3 py-1 text-base font-bold leading-none text-white">
                                                     <DoorOpen size={15} />
                                                     <span>{exam.room_code}</span>
                                                 </div>
@@ -287,7 +287,7 @@ export default function ExamSchedule() {
 
                 {lookupError && !lookupLoading && (
                     <section className="app-sheet p-5">
-                        <div className="app-state border border-[#F4D6D1] bg-[#FFF7F5] py-10 shadow-none">
+                        <div className="app-state border border-bad-line bg-bad-tint py-10 shadow-none">
                             <span className="app-state-icon mb-4 bg-coral-soft text-danger">
                                 <AlertCircle size={28} />
                             </span>
@@ -316,7 +316,7 @@ export default function ExamSchedule() {
                         Arrive at least 15 minutes early. Mobile phones are not allowed in exam rooms.
                     </p>
                 ) : (
-                    <section className="app-sheet border border-accent-line bg-[#F7FCFA] p-5">
+                    <section className="app-sheet border border-accent-line bg-card p-5">
                         <div className="flex items-start gap-3">
                             <div className="app-icon-chip h-10 w-10 rounded-[16px] bg-accent-soft text-accent">
                                 <AlertCircle size={18} />

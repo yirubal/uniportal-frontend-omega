@@ -104,7 +104,7 @@ export default function ExitExamListScreen() {
                                 <p className="app-section-label">Topic clusters</p>
                                 <div className="mt-4 flex flex-wrap gap-2">
                                     {topics.map((topic) => (
-                                        <span key={topic.topic} className="rounded-full bg-accent-soft px-3 py-2 text-[12px] font-semibold text-[#4D6691]">
+                                        <span key={topic.topic} className="rounded-full bg-accent-soft px-3 py-2 text-[12px] font-semibold text-info-ink">
                                             {topic.topic} · {topic.count}
                                         </span>
                                     ))}
@@ -149,7 +149,7 @@ export default function ExitExamListScreen() {
                                     </div>
 
                                     <div className="flex flex-col items-end gap-2">
-                                        <span className="rounded-full bg-ink px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white">
+                                        <span className="rounded-full bg-fill px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white">
                                             Rules
                                         </span>
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-mist text-ink">

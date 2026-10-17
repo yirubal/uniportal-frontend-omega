@@ -178,7 +178,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                         onClick={() => setShowLeaveModal(true)}
                         label="Leave"
                         trailing={(
-                            <span className="rounded-full bg-ink px-3 py-2 text-xs font-bold text-white">
+                            <span className="rounded-full bg-fill px-3 py-2 text-xs font-bold text-white">
                                 {quiz.currentIndex + 1}/{quiz.questions.length}
                             </span>
                         )}
@@ -225,7 +225,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
 
             <div className="app-footer space-y-3">
                 {submitError && (
-                    <div role="alert" className="rounded-[16px] border border-[#F3C9C3] bg-coral-soft px-4 py-3 text-sm leading-relaxed text-[#A8443A]">
+                    <div role="alert" className="rounded-[16px] border border-bad-line bg-coral-soft px-4 py-3 text-sm leading-relaxed text-bad-ink">
                         Your answers were not submitted: {submitError} Tap submit to try again.
                     </div>
                 )}

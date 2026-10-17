@@ -36,7 +36,7 @@ export default function SplashScreen() {
                         <p className="text-sm leading-relaxed text-danger">{error}</p>
                         <button
                             onClick={() => void initAuth()}
-                            className="mt-5 inline-flex rounded-[18px] bg-ink px-5 py-3 text-sm font-semibold text-white"
+                            className="mt-5 inline-flex rounded-[18px] bg-fill px-5 py-3 text-sm font-semibold text-white"
                         >
                             Try again
                         </button>

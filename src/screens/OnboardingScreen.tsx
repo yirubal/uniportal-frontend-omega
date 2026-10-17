@@ -131,11 +131,11 @@ export default function OnboardingScreen() {
         return (
             <div className="app-screen items-center justify-center px-5">
                 <div className="absolute inset-0 bg-[rgba(8,18,34,0.62)] backdrop-blur-sm" />
-                <div className="relative z-10 w-full max-w-sm rounded-[32px] border border-[rgba(23,43,47,0.08)] bg-white px-6 py-8 text-center shadow-[0_28px_70px_rgba(10,22,40,0.28)] animate-scale-in">
+                <div className="relative z-10 w-full max-w-sm rounded-[32px] border border-line bg-card px-6 py-8 text-center shadow-[0_28px_70px_rgba(10,22,40,0.28)] animate-scale-in">
                     <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-success-tint text-success-ink shadow-[0_10px_28px_rgba(46,158,115,0.16)]">
                         <CheckCircle2 size={34} />
                     </div>
-                    <p className="app-section-label mt-5 text-[#4E5F7C]">Setup complete</p>
+                    <p className="app-section-label mt-5 text-steel">Setup complete</p>
                     <h1 className="mt-2 text-[1.7rem] font-bold text-ink">
                         Your study path is ready
                     </h1>
@@ -205,7 +205,7 @@ export default function OnboardingScreen() {
                         {STEP_LABELS.map((item, index) => (
                             <div
                                 key={item.title}
-                                className={`h-2 rounded-full transition-all duration-300 ${index === step ? "flex-[1.6] bg-accent" : index < step ? "flex-1 bg-[#BFD8D3]" : "flex-1 bg-[#DDE8E5]"}`}
+                                className={`h-2 rounded-full transition-all duration-300 ${index === step ? "flex-[1.6] bg-accent" : index < step ? "flex-1 bg-accent-line" : "flex-1 bg-track"}`}
                             />
                         ))}
                     </div>
@@ -238,7 +238,7 @@ export default function OnboardingScreen() {
                                             <p className="text-sm font-semibold text-ink">{dept.name}</p>
                                             <p className="mt-1 text-xs text-faint">{dept.code}</p>
                                         </div>
-                                        <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedDept?.id === dept.id ? "tone-blue" : "bg-[#EFF3F8] text-faint"}`}>
+                                        <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedDept?.id === dept.id ? "tone-blue" : "bg-wash text-faint"}`}>
                                             {selectedDept?.id === dept.id ? "Selected" : "Choose"}
                                         </div>
                                     </button>
@@ -265,7 +265,7 @@ export default function OnboardingScreen() {
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-semibold text-ink">{program.label}</p>
                                     </div>
-                                    <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedProgram === program.value ? "tone-blue" : "bg-[#EFF3F8] text-faint"}`}>
+                                    <div className={`rounded-full px-3 py-2 text-xs font-bold ${selectedProgram === program.value ? "tone-blue" : "bg-wash text-faint"}`}>
                                         {selectedProgram === program.value ? "Selected" : "Choose"}
                                     </div>
                                 </button>
@@ -284,7 +284,7 @@ export default function OnboardingScreen() {
                                         setSelectedYear(year);
                                         goToNextStep();
                                     }}
-                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedYear === year ? "bg-[#F8FBFF] ring-2 ring-accent/20 shadow-[0_18px_36px_rgba(63,111,106,0.10)]" : ""}`}
+                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedYear === year ? "bg-card ring-2 ring-accent/20 shadow-[0_18px_36px_rgba(63,111,106,0.10)]" : ""}`}
                                 >
                                     <div className="app-icon-chip bg-accent-soft text-accent">
                                         <GraduationCap size={18} />
@@ -307,7 +307,7 @@ export default function OnboardingScreen() {
                                         setError(null);
                                         setSelectedPeriod(period.value);
                                     }}
-                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedPeriod === period.value ? "bg-[#F8FBFF] ring-2 ring-accent/20 shadow-[0_18px_36px_rgba(63,111,106,0.10)]" : ""}`}
+                                    className={`app-sheet app-card-interactive flex min-h-[168px] flex-col items-center justify-center gap-2 px-5 py-7 text-center transition-all ${selectedPeriod === period.value ? "bg-card ring-2 ring-accent/20 shadow-[0_18px_36px_rgba(63,111,106,0.10)]" : ""}`}
                                 >
                                     <div className="app-icon-chip bg-accent-soft text-accent">
                                         <Layers3 size={18} />

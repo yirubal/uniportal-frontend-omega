@@ -71,32 +71,33 @@ export const getScoreMessage = (percentage: number): string => {
     return "Don't give up!";
 };
 
+/** `bg` tints the type colour into the card surface, so it works in light and dark mode. */
 export const getFileTypeColor = (
     type: string
 ): { bg: string; text: string; dot: string } => {
     const colors: Record<string, { bg: string; text: string; dot: string }> = {
         lecture_note: {
-            bg: "#E8F4FD",
+            bg: "color-mix(in srgb, #2196F3 14%, var(--color-card))",
             text: "#1565C0",
             dot: "#2196F3",
         },
         worksheet: {
-            bg: "#FFF3E0",
+            bg: "color-mix(in srgb, #FF9800 14%, var(--color-card))",
             text: "#E65100",
             dot: "#FF9800",
         },
         module: {
-            bg: "#EAF4F1",
+            bg: "color-mix(in srgb, #3F6F6A 14%, var(--color-card))",
             text: "#3F6F6A",
             dot: "#3F6F6A",
         },
         past_exam: {
-            bg: "#F3E5F5",
+            bg: "color-mix(in srgb, #9C27B0 14%, var(--color-card))",
             text: "#6A1B9A",
             dot: "#9C27B0",
         },
         exit_exam: {
-            bg: "#E8F5E9",
+            bg: "color-mix(in srgb, #4CAF50 14%, var(--color-card))",
             text: "#1B5E20",
             dot: "#4CAF50",
         },

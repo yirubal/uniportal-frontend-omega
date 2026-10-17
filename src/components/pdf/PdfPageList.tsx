@@ -219,7 +219,7 @@ export default function PdfPageList({ data, onLoadError }: PdfPageListProps) {
         <div className="relative flex min-h-0 flex-1 flex-col">
             <div
                 ref={scrollRef}
-                className="min-h-0 flex-1 overflow-auto overscroll-contain bg-[#E4EAE7]"
+                className="min-h-0 flex-1 overflow-auto overscroll-contain bg-track"
                 // scrollBehavior: index.css makes every scroll smooth; the zoom position restore must be instant,
                 // otherwise the page visibly slides away and back after each zoom.
                 style={{ WebkitTouchCallout: "none", userSelect: "none", WebkitUserSelect: "none", scrollBehavior: "auto" }}
@@ -331,7 +331,7 @@ export default function PdfPageList({ data, onLoadError }: PdfPageListProps) {
 
 function PagePlaceholder({ pageNumber }: { pageNumber: number }) {
     return (
-        <div className="flex h-full w-full items-center justify-center bg-white text-xs font-semibold text-[#9AA9AD]">
+        <div className="flex h-full w-full items-center justify-center bg-card text-xs font-semibold text-faint">
             Page {pageNumber}
         </div>
     );

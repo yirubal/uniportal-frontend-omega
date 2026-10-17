@@ -13,7 +13,7 @@ function PaymentOption({
     holderName?: string;
 }) {
     return (
-        <div className="rounded-[20px] border border-[rgba(23,43,47,0.10)] bg-white/85 px-4 py-3">
+        <div className="rounded-[20px] border border-line-strong bg-card/85 px-4 py-3">
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-subtle">{label}</p>
             <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-faint">{accountLabel}</p>
             <p className="mt-1 break-words text-sm font-bold text-ink">{accountValue}</p>
@@ -51,7 +51,7 @@ export function PaymentDestinationCard({
             <p className="mt-2 break-words text-lg font-black leading-tight text-ink">
                 {destination.primary}
             </p>
-            <div className="mt-3 rounded-[16px] bg-white/65 px-3 py-2">
+            <div className="mt-3 rounded-[16px] bg-card/65 px-3 py-2">
                 <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-faint">Account holder</p>
                 <p className="mt-1 break-words text-sm font-semibold leading-relaxed text-ink-soft">
                     {destination.holderName ?? "Account holder name not loaded"}

@@ -23,7 +23,7 @@ export default function LockedOverlay({
     return (
         <div className="px-1 pt-2">
             <div className="app-state min-h-[50vh]">
-                <div className="mx-auto mb-5 flex h-18 w-18 items-center justify-center rounded-full bg-[rgba(242,236,221,0.96)] text-4xl">
+                <div className="mx-auto mb-5 flex h-18 w-18 items-center justify-center rounded-full bg-gold-tint text-4xl">
                     🔒
                 </div>
 
@@ -45,7 +45,7 @@ export default function LockedOverlay({
                     "All past exam papers",
                 ].map((benefit) => (
                     <div key={benefit} className="flex items-center gap-3 py-1.5">
-                        <span className="text-[#2E7C62] text-base">✓</span>
+                        <span className="text-ok-ink text-base">✓</span>
                         <span className="text-sm text-ink">{benefit}</span>
                     </div>
                 ))}

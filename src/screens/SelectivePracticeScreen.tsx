@@ -230,7 +230,7 @@ export default function SelectivePracticeScreen() {
                             <button
                                 type="button"
                                 onClick={() => setCustomizingProfile(true)}
-                                className="flex-1 rounded-full border border-[rgba(23,43,47,0.10)] bg-white/85 px-3.5 py-2 text-xs font-bold text-ink"
+                                className="flex-1 rounded-full border border-line-strong bg-card/85 px-3.5 py-2 text-xs font-bold text-ink"
                             >
                                 Change filters
                             </button>
@@ -357,7 +357,7 @@ export default function SelectivePracticeScreen() {
                         type="button"
                         disabled={!canStart}
                         onClick={() => void handleStart()}
-                        className="inline-flex min-h-12 w-full items-center justify-center rounded-[16px] border border-ink bg-ink px-5 py-3.5 text-[15px] font-bold text-white shadow-[0_10px_24px_rgba(23,43,47,0.16)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:border-[#D1D5DB] disabled:bg-[#D1D5DB] disabled:text-[#4B5563] disabled:shadow-none"
+                        className="inline-flex min-h-12 w-full items-center justify-center rounded-[16px] border border-fill bg-fill px-5 py-3.5 text-[15px] font-bold text-white shadow-[0_10px_24px_rgba(23,43,47,0.16)] transition-all duration-200 active:scale-[0.985] disabled:cursor-not-allowed disabled:border-edge disabled:bg-edge disabled:text-subtle disabled:shadow-none"
                         style={{
                             opacity: canStart ? 1 : 0.62,
                             boxShadow: canStart ? "0 10px 24px rgba(23,43,47,0.16)" : "none",

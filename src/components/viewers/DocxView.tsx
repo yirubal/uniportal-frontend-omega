@@ -51,12 +51,12 @@ export default function DocxView({ data, onError }: { data: Uint8Array; onError:
     }, [data, onError]);
 
     return (
-        <div className="min-h-0 flex-1 overflow-auto bg-[#E4EAE7] p-3" style={{ scrollBehavior: "auto" }}>
+        <div className="min-h-0 flex-1 overflow-auto bg-track p-3" style={{ scrollBehavior: "auto" }}>
             <div ref={styleRef} />
             {!rendered && <p className="py-10 text-center text-sm font-semibold text-subtle">Opening document...</p>}
             <div
                 ref={bodyRef}
-                className="docx-view mx-auto max-w-3xl overflow-hidden rounded-[6px] bg-white p-5 text-ink shadow-[0_2px_10px_rgba(23,43,47,0.12)] [overflow-wrap:anywhere] [&_img]:h-auto [&_img]:max-w-full [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto"
+                className="docx-view mx-auto max-w-3xl overflow-hidden rounded-[6px] bg-white p-5 text-[#172b2f] shadow-[0_2px_10px_rgba(23,43,47,0.12)] [overflow-wrap:anywhere] [&_img]:h-auto [&_img]:max-w-full [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto"
             />
         </div>
     );

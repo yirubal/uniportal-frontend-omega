@@ -37,14 +37,13 @@ function SubscriptionStatusPanel({ requesting, instructions, onClose }: Subscrip
                 aria-modal="true"
                 aria-labelledby={titleId}
                 aria-busy={requesting}
-                className="relative w-full max-w-[20rem] rounded-[24px] border border-[rgba(23,43,47,0.08)] bg-[rgba(248,250,253,0.98)] p-4 shadow-[0_18px_44px_rgba(10,22,40,0.20)] backdrop-blur-xl">
+                className="relative w-full max-w-[20rem] rounded-[24px] border border-line bg-card p-4 shadow-[0_18px_44px_rgba(10,22,40,0.20)] backdrop-blur-xl">
                 <button
                     type="button"
                     aria-label="Close"
                     disabled={requesting}
                     onClick={onClose}
                     className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full bg-mist text-subtle"
-                    style={{ backgroundColor: "#F4F8F5", color: "#526B70" }}
                 >
                     <X size={16} />
                 </button>
@@ -88,11 +87,6 @@ function SubscriptionStatusPanel({ requesting, instructions, onClose }: Subscrip
                         fullWidth
                         disabled={requesting}
                         onClick={onClose}
-                        style={{
-                            backgroundColor: "#F4F8F5",
-                            borderColor: "rgba(23,43,47,0.08)",
-                            color: "#172B2F",
-                        }}
                     >
                         Cancel
                     </Button>
@@ -109,8 +103,8 @@ function getSubscriptionStatusConfig(status: PaymentInstructions["status"] | "su
             title: "Your subscription is active",
             description: "Your payment has been confirmed. Premium study resources are now available on your account.",
             icon: CheckCircle2,
-            iconBg: "#EAF8F1",
-            iconColor: "#2E9E73",
+            iconBg: "var(--color-success-tint)",
+            iconColor: "var(--color-success-ink)",
         };
     }
 
@@ -120,8 +114,8 @@ function getSubscriptionStatusConfig(status: PaymentInstructions["status"] | "su
             title: "We could not confirm this payment",
             description: "Please check your payment reference and submit the correct receipt or transaction reference again.",
             icon: XCircle,
-            iconBg: "#FFF0ED",
-            iconColor: "#D95A50",
+            iconBg: "var(--color-coral-soft)",
+            iconColor: "var(--color-danger)",
         };
     }
 
@@ -131,8 +125,8 @@ function getSubscriptionStatusConfig(status: PaymentInstructions["status"] | "su
             title: "Sending your request",
             description: "Please wait while we submit your payment reference for review. We will notify you by the bot after it is checked.",
             icon: Clock3,
-            iconBg: "#EAF4F1",
-            iconColor: "#3F6F6A",
+            iconBg: "var(--color-accent-soft)",
+            iconColor: "var(--color-accent)",
         };
     }
 
@@ -141,7 +135,7 @@ function getSubscriptionStatusConfig(status: PaymentInstructions["status"] | "su
         title: "Your request is under review",
         description: "Your payment request is under review. Please be patient; we will notify you by the bot once your payment is confirmed.",
         icon: Clock3,
-        iconBg: "#EAF4F1",
-        iconColor: "#3F6F6A",
+        iconBg: "var(--color-accent-soft)",
+        iconColor: "var(--color-accent)",
     };
 }

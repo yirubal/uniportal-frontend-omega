@@ -9,7 +9,7 @@ export default function TextView({ data }: { data: Uint8Array }) {
     const truncated = text.length > MAX_CHARACTERS;
 
     return (
-        <div className="min-h-0 flex-1 overflow-auto bg-white p-4" style={{ scrollBehavior: "auto" }}>
+        <div className="min-h-0 flex-1 overflow-auto bg-card p-4" style={{ scrollBehavior: "auto" }}>
             <pre className="whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-ink [overflow-wrap:anywhere]">
                 {truncated ? text.slice(0, MAX_CHARACTERS) : text}
             </pre>

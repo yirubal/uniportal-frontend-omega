@@ -123,13 +123,13 @@ export default function ResultsScreen() {
 
                     <div className="mx-auto relative h-32 w-32">
                         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="#E8EDF6" strokeWidth="8" />
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--color-track)" strokeWidth="8" />
                             <circle
                                 cx="50"
                                 cy="50"
                                 r="40"
                                 fill="none"
-                                stroke={passed ? "#2E9E73" : "#D95A50"}
+                                stroke={passed ? "var(--color-success-ink)" : "var(--color-danger)"}
                                 strokeWidth="8"
                                 strokeLinecap="round"
                                 strokeDasharray={circumference}
@@ -143,7 +143,7 @@ export default function ResultsScreen() {
                     </div>
 
                     <p className="mt-5 text-xl font-bold text-ink">{message}</p>
-                    <div className={`mx-auto mt-3 inline-flex min-h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-black ${passed ? "bg-[#D1FAE5] text-[#065F46]" : "bg-[#FEE2E2] text-[#991B1B]"}`}>
+                    <div className={`mx-auto mt-3 inline-flex min-h-9 items-center justify-center rounded-full px-4 py-2 text-sm font-black ${passed ? "bg-ok-tint text-ok-ink" : "bg-bad-tint text-bad-ink"}`}>
                         {passed ? "Passed" : "Needs more practice"}
                     </div>
                     <p className="mt-2 text-sm text-subtle">

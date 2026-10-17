@@ -72,7 +72,7 @@ export default function ResourceCard({
                     </div>
 
                     <div className="mt-3 flex min-h-10 items-center pl-[52px]">
-                        <span className={`inline-flex min-h-6 items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${isPremium ? "bg-purple-100 text-purple-700" : "bg-green-100 text-green-700"}`}>
+                        <span className={`inline-flex min-h-6 items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${isPremium ? "bg-purple-light text-purple" : "bg-ok-tint text-ok-ink"}`}>
                             {isPremium ? "Premium" : "Free"}
                         </span>
                     </div>
@@ -83,7 +83,7 @@ export default function ResourceCard({
                     aria-label={isLocked ? `Unlock ${resource.title}` : `Download ${resource.title}`}
                     disabled={downloading}
                     onClick={() => (isLocked ? navigate("/subscribe") : void download(resource.id))}
-                    className={`absolute bottom-[1.15rem] right-[1.125rem] flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-95 ${isLocked ? "bg-[rgba(245,229,226,0.96)] text-[#B75F57]" : "bg-ink text-white"}`}
+                    className={`absolute bottom-[1.15rem] right-[1.125rem] flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-95 ${isLocked ? "bg-bad-tint text-bad-ink" : "bg-fill text-white"}`}
                 >
                     {downloading ? <LoaderCircle size={18} className="animate-spin" /> : isLocked ? <Lock size={18} /> : <Download size={18} />}
                 </button>
@@ -92,7 +92,7 @@ export default function ResourceCard({
             {message && (
                 <p
                     role={message.tone === "error" ? "alert" : "status"}
-                    className={`px-4 pb-3 text-xs font-semibold ${message.tone === "error" ? "text-[#B4473F]" : "text-[#2E7C62]"}`}
+                    className={`px-4 pb-3 text-xs font-semibold ${message.tone === "error" ? "text-bad-ink" : "text-ok-ink"}`}
                 >
                     {message.text}
                 </p>

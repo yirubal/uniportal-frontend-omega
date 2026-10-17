@@ -10,6 +10,7 @@ import { fetchActiveTerm } from "../api/exams";
 import ExamScheduleCard from "../components/ExamScheduleCard";
 import type { ActiveTermResponse } from "../types/exams";
 import ResumeAttemptCard from "../components/ResumeAttemptCard";
+import ThemeSwitch from "../components/ThemeSwitch";
 
 const QUICK_ACTIONS = [
     {
@@ -42,7 +43,7 @@ const QUICK_ACTIONS = [
         label: "Performance",
         desc: "Review weak topics, progress, and score trends.",
         meta: "Premium insights",
-        tint: "bg-[#F1EDFF] text-[#7654D6]",
+        tint: "bg-purple-light text-purple",
     },
 ];
 
@@ -143,7 +144,7 @@ export default function HomeScreen() {
                         {!displayIsPremium && (
                             <button
                                 onClick={() => navigate("/subscribe")}
-                                className="inline-flex items-center gap-2 rounded-full bg-ink !px-4 py-3 text-sm font-semibold text-white sm:!px-12"
+                                className="inline-flex items-center gap-2 rounded-full bg-fill !px-4 py-3 text-sm font-semibold text-white sm:!px-12"
                                 style={{ paddingInline: "2.5rem" }}
                             >
                                 {hasPendingSubscriptionRequest ? "View request status" : "Unlock premium tools"}
@@ -167,6 +168,11 @@ export default function HomeScreen() {
                             <BookOpenText size={16} />
                             Update setup
                         </Button>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+                        <p className="text-sm font-semibold text-ink">Appearance</p>
+                        <ThemeSwitch />
                     </div>
                 </div>
 
@@ -222,7 +228,7 @@ export default function HomeScreen() {
                 <div className="mt-5 app-sheet p-4">
                     <p className="app-section-label">This week</p>
                     <div className="mt-3 grid gap-3">
-                        <div className="rounded-[20px] bg-[#F6FAF7] px-4 py-3">
+                        <div className="rounded-[20px] bg-mist px-4 py-3">
                             <p className="text-sm font-semibold text-ink">
                                 Keep resource browsing course-first
                             </p>
@@ -230,7 +236,7 @@ export default function HomeScreen() {
                                 Library and quizzes work best after department, program, year, and period are selected.
                             </p>
                         </div>
-                        <div className="rounded-[20px] bg-[#F6FAF7] px-4 py-3">
+                        <div className="rounded-[20px] bg-mist px-4 py-3">
                             <p className="text-sm font-semibold text-ink">
                                 Use practice for speed, simulations for pressure
                             </p>

@@ -147,7 +147,7 @@ export default function SubscribeScreen() {
                         ].map((benefit) => (
                             <div
                                 key={benefit}
-                                className="flex items-center gap-3 rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-[#F6FAF7] px-4 py-3"
+                                className="flex items-center gap-3 rounded-[18px] border border-line bg-mist px-4 py-3"
                             >
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success-tint text-success-ink">
                                     <Check size={14} />
@@ -195,7 +195,7 @@ export default function SubscribeScreen() {
                                         onClick={() => setSelectedPlan(plan.id)}
                                         className={`w-full rounded-[22px] border p-4 text-left transition-colors ${isSelected
                                             ? "border-accent bg-accent-soft"
-                                            : "border-[rgba(23,43,47,0.10)] bg-white/85"
+                                            : "border-line-strong bg-card/85"
                                             }`}
                                     >
                                         <div className="flex min-w-0 flex-col gap-3">
@@ -203,11 +203,11 @@ export default function SubscribeScreen() {
                                                 <p className="break-words text-sm font-semibold leading-snug text-ink">
                                                     {plan.name}
                                                 </p>
-                                                <p className="mt-1 break-words text-sm leading-relaxed text-[#3F5A60]">
+                                                <p className="mt-1 break-words text-sm leading-relaxed text-ink-soft">
                                                     {plan.description}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center justify-between gap-3 border-t border-[rgba(23,43,47,0.08)] pt-3 py-2 px-1">
+                                            <div className="flex items-center justify-between gap-3 border-t border-line pt-3 py-2 px-1">
                                                 <span className={`rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] ${isSelected
                                                     ? "bg-accent text-white"
                                                     : "bg-mist text-subtle"
@@ -244,10 +244,9 @@ export default function SubscribeScreen() {
                                 type="button"
                                 disabled={method === "cbe" && !paymentOptions.cbe}
                                 onClick={() => setPaymentMethod(method)}
-                                style={paymentMethod === method ? { backgroundColor: "#3F6F6A", border: "1px solid #3F6F6A", color: "#FFFFFF" } : undefined}
-                                className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:border-disabled disabled:bg-[#EEF4F1] disabled:text-[#809398] ${paymentMethod === method
-                                    ? "border-accent bg-accent text-white"
-                                    : "border-[rgba(23,43,47,0.10)] bg-white/80 text-ink"
+                                className={`min-h-12 rounded-[18px] border px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:border-disabled disabled:bg-mist disabled:text-faint ${paymentMethod === method
+                                    ? "border-fill-accent bg-fill-accent text-white"
+                                    : "border-line-strong bg-card/80 text-ink"
                                     }`}
                             >
                                 {method === "telebirr" ? "Telebirr" : "CBE"}
@@ -274,7 +273,7 @@ export default function SubscribeScreen() {
                             {paymentReferenceCopy.helper}
                         </span>
                         {paymentReferenceError && (
-                            <span className="mt-2 block text-xs font-bold leading-relaxed text-[#B4473F]">
+                            <span className="mt-2 block text-xs font-bold leading-relaxed text-bad-ink">
                                 {paymentReferenceError}
                             </span>
                         )}

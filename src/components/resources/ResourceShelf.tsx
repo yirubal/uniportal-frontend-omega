@@ -192,7 +192,7 @@ export default function ResourceShelf({ course, loading, error, onRetry, onBack 
                                     {!!resource.tags?.length && (
                                         <div className="ml-2 mt-2 flex flex-wrap gap-2">
                                             {resource.tags.slice(0, 3).map((tag) => (
-                                                <span key={`${resource.id}-${tag}`} className="rounded-full bg-accent-soft px-3 py-1 text-[11px] font-semibold text-[#4D6691]">
+                                                <span key={`${resource.id}-${tag}`} className="rounded-full bg-accent-soft px-3 py-1 text-[11px] font-semibold text-info-ink">
                                                     {tag}
                                                 </span>
                                             ))}

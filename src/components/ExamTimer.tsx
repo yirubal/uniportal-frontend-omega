@@ -41,7 +41,7 @@ export function ExamTimerChip({ deadline }: { deadline: number }) {
             <span
                 role="timer"
                 aria-label={`${formatTimeRemaining(secondsLeft)} left`}
-                className={`rounded-full px-3 py-2 text-xs font-bold tabular-nums transition-all ${isLowTime ? "bg-coral-soft text-danger" : "bg-ink text-white"} ${isCriticalTime ? "animate-pulse shadow-[0_0_0_6px_rgba(217,90,80,0.12)]" : ""}`}
+                className={`rounded-full px-3 py-2 text-xs font-bold tabular-nums transition-all ${isLowTime ? "bg-coral-soft text-danger" : "bg-fill text-white"} ${isCriticalTime ? "animate-pulse shadow-[0_0_0_6px_rgba(217,90,80,0.12)]" : ""}`}
             >
                 {formatTimeRemaining(secondsLeft)}
             </span>
@@ -63,9 +63,9 @@ export function ExamTimerBar({ deadline, totalSeconds }: { deadline: number; tot
                     {progress.toFixed(0)}% left
                 </span>
             </div>
-            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[rgba(23,43,47,0.08)]">
+            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-line">
                 <div
-                    className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${isLowTime ? "bg-danger" : "bg-ink"} ${isCriticalTime ? "animate-pulse" : ""}`}
+                    className={`h-full rounded-full transition-[width,background-color] duration-1000 ease-linear ${isLowTime ? "bg-danger" : "bg-fill"} ${isCriticalTime ? "animate-pulse" : ""}`}
                     style={{ width: `${progress}%` }}
                 />
             </div>

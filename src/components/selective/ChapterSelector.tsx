@@ -17,8 +17,8 @@ export default function ChapterSelector({
 
     return (
         <div className="space-y-5">
-            <div className="flex items-center justify-between gap-3 rounded-[16px] border border-[#E0E0E0] bg-[#F5F7FA] px-4 py-3">
-                <p className="min-w-0 text-[15px] font-medium leading-[1.5] text-[#1F2937]">
+            <div className="flex items-center justify-between gap-3 rounded-[16px] border border-edge bg-mist px-4 py-3">
+                <p className="min-w-0 text-[15px] font-medium leading-[1.5] text-ink">
                     Select one or more chapters to practice.
                 </p>
                 <span className="shrink-0 rounded-[8px] bg-accent-soft px-3 py-2 text-[13px] font-bold text-accent-deep">
@@ -40,18 +40,12 @@ export default function ChapterSelector({
                             aria-label={`${chapterDisplay}: ${chapter.title}, ${selected ? "selected" : "not selected"}`}
                             className={`flex min-h-[8.75rem] min-w-0 max-w-full flex-col items-stretch gap-3 overflow-visible rounded-[16px] border-2 p-4 text-left transition-all duration-150 active:scale-[0.985] ${
                                 selected
-                                    ? "border-ink bg-ink text-white shadow-[0_10px_24px_rgba(23,43,47,0.20)]"
-                                    : "border-[#E0E0E0] bg-white text-[#1F2937] shadow-[0_8px_18px_rgba(23,43,47,0.04)]"
+                                    ? "border-fill bg-fill text-white shadow-[0_10px_24px_rgba(23,43,47,0.20)]"
+                                    : "border-edge bg-card text-ink shadow-[0_8px_18px_rgba(23,43,47,0.04)]"
                             }`}
                             style={{
                                 paddingTop: "1.125rem",
                                 paddingInline: "0.75rem",
-                                ...(selected
-                                    ? {
-                                        backgroundColor: "#172B2F",
-                                        borderColor: "#172B2F",
-                                    }
-                                    : {}),
                             }}
                         >
                             <div
@@ -61,7 +55,7 @@ export default function ChapterSelector({
                                 <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-bold ${
                                     selected
                                         ? "bg-[rgba(255,255,255,0.20)] text-white"
-                                        : "bg-[#F3F4F6] text-[#374151]"
+                                        : "bg-mist text-ink-soft"
                                 }`}>
                                     {chapter.number}
                                 </span>
@@ -76,7 +70,7 @@ export default function ChapterSelector({
 
                             <div className="flex min-w-0 max-w-full flex-1 flex-col items-center justify-center overflow-hidden px-1 text-center">
                                 <p className={`max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-semibold leading-[1.4] ${
-                                    selected ? "text-white" : "text-[#1F2937]"
+                                    selected ? "text-white" : "text-ink"
                                 }`}
                                 style={{
                                     maxWidth: "100%",
@@ -100,14 +94,14 @@ export default function ChapterSelector({
             </div>
 
             {selectedChapters.length > 0 && (
-                <div className="rounded-[16px] border border-[#E0E0E0] bg-[#F9FAFB] px-4 py-3">
-                    <div className="h-2 overflow-hidden rounded-full bg-[#E5E7EB]">
+                <div className="rounded-[16px] border border-edge bg-card px-4 py-3">
+                    <div className="h-2 overflow-hidden rounded-full bg-track">
                         <div
                             className="h-full rounded-full bg-navy transition-[width] duration-200"
                             style={{ width: `${selectedPercent}%` }}
                         />
                     </div>
-                    <p className="mt-2 text-center text-[13px] font-medium text-[#6B7280]">
+                    <p className="mt-2 text-center text-[13px] font-medium text-steel">
                         {selectedPercent}% of chapters selected
                     </p>
                 </div>

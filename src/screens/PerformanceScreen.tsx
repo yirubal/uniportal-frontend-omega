@@ -189,7 +189,7 @@ export default function PerformanceScreen() {
                         >
                             {performance.score_over_time.map((point, index) => (
                                 <div key={`${point.date}-${index}`} aria-hidden="true" className="flex flex-1 flex-col items-center gap-2">
-                                    <div className="relative w-full overflow-hidden rounded-t-[18px] bg-[#E6ECF7]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }}>
+                                    <div className="relative w-full overflow-hidden rounded-t-[18px] bg-wash" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }}>
                                         <div className="absolute inset-x-0 bottom-0 rounded-t-[18px] bg-[linear-gradient(180deg,#5D8F88_0%,#172B2F_100%)]" style={{ height: `${Math.max(18, (point.score / maxScore) * 150)}px` }} />
                                     </div>
                                     <span className="text-[11px] font-semibold text-faint">
@@ -224,7 +224,7 @@ export default function PerformanceScreen() {
                 <div className="app-sheet p-5">
                     <p className="app-section-label">Paper breakdown</p>
                     {retryError && (
-                        <div className="mt-4 rounded-[18px] bg-coral-soft px-4 py-3 text-sm font-semibold text-[#B75F57]">
+                        <div className="mt-4 rounded-[18px] bg-coral-soft px-4 py-3 text-sm font-semibold text-bad-ink">
                             {retryError}
                         </div>
                     )}
@@ -253,10 +253,10 @@ export default function PerformanceScreen() {
                                             </div>
                                             <span className="shrink-0 text-lg font-black text-ink">{course.average}%</span>
                                         </div>
-                                        <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E1E7F2]">
+                                        <div className="mt-3 h-2 overflow-hidden rounded-full bg-wash">
                                             <div className="h-full rounded-full bg-[linear-gradient(90deg,#5D8F88_0%,#172B2F_100%)]" style={{ width: `${Math.max(0, Math.min(100, course.average))}%` }} />
                                         </div>
-                                        <div className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-[16px] bg-ink px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-white">
+                                        <div className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-[16px] bg-fill px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] text-white">
                                             <RotateCcw size={14} />
                                             {isRetrying ? "Opening..." : "Retake paper"}
                                         </div>

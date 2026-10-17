@@ -179,7 +179,7 @@ function QuizPaperButton({
                         {quiz.year}
                     </span>
                     {isLocked && (
-                        <span className="rounded-full bg-coral-soft px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#B75F57]">
+                        <span className="rounded-full bg-coral-soft px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-bad-ink">
                             Premium
                         </span>
                     )}
@@ -194,7 +194,7 @@ function QuizPaperButton({
                 </div>
             </div>
 
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isLocked ? "bg-coral-soft text-[#B75F57]" : "bg-mist text-ink"}`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isLocked ? "bg-coral-soft text-bad-ink" : "bg-mist text-ink"}`}>
                 {isLocked ? <Lock size={18} /> : <TimerReset size={18} />}
             </div>
         </button>

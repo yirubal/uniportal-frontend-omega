@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 @theme {
+    /* Every colour has a light value here and a dark value in the [data-theme="dark"] block below.
+       Utilities read the variables, so switching the attribute recolours the whole app. */
     --color-ink: #172b2f;
     --color-ink-soft: #354f55;
     --color-ink-contrast: #f7faf8;
@@ -35,6 +37,7 @@
     --color-faint: #5e7479;
     --color-accent-line: #cfe2de;
     --color-accent-deep: #234c48;
+    --color-accent-wash: #dfeeea;
     --color-mist: #f4f8f5;
     --color-gold-tint: #fff6df;
     --color-gold-ink: #b27614;
@@ -44,6 +47,31 @@
     --color-steel: #60728f;
     --color-navy: #0a1628;
     --color-disabled: #d5e1dd;
+    --color-info-ink: #4d6691;
+
+    /* Surfaces and lines. */
+    --color-card: #ffffff;
+    --color-wash: #ecf1f6;
+    --color-track: #e4eae7;
+    --color-edge: #dce2df;
+    --color-line: rgba(23, 43, 47, 0.08);
+    --color-line-strong: rgba(23, 43, 47, 0.1);
+    /* Solid fills that carry white text (primary buttons, selected chips). Stay dark in dark mode. */
+    --color-fill: #172b2f;
+    --color-fill-accent: #27565a;
+
+    /* Status colours: base, tint (backgrounds), line (borders), ink (text). */
+    --color-ok: #10b981;
+    --color-ok-tint: #d1fae5;
+    --color-ok-ink: #065f46;
+    --color-warn: #f59e0b;
+    --color-warn-tint: #fff8e1;
+    --color-warn-line: #f6cf63;
+    --color-warn-ink: #92400e;
+    --color-bad: #ef4444;
+    --color-bad-tint: #fdecea;
+    --color-bad-line: #f2cfca;
+    --color-bad-ink: #a8443a;
 
     --radius-sm: 10px;
     --radius-md: 16px;
@@ -57,6 +85,76 @@
     /* System fonts on purpose: no web-font download on slow connections (decided 2026-10-14). */
     --font-sans: "Avenir Next", "Segoe UI", sans-serif;
     --font-display: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+/* Dark palette. data-theme is set on <html> by utils/theme.ts before the first render. */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-ink: #e7efed;
+    --color-ink-soft: #c3d2cf;
+    --color-ink-contrast: #0f1a1c;
+    --color-accent: #6db5a9;
+    --color-accent-soft: #1b3431;
+    --color-gold: #d9b05c;
+    --color-gold-soft: #2f2716;
+    --color-coral: #e58c80;
+    --color-coral-soft: #3a2224;
+    --color-background: #0f1a1c;
+    --color-background-alt: #0b1416;
+    --color-surface: rgba(23, 36, 39, 0.94);
+    --color-surface-strong: #172427;
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-text-primary: #e7efed;
+    --color-text-secondary: #a3b5b2;
+    --color-text-muted: #8fa3a0;
+    --color-purple: #ab96f2;
+    --color-purple-light: #2a2540;
+
+    --color-subtle: #a3b5b2;
+    --color-faint: #8fa3a0;
+    --color-accent-line: #2d504b;
+    --color-accent-deep: #a8d8cf;
+    --color-accent-wash: #213f3b;
+    --color-mist: #1e2d30;
+    --color-gold-tint: #33291a;
+    --color-gold-ink: #e7c07a;
+    --color-danger: #ef7d72;
+    --color-success-ink: #5fd0a0;
+    --color-success-tint: #163328;
+    --color-steel: #a1b1c9;
+    --color-disabled: #2a3a3d;
+    --color-info-ink: #a3b8e0;
+
+    --color-card: #172427;
+    --color-wash: #213236;
+    --color-track: #2a3a3d;
+    --color-edge: #35474b;
+    --color-line: rgba(255, 255, 255, 0.08);
+    --color-line-strong: rgba(255, 255, 255, 0.12);
+    --color-fill: #2b5f59;
+    --color-fill-accent: #2f6f67;
+
+    --color-ok-tint: #143a2c;
+    --color-ok-ink: #7be3b8;
+    --color-warn-tint: #33280f;
+    --color-warn-line: #6b5217;
+    --color-warn-ink: #f8cf62;
+    --color-bad-tint: #3a1f21;
+    --color-bad-line: #5c3033;
+    --color-bad-ink: #f6a39a;
+
+    --tg-bg-color: #0f1a1c;
+    --tg-secondary-bg-color: #0b1416;
+    --tg-text-color: #e7efed;
+    --tg-hint-color: #8fa3a0;
+    --tg-link-color: #6db5a9;
+    --tg-button-color: #2b5f59;
+    --tg-button-text-color: #ffffff;
+    --tg-section-bg-color: rgba(23, 36, 39, 0.94);
+    --tg-header-bg-color: #0b1416;
+    /* Mixed into surfaces for a slight lift; the light theme mixes in near-white instead. */
+    --mix-lift: #1d2d30;
+    --shadow-tint: rgba(0, 0, 0, 0.35);
 }
 
 *,
@@ -77,7 +175,7 @@ body {
     background:
         radial-gradient(circle at top left, rgba(63, 111, 106, 0.08), transparent 30%),
         radial-gradient(circle at top right, rgba(213, 168, 78, 0.08), transparent 20%),
-        linear-gradient(180deg, #eef3f0 0%, #e2ebe8 100%);
+        linear-gradient(180deg, var(--color-background) 0%, var(--color-background-alt) 100%);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
     overflow-x: hidden;
@@ -220,6 +318,14 @@ img {
     --tg-header-bg-color: #172b2f;
     --tg-viewport-height: 100dvh;
     --tg-viewport-stable-height: 100dvh;
+    --mix-lift: #f7f9fc;
+    --shadow-tint: rgba(23, 43, 47, 0.06);
+    /* Light inner edge on glassy panels; nearly invisible in dark mode. */
+    --panel-edge: rgba(255, 255, 255, 0.42);
+}
+
+:root[data-theme="dark"] {
+    --panel-edge: rgba(255, 255, 255, 0.05);
 }
 
 .app-screen {
@@ -230,7 +336,7 @@ img {
     flex-direction: column;
     background:
         radial-gradient(circle at top, rgba(63, 111, 106, 0.045), transparent 24%),
-        linear-gradient(180deg, color-mix(in srgb, var(--tg-bg-color) 96%, #f8faf8 4%) 0%, var(--tg-secondary-bg-color) 100%);
+        linear-gradient(180deg, color-mix(in srgb, var(--tg-bg-color) 96%, var(--mix-lift) 4%) 0%, var(--tg-secondary-bg-color) 100%);
 }
 
 .app-hero {
@@ -257,7 +363,7 @@ img {
 .app-hero-subtle {
     background:
         radial-gradient(circle at top right, rgba(63, 111, 106, 0.09), transparent 34%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(244, 248, 245, 0.96));
+        linear-gradient(180deg, color-mix(in srgb, var(--color-card) 82%, transparent), color-mix(in srgb, var(--color-mist) 96%, transparent));
     color: var(--color-text-primary);
     border-bottom: 1px solid var(--color-border);
 }
@@ -280,22 +386,22 @@ img {
 
 .app-footer {
     padding: 0.9rem 1.25rem calc(env(safe-area-inset-bottom) + 1rem);
-    background: color-mix(in srgb, var(--tg-bg-color) 90%, #f6f8fb 10%);
-    border-top: 1px solid rgba(23, 43, 47, 0.08);
+    background: color-mix(in srgb, var(--tg-bg-color) 90%, var(--mix-lift) 10%);
+    border-top: 1px solid var(--color-line);
     backdrop-filter: blur(22px);
 }
 
 .app-panel {
-    background: color-mix(in srgb, var(--tg-section-bg-color) 94%, #f7f9fc 6%);
-    border: 1px solid rgba(255, 255, 255, 0.42);
+    background: color-mix(in srgb, var(--tg-section-bg-color) 94%, var(--mix-lift) 6%);
+    border: 1px solid var(--panel-edge);
     border-radius: var(--radius-xl);
     box-shadow: 0 10px 24px rgba(23, 43, 47, 0.05);
     backdrop-filter: blur(20px);
 }
 
 .app-panel-muted {
-    background: color-mix(in srgb, var(--tg-bg-color) 88%, #f7f9fc 12%);
-    border: 1px solid rgba(23, 43, 47, 0.08);
+    background: color-mix(in srgb, var(--tg-bg-color) 88%, var(--mix-lift) 12%);
+    border: 1px solid var(--color-line);
     border-radius: var(--radius-lg);
 }
 
@@ -316,22 +422,22 @@ img {
 }
 
 .app-copy {
-    color: #53627d;
+    color: var(--color-subtle);
     font-size: 0.92rem;
     line-height: 1.5;
 }
 
 .app-divider {
     height: 1px;
-    background: rgba(23, 43, 47, 0.08);
+    background: var(--color-line);
 }
 
 .app-topbar {
     position: relative;
     overflow: hidden;
     padding: calc(env(safe-area-inset-top) + 1rem) 1rem 0.9rem;
-    background: color-mix(in srgb, var(--tg-bg-color) 92%, #f7f9fc 8%);
-    border-bottom: 1px solid rgba(23, 43, 47, 0.06);
+    background: color-mix(in srgb, var(--tg-bg-color) 92%, var(--mix-lift) 8%);
+    border-bottom: 1px solid var(--color-line);
     backdrop-filter: blur(20px);
 }
 
@@ -345,8 +451,8 @@ img {
 }
 
 .app-sheet {
-    background: color-mix(in srgb, var(--tg-section-bg-color) 92%, #eef3f8 8%);
-    border: 1px solid rgba(255, 255, 255, 0.26);
+    background: color-mix(in srgb, var(--tg-section-bg-color) 92%, var(--mix-lift) 8%);
+    border: 1px solid var(--panel-edge);
     border-radius: 24px;
     box-shadow: 0 8px 18px rgba(23, 43, 47, 0.04);
     backdrop-filter: blur(18px);
@@ -359,8 +465,8 @@ img {
     width: 100%;
     padding: 0.9rem 1rem;
     border-radius: 20px;
-    background: color-mix(in srgb, var(--tg-section-bg-color) 90%, #edf3f8 10%);
-    border: 1px solid rgba(23, 43, 47, 0.06);
+    background: color-mix(in srgb, var(--tg-section-bg-color) 90%, var(--mix-lift) 10%);
+    border: 1px solid var(--color-line);
     text-align: left;
     transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease;
 }
@@ -377,14 +483,14 @@ img {
     height: 2.75rem;
     width: 2.75rem;
     border-radius: 18px;
-    background: #eaf4f1;
-    color: #3f6f6a;
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
     flex-shrink: 0;
 }
 
 .app-tabbar {
-    background: color-mix(in srgb, var(--tg-bg-color) 92%, #f7f9fc 8%);
-    border: 1px solid rgba(23, 43, 47, 0.08);
+    background: color-mix(in srgb, var(--tg-bg-color) 92%, var(--mix-lift) 8%);
+    border: 1px solid var(--color-line);
     box-shadow: 0 10px 22px rgba(23, 43, 47, 0.06);
     backdrop-filter: blur(22px);
 }
@@ -397,8 +503,8 @@ img {
     text-align: center;
     padding: 1.5rem;
     border-radius: 24px;
-    background: color-mix(in srgb, var(--tg-section-bg-color) 95%, #f8fafc 5%);
-    border: 1px solid rgba(255, 255, 255, 0.36);
+    background: color-mix(in srgb, var(--tg-section-bg-color) 95%, var(--mix-lift) 5%);
+    border: 1px solid var(--panel-edge);
     box-shadow: 0 10px 24px rgba(23, 43, 47, 0.05);
 }
 
@@ -409,8 +515,8 @@ img {
     width: 4.25rem;
     height: 4.25rem;
     border-radius: 999px;
-    background: #eaf4f1;
-    color: #3f6f6a;
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
 }
 
 .app-chip {
@@ -422,8 +528,8 @@ img {
     font-size: 0.72rem;
     line-height: 1rem;
     font-weight: 700;
-    border: 1px solid rgba(23, 43, 47, 0.08);
-    background: rgba(236, 242, 248, 0.9);
+    border: 1px solid var(--color-line);
+    background: var(--color-wash);
     color: var(--color-text-secondary);
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -431,8 +537,8 @@ img {
 }
 
 .app-chip-active {
-    background: var(--color-text-primary);
-    border-color: var(--color-text-primary);
+    background: var(--color-fill);
+    border-color: var(--color-fill);
     color: white;
     box-shadow: 0 6px 14px rgba(23, 43, 47, 0.12);
 }
@@ -444,13 +550,13 @@ img {
 .app-input {
     width: 100%;
     border-radius: 18px;
-    border: 1px solid rgba(23, 43, 47, 0.08);
-    background: color-mix(in srgb, var(--tg-section-bg-color) 94%, #fbfcfe 6%);
+    border: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--tg-section-bg-color) 94%, var(--mix-lift) 6%);
     color: var(--tg-text-color);
     padding: 0.9rem 1rem;
     font-size: 0.95rem;
     outline: none;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    box-shadow: inset 0 1px 0 var(--panel-edge);
 }
 
 .app-input:focus {
@@ -486,8 +592,8 @@ img {
 .app-stat-card {
     border-radius: 20px;
     padding: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    border: 1px solid var(--panel-edge);
+    box-shadow: inset 0 1px 0 var(--panel-edge);
 }
 
 .tone-blue {
@@ -522,9 +628,9 @@ img {
     min-height: 1.6rem;
     padding: 0.24rem 0.62rem;
     border-radius: 999px;
-    border: 1px solid rgba(23, 43, 47, 0.08);
-    background: rgba(233, 239, 247, 0.88);
-    color: #4d607f;
+    border: 1px solid var(--color-line);
+    background: var(--color-wash);
+    color: var(--color-info-ink);
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -559,6 +665,16 @@ img {
     background: rgba(245, 229, 226, 0.96);
     color: #b75f57;
 }
+
+:root[data-theme="dark"] .tone-blue   { background: linear-gradient(180deg, #1d3633 0%, #18302d 100%); color: #8fd0c4; }
+:root[data-theme="dark"] .tone-green  { background: linear-gradient(180deg, #17352a 0%, #132e24 100%); color: #7be3b8; }
+:root[data-theme="dark"] .tone-gold   { background: linear-gradient(180deg, #352b17 0%, #2e2513 100%); color: #f0c674; }
+:root[data-theme="dark"] .tone-purple { background: linear-gradient(180deg, #2a2540 0%, #241f38 100%); color: #b9a6f6; }
+:root[data-theme="dark"] .tone-coral  { background: linear-gradient(180deg, #3a2224 0%, #321d1f 100%); color: #f2a097; }
+:root[data-theme="dark"] .app-badge-blue  { background: #1f2c40; color: #a3b8e0; }
+:root[data-theme="dark"] .app-badge-green { background: #163328; color: #7be3b8; }
+:root[data-theme="dark"] .app-badge-gold  { background: #33291a; color: #e7c07a; }
+:root[data-theme="dark"] .app-badge-coral { background: #3a2224; color: #f2a097; }
 
 .app-card-interactive {
     transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;

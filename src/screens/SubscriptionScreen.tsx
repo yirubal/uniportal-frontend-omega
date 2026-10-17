@@ -155,7 +155,7 @@ function PlanCard({
     selected: boolean;
 }) {
     return (
-        <div className={`rounded-[22px] border p-4 ${selected ? "border-accent bg-accent-soft" : "border-[rgba(23,43,47,0.10)] bg-white/85"}`}>
+        <div className={`rounded-[22px] border p-4 ${selected ? "border-accent bg-accent-soft" : "border-line-strong bg-card/85"}`}>
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">

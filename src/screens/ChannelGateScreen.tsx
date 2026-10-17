@@ -110,15 +110,15 @@ export default function ChannelGateScreen() {
                         type="button"
                         onClick={onCheckJoined}
                         disabled={isChecking}
-                        className={`flex w-full items-center justify-center gap-2 rounded-[18px] border-[1.5px] border-[rgba(63,111,106,0.22)] px-5 py-3.5 text-[0.92rem] font-bold transition-[transform,opacity] duration-150 active:scale-[0.97] disabled:active:scale-100 ${
+                        className={`flex w-full items-center justify-center gap-2 rounded-[18px] border-[1.5px] border-accent/25 px-5 py-3.5 text-[0.92rem] font-bold transition-[transform,opacity] duration-150 active:scale-[0.97] disabled:active:scale-100 ${
                             isChecking
-                                ? "bg-[rgba(23,43,47,0.06)] text-faint opacity-70"
+                                ? "bg-line text-faint opacity-70"
                                 : "bg-[linear-gradient(135deg,rgba(63,111,106,0.12)_0%,rgba(63,111,106,0.06)_100%)] text-ink"
                         }`}
                     >
                         {isChecking ? (
                             <>
-                                <span aria-hidden="true" className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-[rgba(63,111,106,0.28)] border-t-accent" />
+                                <span aria-hidden="true" className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
                                 Checking…
                             </>
                         ) : (
@@ -135,12 +135,12 @@ export default function ChannelGateScreen() {
                 <div
                     role="status"
                     aria-live="polite"
-                    className={`pointer-events-none flex w-full items-center gap-[0.6rem] rounded-2xl border border-[rgba(216,114,102,0.28)] bg-[linear-gradient(135deg,rgba(216,114,102,0.14)_0%,rgba(216,114,102,0.08)_100%)] px-4 py-[0.8rem] transition-[opacity,transform] duration-300 ${
+                    className={`pointer-events-none flex w-full items-center gap-[0.6rem] rounded-2xl border border-bad-line bg-[linear-gradient(135deg,rgba(216,114,102,0.14)_0%,rgba(216,114,102,0.08)_100%)] px-4 py-[0.8rem] transition-[opacity,transform] duration-300 ${
                         showNotJoined ? "translate-y-0 opacity-100" : "translate-y-1.5 opacity-0"
                     }`}
                 >
                     <span aria-hidden="true" className="shrink-0 text-base">⚠️</span>
-                    <p className="m-0 text-left text-[0.82rem] font-semibold text-[#C86056]">
+                    <p className="m-0 text-left text-[0.82rem] font-semibold text-bad-ink">
                         {showNotJoined ? "You haven't joined yet. Please join the channel first." : "\u00a0"}
                     </p>
                 </div>

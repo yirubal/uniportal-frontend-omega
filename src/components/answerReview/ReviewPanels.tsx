@@ -26,10 +26,10 @@ export function ReviewShell({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="answer-review-title"
-                className="flex h-[92dvh] max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-[24px] border border-[rgba(23,43,47,0.08)] bg-[#F8FBF9] shadow-[0_24px_70px_rgba(10,22,40,0.26)] sm:h-[86dvh] sm:max-h-[86dvh]"
+                className="flex h-[92dvh] max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-[24px] border border-line bg-card shadow-[0_24px_70px_rgba(10,22,40,0.26)] sm:h-[86dvh] sm:max-h-[86dvh]"
                 onClick={(event) => event.stopPropagation()}
             >
-                <header className="flex shrink-0 items-start justify-between gap-4 border-b border-[rgba(23,43,47,0.08)] px-4 py-4 sm:px-5">
+                <header className="flex shrink-0 items-start justify-between gap-4 border-b border-line px-4 py-4 sm:px-5">
                     <div className="min-w-0">
                         <p className="app-section-label">Question feedback</p>
                         <h2 id="answer-review-title" className="mt-1 text-xl font-black leading-tight text-ink">
@@ -41,7 +41,7 @@ export function ReviewShell({
                         type="button"
                         onClick={onClose}
                         aria-label="Close answer review"
-                        className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-full bg-accent-soft text-ink transition-colors hover:bg-[#DDECE8] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+                        className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-full bg-accent-soft text-ink transition-colors hover:bg-accent-wash focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
                     >
                         <X size={19} />
                     </button>
@@ -73,7 +73,7 @@ export function QuestionListPanel({
     return (
         <section
             aria-label="Question list"
-            className="hidden min-h-0 rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-[rgba(234,244,241,0.72)] p-2 md:block"
+            className="hidden min-h-0 rounded-[18px] border border-line bg-accent-soft p-2 md:block"
         >
             <div className="flex max-h-full flex-col gap-2 overflow-y-auto pr-1">
                 {questions.map((question, index) => (
@@ -116,12 +116,12 @@ const QuestionListItem = function QuestionListItem({
             aria-label={`Question ${number}: ${meta.label}`}
             className={`flex min-h-14 w-full items-center justify-between gap-3 rounded-[14px] border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${
                 isSelected
-                    ? "border-ink bg-white text-ink shadow-[0_10px_24px_rgba(23,43,47,0.08)]"
+                    ? "border-fill bg-card text-ink shadow-[0_10px_24px_rgba(23,43,47,0.08)]"
                     : meta.listClass
             }`}
         >
             <span className="text-sm font-black leading-none">Q{number}</span>
-            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${isSelected ? meta.badgeClass : "bg-white/78"}`}>
+            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${isSelected ? meta.badgeClass : "bg-card/78"}`}>
                 <Icon size={15} strokeWidth={3} aria-hidden="true" />
             </span>
         </button>
@@ -159,7 +159,7 @@ export function QuestionDetailPanel({
                 </div>
             </section>
 
-            <section className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-white px-4 py-4 shadow-[0_8px_18px_rgba(23,43,47,0.04)]">
+            <section className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-line bg-card px-4 py-4 shadow-[0_8px_18px_rgba(23,43,47,0.04)]">
                 <p className="app-section-label">Question</p>
                 <h3 className="mt-3 text-base font-bold leading-relaxed text-ink [overflow-wrap:anywhere]">
                     {question.questionText}
@@ -215,18 +215,18 @@ function OptionReviewItem({
 }) {
     const isWrongSelection = isSelected && status === "incorrect" && !isCorrect;
     const stateClass = isCorrect
-        ? "border-[#10B981] bg-[#ECFDF5]"
+        ? "border-ok bg-success-tint"
         : isWrongSelection
-            ? "border-[#EF4444] bg-[#FEF2F2]"
+            ? "border-bad bg-bad-tint"
             : isSelected
-                ? "border-[#F59E0B] bg-[#FFFBEB]"
-                : "border-[rgba(23,43,47,0.08)] bg-white";
+                ? "border-warn bg-warn-tint"
+                : "border-line bg-card";
     const markerClass = isCorrect
-        ? "bg-[#10B981] text-white"
+        ? "bg-ok text-white"
         : isWrongSelection
-            ? "bg-[#EF4444] text-white"
+            ? "bg-bad text-white"
             : isSelected
-                ? "bg-[#F59E0B] text-white"
+                ? "bg-warn text-white"
                 : "bg-accent-soft text-subtle";
 
     return (
@@ -242,19 +242,19 @@ function OptionReviewItem({
                 <p className="text-[15px] font-semibold leading-relaxed text-ink [overflow-wrap:anywhere]">{text}</p>
                 <div className="mt-2 flex min-w-0 flex-wrap gap-2">
                     {isCorrect && (
-                        <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-[#D1FAE5] px-2.5 py-1 text-[11px] font-bold text-[#065F46] [overflow-wrap:anywhere]">
+                        <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-ok-tint px-2.5 py-1 text-[11px] font-bold text-ok-ink [overflow-wrap:anywhere]">
                             <Check size={12} strokeWidth={3} aria-hidden="true" />
                             Correct answer
                         </span>
                     )}
                     {isWrongSelection && (
-                        <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-[#FEE2E2] px-2.5 py-1 text-[11px] font-bold text-[#991B1B] [overflow-wrap:anywhere]">
+                        <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-bad-tint px-2.5 py-1 text-[11px] font-bold text-bad-ink [overflow-wrap:anywhere]">
                             <X size={12} strokeWidth={3} aria-hidden="true" />
                             Your answer
                         </span>
                     )}
                     {isSelected && !isWrongSelection && !isCorrect && (
-                        <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-[#FEF3C7] px-2.5 py-1 text-[11px] font-bold text-[#92400E] [overflow-wrap:anywhere]">
+                        <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-warn-tint px-2.5 py-1 text-[11px] font-bold text-warn-ink [overflow-wrap:anywhere]">
                             <AlertTriangle size={12} strokeWidth={3} aria-hidden="true" />
                             Your answer
                         </span>
@@ -267,7 +267,7 @@ function OptionReviewItem({
 
 function FreeTextAnswer({ question }: { question: ReviewQuestion }) {
     return (
-        <section className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-white px-4 py-4">
+        <section className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-line bg-card px-4 py-4">
             <p className="app-section-label">Student answer</p>
             <p className="mt-3 text-[15px] font-semibold leading-relaxed text-ink [overflow-wrap:anywhere]">
                 {question.selectedOption?.trim() || "No answer submitted"}
@@ -292,21 +292,21 @@ function ExplanationBox({ explanation }: { explanation: string }) {
     return (
         <section
             aria-label="Explanation"
-            className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-[#FCD34D] border-l-4 border-l-[#F59E0B] bg-[#FFFBEB] px-4 py-4"
+            className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-warn-line border-l-4 border-l-warn bg-warn-tint px-4 py-4"
         >
             <div className="flex min-w-0 items-center gap-2">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FEF3C7] text-[#92400E]">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warn-tint text-warn-ink">
                     <Lightbulb size={17} aria-hidden="true" />
                 </span>
-                <h4 className="min-w-0 text-sm font-black uppercase tracking-[0.12em] text-[#92400E] [overflow-wrap:anywhere]">Explanation</h4>
+                <h4 className="min-w-0 text-sm font-black uppercase tracking-[0.12em] text-warn-ink [overflow-wrap:anywhere]">Explanation</h4>
             </div>
-            <p className="mt-3 text-[15px] leading-relaxed text-[#78350F] [overflow-wrap:anywhere]">{displayText}</p>
+            <p className="mt-3 text-[15px] leading-relaxed text-warn-ink [overflow-wrap:anywhere]">{displayText}</p>
             {isLong && (
                 <button
                     type="button"
                     onClick={() => setIsExpanded((current) => !current)}
                     aria-expanded={isExpanded}
-                    className="mt-3 min-h-12 rounded-[12px] px-1 text-sm font-black text-[#92400E] underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:ring-offset-2"
+                    className="mt-3 min-h-12 rounded-[12px] px-1 text-sm font-black text-warn-ink underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-warn focus:ring-offset-2"
                 >
                     {isExpanded ? "Show less" : "Show more"}
                 </button>
@@ -317,13 +317,13 @@ function ExplanationBox({ explanation }: { explanation: string }) {
 
 function TopicTags({ tags }: { tags: string[] }) {
     return (
-        <section aria-label="Topics covered" className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-[rgba(23,43,47,0.08)] bg-accent-soft px-4 py-4">
+        <section aria-label="Topics covered" className="min-w-0 max-w-full overflow-hidden rounded-[18px] border border-line bg-accent-soft px-4 py-4">
             <p className="app-section-label">Topics covered</p>
             <div className="mt-3 flex min-w-0 flex-wrap gap-2">
                 {tags.map((tag) => (
                     <span
                         key={tag}
-                        className="max-w-full rounded-[10px] border border-accent-line bg-white px-3 py-2 text-xs font-bold text-[#315F59] [overflow-wrap:anywhere]"
+                        className="max-w-full rounded-[10px] border border-accent-line bg-card px-3 py-2 text-xs font-bold text-accent-deep [overflow-wrap:anywhere]"
                     >
                         {tag}
                     </span>
@@ -345,13 +345,13 @@ function NavigationButtons({
     isLastQuestion: boolean;
 }) {
     return (
-        <div className="grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 overflow-hidden border-t border-[rgba(23,43,47,0.08)] pt-4 sm:gap-3">
+        <div className="grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 overflow-hidden border-t border-line pt-4 sm:gap-3">
             <button
                 type="button"
                 onClick={onPrevious}
                 disabled={isFirstQuestion}
                 aria-label="Previous question"
-                className="inline-flex min-h-12 min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden rounded-[14px] border border-[rgba(23,43,47,0.08)] bg-[rgba(244,247,252,0.92)] px-2.5 py-3 text-sm font-black text-ink transition-colors hover:bg-background disabled:cursor-not-allowed disabled:bg-background disabled:text-[#809398] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent focus:ring-offset-0 sm:gap-2 sm:px-3"
+                className="inline-flex min-h-12 min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden rounded-[14px] border border-line bg-mist px-2.5 py-3 text-sm font-black text-ink transition-colors hover:bg-background disabled:cursor-not-allowed disabled:bg-background disabled:text-faint focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent focus:ring-offset-0 sm:gap-2 sm:px-3"
             >
                 <ChevronLeft size={16} aria-hidden="true" />
                 Previous
@@ -361,7 +361,7 @@ function NavigationButtons({
                 onClick={onNext}
                 disabled={isLastQuestion}
                 aria-label="Next question"
-                className="inline-flex min-h-12 min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden rounded-[14px] border border-accent-line bg-accent-soft px-2.5 py-3 text-sm font-black text-accent-deep transition-colors hover:bg-[#DDECE8] disabled:cursor-not-allowed disabled:border-[#DCE5E1] disabled:bg-background disabled:text-[#5E7479] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent focus:ring-offset-0 sm:gap-2 sm:px-3"
+                className="inline-flex min-h-12 min-w-0 max-w-full items-center justify-center gap-1.5 overflow-hidden rounded-[14px] border border-accent-line bg-accent-soft px-2.5 py-3 text-sm font-black text-accent-deep transition-colors hover:bg-accent-wash disabled:cursor-not-allowed disabled:border-edge disabled:bg-background disabled:text-faint focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent focus:ring-offset-0 sm:gap-2 sm:px-3"
             >
                 Next
                 <ChevronRight size={16} aria-hidden="true" />
