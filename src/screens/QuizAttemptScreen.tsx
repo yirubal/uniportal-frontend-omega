@@ -14,6 +14,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useQuizStore } from "../store/quizStore";
 import { getPracticeContentMeta } from "../utils/practice";
 import { isOptionQuestion, isQuestionAnswered } from "../utils/questions";
+import { useStepDirection } from "../hooks/useStepDirection";
 
 export default function QuizAttemptScreen({ selectiveMode = false }: { selectiveMode?: boolean }) {
     const navigate = useNavigate();
@@ -38,6 +39,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
             setSelectedQuiz: state.setSelectedQuiz,
         }))
     );
+    const stepDirection = useStepDirection(quiz.currentIndex);
     const meta = getPracticeContentMeta(quiz.practiceContentType);
     const attemptMode = selectiveMode ? "selective" : "practice";
 
@@ -220,6 +222,7 @@ export default function QuizAttemptScreen({ selectiveMode = false }: { selective
                     totalQuestions={quiz.questions.length}
                     selectedAnswer={quiz.selectedAnswer}
                     onSelect={quiz.setAnswer}
+                    enterDirection={stepDirection}
                 />
             </div>
 

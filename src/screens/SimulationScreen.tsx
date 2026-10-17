@@ -15,6 +15,7 @@ import { formatDuration } from "../utils/format";
 import { ExamTimerBar, ExamTimerChip } from "../components/ExamTimer";
 import { useShallow } from "zustand/react/shallow";
 import { isQuestionAnswered } from "../utils/questions";
+import { useStepDirection } from "../hooks/useStepDirection";
 
 export default function SimulationScreen() {
     const navigate = useNavigate();
@@ -43,6 +44,7 @@ export default function SimulationScreen() {
             resetAttempt: state.resetAttempt,
         }))
     );
+    const stepDirection = useStepDirection(quiz.currentIndex);
     const handleSubmitCallRef = useRef<() => void>(() => {});
     // Note: handleSubmitCallRef.current is assigned after handleSubmit is declared below
     const autoSubmittedRef = useRef(false);
@@ -290,6 +292,7 @@ export default function SimulationScreen() {
                     totalQuestions={quiz.questions.length}
                     selectedAnswer={quiz.selectedAnswer}
                     onSelect={quiz.setAnswer}
+                    enterDirection={stepDirection}
                     showQuestionType={false}
                 />
 

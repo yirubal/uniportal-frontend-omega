@@ -84,6 +84,8 @@ export default function AnswerReviewModal({
                 <div className="min-h-0 overflow-y-auto overscroll-contain pr-0.5 md:pr-2" aria-live="polite">
                     {selectedQuestion && (
                         <QuestionDetailPanel
+                            // Remount per question so the correct/wrong marks replay their entrance.
+                            key={selectedQuestion.questionId}
                             question={selectedQuestion}
                             questionNumber={selectedIndex + 1}
                             totalQuestions={totalQuestions}

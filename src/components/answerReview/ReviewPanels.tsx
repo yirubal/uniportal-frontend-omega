@@ -233,7 +233,7 @@ function OptionReviewItem({
         <div
             role="group"
             aria-label={`Option ${letter.toUpperCase()}: ${text}${isCorrect ? ". Correct answer" : ""}${isWrongSelection ? ". Your incorrect answer" : ""}`}
-            className={`relative flex min-h-14 min-w-0 max-w-full items-start gap-3 overflow-hidden rounded-[14px] border px-4 py-3 ${stateClass}`}
+            className={`relative flex min-h-14 min-w-0 max-w-full items-start gap-3 overflow-hidden rounded-[14px] border px-4 py-3 ${stateClass} ${isCorrect ? "review-correct" : isWrongSelection ? "review-wrong" : ""}`}
         >
             <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-sm font-black ${markerClass}`}>
                 {letter.toUpperCase()}

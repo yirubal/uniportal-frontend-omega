@@ -274,6 +274,38 @@ input, textarea {
     }
 }
 
+/* Quiz: the question slides in from the side it came from, the progress bar fills from the previous
+   question's position, and a chosen answer's letter pops. Variables are set inline by QuestionCard. */
+@keyframes question-in {
+    from { opacity: 0; transform: translate3d(var(--question-from, 28px), 0, 0); }
+}
+@keyframes progress-fill {
+    from { width: var(--progress-from, 0%); }
+}
+@keyframes option-pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+/* Answer review: the correct answer glows once, a wrong pick gives a short shake. */
+@keyframes review-glow {
+    0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-ok) 45%, transparent); }
+    100% { box-shadow: 0 0 0 12px transparent; }
+}
+@keyframes review-shake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(5px); }
+    60%      { transform: translateX(-3px); }
+    80%      { transform: translateX(2px); }
+}
+
+.question-enter { animation: question-in 260ms cubic-bezier(0.22, 0.8, 0.24, 1) backwards; }
+.progress-fill  { animation: progress-fill 450ms cubic-bezier(0.22, 0.8, 0.24, 1) backwards; }
+.option-pop     { animation: option-pop 280ms ease-out; }
+.review-correct { animation: review-glow 900ms ease-out 200ms backwards; }
+.review-wrong   { animation: review-shake 420ms ease-in-out 250ms; }
+
 /* Animation utility classes */
 .animate-fade-in     { animation: fadeIn     0.3s ease forwards; }
 .animate-fade-in-up  { animation: fadeInUp   0.4s ease forwards; }
@@ -717,7 +749,12 @@ img {
     .animate-fade-in-up,
     .animate-fade-in-down,
     .animate-scale-in,
-    .skeleton {
+    .skeleton,
+    .question-enter,
+    .progress-fill,
+    .option-pop,
+    .review-correct,
+    .review-wrong {
         animation: none !important;
     }
 

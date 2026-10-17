@@ -10,6 +10,8 @@ interface QuestionCardProps {
     /** Receives the question id too, so a debounced text answer is saved to the right question. */
     onSelect: (answer: string, questionId: number) => void;
     showQuestionType?: boolean;
+    /** Which way the attempt last moved: the card slides in from that side. */
+    enterDirection?: 1 | -1;
 }
 
 const OPTION_LABELS: Record<string, string> = {
@@ -30,6 +32,7 @@ function QuestionCard({
     selectedAnswer,
     onSelect,
     showQuestionType = true,
+    enterDirection = 1,
 }: QuestionCardProps) {
     const [draftAnswer, setDraftAnswer] = useState(selectedAnswer ?? "");
     const [showHint, setShowHint] = useState(false);
@@ -37,6 +40,8 @@ function QuestionCard({
     const questionType = getResolvedQuestionType(question);
     const hasSavedAnswer = hasMeaningfulAnswer(questionType, selectedAnswer);
     const progressPercent = ((questionNumber - 1) / totalQuestions) * 100;
+    // The card remounts per question, so the bar animates from where the previous question left it.
+    const progressFrom = Math.min(100, Math.max(0, ((questionNumber - 1 - enterDirection) / totalQuestions) * 100));
 
     // Draft and hint state reset per question because parents render this card with key={question.id}.
     const pendingTextRef = useRef<string | null>(null);
@@ -82,10 +87,15 @@ function QuestionCard({
 
             <div className="h-2 overflow-hidden rounded-full bg-line">
                 <div
-                    className="h-full rounded-full bg-fill transition-all duration-200"
-                    style={{ width: `${progressPercent}%` }}
+                    className="progress-fill h-full rounded-full bg-fill"
+                    style={{ width: `${progressPercent}%`, "--progress-from": `${progressFrom}%` } as React.CSSProperties}
                 />
             </div>
+
+            <div
+                className="question-enter flex flex-col gap-4"
+                style={{ "--question-from": enterDirection > 0 ? "28px" : "-28px" } as React.CSSProperties}
+            >
 
             <div className="app-sheet overflow-hidden p-5">
                 <div className="mb-4 flex items-start justify-between gap-3">
@@ -153,7 +163,9 @@ function QuestionCard({
                                 }}
                             >
                                 <span
-                                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center self-center rounded-full px-1 py-1 text-xs font-bold transition-colors duration-200"
+                                    // Keyed on the selected state so the letter pops each time it is chosen.
+                                    key={option === selectedAnswer ? "selected" : "idle"}
+                                    className={`flex h-9 w-9 flex-shrink-0 items-center justify-center self-center rounded-full px-1 py-1 text-xs font-bold transition-colors duration-200 ${option === selectedAnswer ? "option-pop" : ""}`}
                                     style={{
                                         backgroundColor: style.labelBg,
                                         color: style.labelText,
@@ -245,6 +257,7 @@ function QuestionCard({
                     <p className="mt-3 text-xs text-subtle">Your answer is saved as you type.</p>
                 </div>
             )}
+            </div>
         </div>
     );
 }
