@@ -10,6 +10,7 @@ import {
 import { useAuthStore } from "./store/authStore";
 import { initAuth } from "./hooks/useAuth";
 import { useTelegramChrome } from "./hooks/useTelegramChrome";
+import { useScreenTransitions } from "./hooks/useScreenTransitions";
 
 import SplashScreen from "./screens/SplashScreen";
 import HomeScreen from "./screens/HomeScreen";
@@ -60,6 +61,7 @@ function AppRoutes() {
         }))
     );
     const location = useLocation();
+    useScreenTransitions();
 
     const hideBottomNav =
         location.pathname === "/onboarding" ||
